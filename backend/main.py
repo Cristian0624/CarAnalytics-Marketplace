@@ -1,4 +1,9 @@
 from fastapi import FastAPI
+from routers.users import router as users_router
+from database import Base, engine
+import models
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Car Analytics Marketplace API",
@@ -6,6 +11,10 @@ app = FastAPI(
     version="1.0.0",
 )
 
+app.include_router(users_router)
+
 @app.get("/")
 def root():
-    return "The Car Analytics Marketplace API is running."
+    return {
+        "message": "Welcome to the Car Analytics Marketplace API!"
+    }
