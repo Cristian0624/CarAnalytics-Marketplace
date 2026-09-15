@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 import jwt
 from database import get_db
 from models import User
-from schemas import UserCreate, UserResponse, UserLogin, Token
+from schemas import UserCreate, UserResponse, UserLogin, Token, UserUpdate, PasswordChange
 from security import (hash_password, verify_password, create_access_token, decode_access_token)
 
 router = APIRouter(
@@ -94,3 +94,54 @@ def get_current_user_profile(
 ):
     return current_user
 
+@router.put("/me", response_model=UserResponse)
+def update_current_user_profile(
+    user_data : UserUpdate,
+    current_user : User = Depends(get_current_user),
+    db : Session = Depends(get_db)
+):
+    if user_data.email is not None:
+        existing_user = db.query(User).filter(
+            User.email == user_data.email,
+            User.id == current_user.id 
+        ).first()
+
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Email already registered"
+            )
+        
+        current_user.email = user_data.email
+    
+    if user_data.name is not None:
+        current_user.name = user_data.name
+
+    if user_data.phone is not None:
+        current_user.phone = user_data.phone
+
+    if user_data.seller_type is not None:
+        current_user.seller_type = user_data.seller_type
+    
+    db.commit()
+    db.refresh(current_user)
+
+    return current_user
+
+@router.put("/me/password", status_code=status.HTTP_204_NO_CONTENT)
+def change_current_user_password(
+    password_data : PasswordChange,
+    current_user : User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not verify_password(password_data.current_password, current_user.password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    
+    current_user.password = hash_password(password_data.new_password)
+    db.commit()
+
+    return None
