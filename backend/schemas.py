@@ -5,7 +5,7 @@ class UserCreate(BaseModel):
     email : EmailStr
     password : str = Field(min_length=8, max_length=128)
     phone : str | None = Field(default=None, max_length=30)
-    seller_type : str = Field(default="private", regex="^(private|dealer)$")
+    seller_type : str = Field(default="private", pattern="^(private|dealer)$")
 
 class UserLogin(BaseModel):
     email : EmailStr
