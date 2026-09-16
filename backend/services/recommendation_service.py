@@ -480,7 +480,7 @@ def get_recommendations_by_attributes(
             price=float(cand.price) if cand.price is not None else None,
             currency=cand.currency,
             price_eur=cand.price_eur,
-            engine=cand.engine,
+            engine=str(cand.engine) if cand.engine is not None else None,
             fuel_type=cand.fuel_type,
             gearbox=cand.gearbox,
             body_type=cand.body_type,

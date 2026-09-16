@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
 class UserCreate(BaseModel):
     name : str = Field(min_length=2, max_length=100)
@@ -69,6 +69,13 @@ class CarListingBase(BaseModel):
     seller_type: str | None = None
     car_class: str | None = Field(default=None, alias="class", validation_alias=None)
 
+    @field_validator("engine", mode="before")
+    @classmethod
+    def convert_engine(cls, v):
+        if v is None:
+            return None
+        return str(v)
+
     @classmethod
     def from_orm_listing(cls, listing):
         raw_url = getattr(listing, "url", None)
@@ -88,7 +95,7 @@ class CarListingBase(BaseModel):
             price=float(listing.price) if listing.price is not None else None,
             currency=listing.currency,
             price_eur=listing.price_eur,
-            engine=listing.engine,
+            engine=str(listing.engine) if listing.engine is not None else None,
             fuel_type=listing.fuel_type,
             gearbox=listing.gearbox,
             body_type=listing.body_type,
