@@ -1,12 +1,17 @@
 import os
 import jwt
+from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 from pwdlib import PasswordHash
 
-load_dotenv()   
+env_path = Path(__file__).resolve().parent / ".env"
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path)
+else:
+    load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.getenv("SECRET_KEY", "default_secret_key_change_in_production")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
 
