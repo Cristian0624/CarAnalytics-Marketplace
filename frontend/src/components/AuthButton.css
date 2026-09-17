@@ -1,0 +1,56 @@
+.auth-button-wrapper {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 100;
+}
+
+.auth-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.auth-button:hover {
+  background-color: #1d4ed8;
+}
+
+.auth-dropdown {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  width: 80px;
+  background-color: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  overflow: hidden;
+  text-align: left;
+}
+
+.auth-dropdown-item {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: white;
+  cursor: pointer;
+}
+
+.auth-dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.arrow {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.arrow-open{
+    transform: rotate(-90deg);
+}
