@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import "./AuthButton.css";
 
 function AuthButton() {
@@ -21,12 +22,17 @@ function AuthButton() {
           <path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8" />
         </svg>
         Account
-        <span className={isOpen ? "arrow arrow-open" : "arrow"}>▼</span>
-    </button>
+        <span className={isOpen ? "chevron chevron-open" : "chevron"}>▼</span>
+      </button>
+
       {isOpen && (
         <div className="auth-dropdown">
-          <div className="auth-dropdown-item">Login</div>
-          <div className="auth-dropdown-item">Register</div>
+          <Link to="/login" className="auth-dropdown-item" onClick={() => setIsOpen(false)}>
+            Login
+          </Link>
+          <Link to="/register" className="auth-dropdown-item" onClick={() => setIsOpen(false)}>
+            Register
+          </Link>
         </div>
       )}
     </div>
