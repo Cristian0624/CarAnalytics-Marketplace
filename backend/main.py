@@ -7,6 +7,7 @@ if backend_dir not in sys.path:
     sys.path.insert(0, backend_dir)
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from routers.users import router as users_router
 from routers.recommendations import router as recommendations_router
 from routers.listings import router as listings_router
@@ -31,7 +32,13 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173",],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(users_router)
 app.include_router(recommendations_router)
 app.include_router(listings_router)

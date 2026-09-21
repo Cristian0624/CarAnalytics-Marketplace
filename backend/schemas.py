@@ -39,10 +39,8 @@ class PasswordChange(BaseModel):
             raise ValueError("New password must be different from the current password")
         return self
 
-
-class Token(BaseModel):
-    access_token : str
-    token_type : str
+class MessageResponse(BaseModel):
+    message : str
 
 class TokenData(BaseModel):
     email : str | None = None
