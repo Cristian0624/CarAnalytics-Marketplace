@@ -1,0 +1,6 @@
+# Scraper pipeline dependencies (install separately from root requirements.txt):
+#   pip install -r backend/data_acquisition_cleaning_and_labeling/requirements.txt
+beautifulsoup4
+psycopg[binary]
+requests
+selenium
