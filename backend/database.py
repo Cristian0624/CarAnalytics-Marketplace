@@ -1,10 +1,15 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 from urllib.parse import quote_plus
 
-load_dotenv()
+env_path = Path(__file__).resolve().parent / ".env"
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path)
+else:
+    load_dotenv()
 
 def _get_database_url() -> str:
     """Read a complete URL or construct the Aiven-compatible URL from DB_* vars."""
