@@ -30,15 +30,14 @@ app = FastAPI(
     title="Car Analytics Marketplace API",
     description="Backend API for the automotive marketplace with intelligent car recommendations",
     version="1.0.0",
-    lifespan=lifespan,
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173",],
-    allow_credentials=True,
+    allow_origins=["http://localhost:5173"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 app.include_router(users_router)
 app.include_router(recommendations_router)
 app.include_router(listings_router)

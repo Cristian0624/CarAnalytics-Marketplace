@@ -1,7 +1,5 @@
 .auth-button-wrapper {
-  position: fixed;
-  top: 16px;
-  right: 16px;
+  position: relative;
   z-index: 100;
 }
 
@@ -27,18 +25,25 @@
   position: absolute;
   top: 44px;
   right: 0;
-  width: 80px;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
   background-color: #111827;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   overflow: hidden;
   text-align: left;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
 }
 
 .auth-dropdown-item {
+  display: block;
   padding: 10px 12px;
-  font-size: 13px;
+  font-size: 14px;
   color: white;
+  text-decoration: none;
+  border-radius: 6px;
   cursor: pointer;
 }
 
@@ -46,11 +51,12 @@
   background-color: rgba(255, 255, 255, 0.08);
 }
 
-.arrow {
+.chevron {
     display: inline-block;
+    font-size: 10px;
     transition: transform 0.2s ease;
 }
 
-.arrow-open{
-    transform: rotate(-90deg);
+.chevron-open {
+    transform: rotate(180deg);
 }
