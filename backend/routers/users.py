@@ -92,7 +92,7 @@ def login_user(
 
     return {
         "message" : "Login successful",
-         "access_token": access_token,
+         "access_token": access_token, # remove when it is resolved
         "token_type": "bearer"
     }
 
