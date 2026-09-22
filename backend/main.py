@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from routers.users import router as users_router
 from routers.listings import router as listings_router
+from routers.price_estimate import router as price_estimate_router
 from database import Base, engine
 import models
 import eval
@@ -25,6 +26,7 @@ app = FastAPI(
 
 app.include_router(users_router)
 app.include_router(listings_router)
+app.include_router(price_estimate_router)
 
 @app.get("/")
 def root():

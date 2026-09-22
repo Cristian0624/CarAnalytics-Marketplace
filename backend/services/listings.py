@@ -18,6 +18,9 @@ class ListingsService:
     def get_listing(self, listing_id: int):
         return self.repository.get_by_id(listing_id)
 
+    def get_options(self, brand=None, model=None, generation=None):
+        return self.repository.get_options(brand, model, generation)
+
 
 class UserQueriesService:
     def __init__(self, repository: UserQueriesRepository):
