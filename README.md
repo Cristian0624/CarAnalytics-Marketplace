@@ -14,3 +14,7 @@ The React Compiler is not enabled on this template because of its impact on dev 
 ## Expanding the Oxlint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+
+## Price estimate API
+
+The backend exposes `POST /price-estimate` for listing based vehicle price estimates. Start the API with `python -m uvicorn main:app --app-dir backend --reload`, then open `http://127.0.0.1:8000/docs` to try the endpoint.
