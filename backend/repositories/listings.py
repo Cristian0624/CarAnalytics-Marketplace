@@ -81,3 +81,22 @@ class ListingsRepository:
 
     def get_by_id(self, listing_id: int):
         return self.db.get(Listing, listing_id)
+
+    def get_options(self, brand=None, model=None, generation=None):
+        """Return exact inventory values; only vehicle identity fields cascade."""
+        def distinct(column, *conditions):
+            statement = select(column).where(column.is_not(None), *conditions).distinct().order_by(column)
+            return self.db.scalars(statement).all()
+
+        identity = [Listing.brand == brand, Listing.model == model]
+        if generation is not None:
+            identity.append(Listing.generation == generation)
+        return {
+            "brand": distinct(Listing.brand),
+            "model": distinct(Listing.model, Listing.brand == brand) if brand is not None else [],
+            "generation": distinct(Listing.generation, Listing.brand == brand, Listing.model == model)
+            if brand is not None and model is not None else [],
+            **{field: distinct(getattr(Listing, field)) for field in
+               ("fuel_type", "engine", "gearbox", "drivetrain", "body_type")},
+            "class": distinct(Listing.class_, *identity) if brand is not None and model is not None else [],
+        }
