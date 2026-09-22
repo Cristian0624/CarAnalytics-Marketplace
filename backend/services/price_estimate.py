@@ -11,7 +11,8 @@ import httpx
 from price_estimate_schemas import PriceEstimateRequest, PriceEstimateResponse
 
 
-MIN_EXACT_COMPARABLES = 8
+MIN_DIRECT_COMPARABLES = 8
+MIN_ACCEPTABLE_POOL = 5
 MAX_SIMILAR_COMPARABLES = 25
 ENGINE_TOLERANCE = Decimal("0.3")
 MIN_BARS, TARGET_BARS, MAX_BARS = 4, 6, 8
@@ -31,6 +32,24 @@ class PriceEstimateError(Exception):
         super().__init__(detail)
         self.status_code = status_code
         self.detail = detail
+
+
+def normal_fallback_engine_tolerance(engine: Decimal | float) -> Decimal:
+    engine = Decimal(str(engine))
+    for ceiling, tolerance in (("1.6", "0.3"), ("2.0", "0.4"), ("2.5", "0.5"),
+                               ("3.0", "0.6"), ("4.0", "0.8")):
+        if engine <= Decimal(ceiling):
+            return Decimal(tolerance)
+    return Decimal("1.2")
+
+
+def emergency_fallback_engine_tolerance(engine: Decimal | float) -> Decimal:
+    engine = Decimal(str(engine))
+    for ceiling, tolerance in (("1.6", "0.3"), ("2.0", "0.4"), ("2.5", "0.6"),
+                               ("3.0", "0.8"), ("4.0", "1.2")):
+        if engine <= Decimal(ceiling):
+            return Decimal(tolerance)
+    return Decimal("2.0")
 
 
 def get_powertrain_group(fuel_type: str) -> str:
@@ -81,6 +100,7 @@ class Comparable:
     engine: Decimal | None
     direct: bool
     weight: float = 0.0
+    source: str = "normal_fallback"
 
 
 def relevance_weight(car: Comparable, target: PriceEstimateRequest, years: tuple[int, int], group: str) -> float:
@@ -113,6 +133,8 @@ def percentile(prices: list[float], fraction: float) -> float:
 
 
 def remove_outliers(cars: list[Comparable]) -> list[Comparable]:
+    if len(cars) < 2:
+        return list(cars)
     prices = sorted(car.price for car in cars)
     q1, q3 = percentile(prices, 0.25), percentile(prices, 0.75)
     iqr = q3 - q1
@@ -191,7 +213,8 @@ class PriceEstimateService:
             raise PriceEstimateError(422, "engine must be an exact database option")
 
     @staticmethod
-    def _eligible(rows, target, years, group, direct, target_class=None):
+    def _eligible(rows, target, years, group, direct, target_class=None,
+                  engine_tolerance=ENGINE_TOLERANCE, source="normal_fallback"):
         cars = []
         for row in rows:
             if row.get("body_type") != target.body_type:
@@ -212,11 +235,13 @@ class PriceEstimateService:
                 if get_powertrain_group(row["fuel_type"]) != group:
                     continue
                 engine = None if group == "EV" else Decimal(str(row["engine"]))
-                if group != "EV" and (not engine.is_finite() or engine <= 0 or abs(engine - target.engine) > ENGINE_TOLERANCE):
+                tolerance = ENGINE_TOLERANCE if direct else engine_tolerance
+                if group != "EV" and (not engine.is_finite() or engine <= 0 or abs(engine - target.engine) > tolerance):
                     continue
             except (KeyError, TypeError, ValueError, InvalidOperation, AttributeError):
                 continue
-            car = Comparable(row, price, year, mileage, engine, direct)
+            car = Comparable(row, price, year, mileage, engine, direct,
+                             source="direct" if direct else source)
             car.weight = relevance_weight(car, target, years, group)
             cars.append(car)
         return cars
@@ -242,6 +267,52 @@ class PriceEstimateService:
             result.append(car)
         return result
 
+    async def _fetch_fallback(self, target, years, group, params, target_class, tolerance, source):
+        """Both fallback stages use identical constraints except displacement."""
+        query = {**params, "class": target_class}
+        if group != "EV":
+            query.update(engine_min=str(max(Decimal("0"), target.engine - tolerance)),
+                         engine_max=str(target.engine + tolerance))
+        rows = await self._get("/listings", query)
+        cars = self._eligible(rows, target, years, group, direct=False,
+                              target_class=target_class, engine_tolerance=tolerance, source=source)
+        return cars, len(rows)
+
+    @staticmethod
+    def _comparison_state(count, search_mode, engine_range_widened):
+        if count == 0:
+            mode = "no_comparables"
+            message = ("No sufficiently comparable vehicles were found. There is not enough market data "
+                       "to calculate a meaningful price estimate for this configuration.")
+        elif count == 1:
+            mode = "single_comparable"
+            message = ("Only one sufficiently comparable vehicle was found. Its asking price is shown as a "
+                       "reference, but there is not enough market data to calculate a reliable price estimate.")
+        elif count < MIN_ACCEPTABLE_POOL:
+            mode = "very_limited"
+            message = (f"Only {count} sufficiently comparable vehicles remain after filtering and price cleanup. "
+                       "The estimate is based on very limited market data and may have high variance.")
+        else:
+            mode = search_mode
+            message = {
+                "direct": "Sufficient direct model comparisons were available.",
+                "normal_fallback": "Compatible fallback comparisons were included because fewer than 8 direct comparisons were available.",
+                "emergency_fallback": (
+                    "Direct and normal fallback data were limited, so a broader engine-size range was used."
+                    if engine_range_widened else
+                    "Direct and normal fallback data were limited, so the final engine search was used."
+                ),
+            }[mode]
+        if engine_range_widened:
+            if count < MIN_ACCEPTABLE_POOL:
+                message += " The final search used a broader engine-size range."
+            message += " Year, mileage, body type, vehicle class, and powertrain constraints remained unchanged."
+        elif search_mode == "emergency_fallback":
+            message += " The final engine search allowed no further displacement relaxation for this engine size."
+        if count >= 2:
+            message += " Estimates reflect asking prices and do not guarantee sale prices or time to sell."
+        return mode, mode not in {"direct", "normal_fallback"}, message
+
     async def estimate(self, target: PriceEstimateRequest) -> PriceEstimateResponse:
         years = effective_year_range(target)
         try:
@@ -262,42 +333,51 @@ class PriceEstimateService:
         fetched = len(rows)
         exact = self._deduplicate(self._eligible(rows, target, years, group, direct=True))
         direct_count = len(exact)
-        same_model_only = direct_count >= MIN_EXACT_COMPARABLES
+        same_model_only = direct_count >= MIN_DIRECT_COMPARABLES
         pool = exact
         eligible = direct_count
+        search_mode = "direct"
+        engine_range_widened = False
         if not same_model_only:
             classes = options["class"]
             if len(classes) != 1:
                 raise PriceEstimateError(422, "Selected vehicle must have one unambiguous database class for fallback comparisons")
-            fallback_rows = await self._get("/listings", {**params, "class": classes[0]})
-            fetched += len(fallback_rows)
-            candidates = self._deduplicate(exact + self._eligible(
-                fallback_rows, target, years, group, direct=False, target_class=classes[0],
-            ))
+            normal_tolerance = None if group == "EV" else normal_fallback_engine_tolerance(target.engine)
+            normal, count = await self._fetch_fallback(
+                target, years, group, params, classes[0], normal_tolerance, "normal_fallback",
+            )
+            fetched += count
+            candidates = self._deduplicate(exact + normal)
+            search_mode = "normal_fallback"
+            # EV displacement is inapplicable: an identical third search adds no evidence.
+            if len(candidates) < MIN_ACCEPTABLE_POOL and group != "EV":
+                emergency_tolerance = emergency_fallback_engine_tolerance(target.engine)
+                emergency, count = await self._fetch_fallback(
+                    target, years, group, params, classes[0], emergency_tolerance, "emergency_fallback",
+                )
+                fetched += count
+                # The first occurrence preserves direct > normal > emergency origin.
+                candidates = self._deduplicate(candidates + emergency)
+                search_mode = "emergency_fallback"
+                engine_range_widened = emergency_tolerance > normal_tolerance
             similar = [car for car in candidates if not car.direct]
             eligible = len(candidates)
             similar.sort(key=lambda car: (-car.weight, car.listing["id"]))
             pool = exact + similar[:MAX_SIMILAR_COMPARABLES]
-        if not pool:
-            raise PriceEstimateError(404, "No eligible comparison listings were found")
         cleaned = remove_outliers(pool)
-        if not cleaned or sum(car.weight for car in cleaned) <= 0:
-            raise PriceEstimateError(404, "No comparison listings with usable relevance remain")
-        prices = [car.price for car in cleaned]
-        percentiles = {p: weighted_percentile(cleaned, p / 100) for p in (20, 30, 40, 50, 60, 70, 80)}
         same_count = sum(car.listing.get("brand") == target.brand and car.listing.get("model") == target.model for car in cleaned)
-        message = ("Sufficient direct model comparisons were available."
-                   if same_model_only else
-                   f"Only {direct_count} direct model comparisons were available; compatible similar models were searched.")
-        message += " Estimates reflect asking prices and do not guarantee sale prices or time to sell."
-        return PriceEstimateResponse.model_validate({
-            "estimate": {
-                "market_price": percentiles[50],
-                "sell_fast": {"min": percentiles[20], "max": percentiles[30], "percentile_range": "P20-P30"},
-                "normal": {"min": percentiles[40], "max": percentiles[60], "percentile_range": "P40-P60"},
-                "higher_asking": {"min": percentiles[70], "max": percentiles[80], "percentile_range": "P70-P80"},
-            },
+        mode, limited, message = self._comparison_state(len(cleaned), search_mode, engine_range_widened)
+        response = {
+            "estimate_available": len(cleaned) >= 2,
+            "estimate": None,
+            "reference_price": cleaned[0].price if len(cleaned) == 1 else None,
+            "market_stats": None,
+            "distribution": None,
             "comparison": {
+                "comparison_mode": mode, "limited_market_data": limited,
+                "direct_count": sum(car.source == "direct" for car in cleaned),
+                "normal_fallback_added": sum(car.source == "normal_fallback" for car in cleaned),
+                "emergency_fallback_added": sum(car.source == "emergency_fallback" for car in cleaned),
                 "same_model_only": same_model_only, "same_model_count": same_count,
                 "similar_model_count": len(cleaned) - same_count, "total_used": len(cleaned),
                 "fetched": fetched, "eligible": eligible, "direct_comparables_available": direct_count,
@@ -310,6 +390,19 @@ class PriceEstimateService:
                 "effective_year_min": years[0], "effective_year_max": years[1],
                 "mileage_min": target.mileage_min, "mileage_max": target.mileage_max,
             },
+        }
+        if len(cleaned) < 2:
+            return PriceEstimateResponse.model_validate(response)
+
+        prices = [car.price for car in cleaned]
+        percentiles = {p: weighted_percentile(cleaned, p / 100) for p in (20, 30, 40, 50, 60, 70, 80)}
+        response.update({
+            "estimate": {
+                "market_price": percentiles[50],
+                "sell_fast": {"min": percentiles[20], "max": percentiles[30], "percentile_range": "P20-P30"},
+                "normal": {"min": percentiles[40], "max": percentiles[60], "percentile_range": "P40-P60"},
+                "higher_asking": {"min": percentiles[70], "max": percentiles[80], "percentile_range": "P70-P80"},
+            },
             "market_stats": {
                 "average_price": round(mean(prices), 2), "median_price": median(prices),
                 "lowest_price": min(prices), "highest_price": max(prices),
@@ -318,3 +411,4 @@ class PriceEstimateService:
             },
             "distribution": distribution(cleaned),
         })
+        return PriceEstimateResponse.model_validate(response)

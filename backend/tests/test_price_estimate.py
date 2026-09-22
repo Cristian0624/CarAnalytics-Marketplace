@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 import unittest
 from decimal import Decimal
+from unittest.mock import patch
 
 # Tests never connect to the configured application database or start main's
 # background evaluator. Route integration uses its own SQLite inventory.
@@ -28,6 +29,7 @@ from services.price_estimate import (
     Comparable, PriceEstimateError, PriceEstimateService, distribution,
     drivetrain_score, effective_year_range, get_powertrain_group,
     relevance_weight, remove_outliers, weighted_percentile,
+    normal_fallback_engine_tolerance, emergency_fallback_engine_tolerance,
 )
 
 
@@ -56,6 +58,36 @@ def comparable(price, weight=1, **overrides):
 
 
 class MathTests(unittest.TestCase):
+    def test_fallback_tolerance_tiers_and_boundaries(self):
+        cases = (
+            (1.5, "0.3", "0.3"), (1.6, "0.3", "0.3"), (1.6001, "0.4", "0.4"),
+            (2.0, "0.4", "0.4"), (2.0001, "0.5", "0.6"), (2.5, "0.5", "0.6"),
+            (2.5001, "0.6", "0.8"), (3.0, "0.6", "0.8"), (3.0001, "0.8", "1.2"),
+            (3.5, "0.8", "1.2"), (4.0, "0.8", "1.2"), (4.0001, "1.2", "2.0"),
+            (4.7, "1.2", "2.0"), (5.5, "1.2", "2.0"),
+        )
+        for engine, normal, emergency in cases:
+            with self.subTest(engine=engine):
+                self.assertEqual(normal_fallback_engine_tolerance(engine), Decimal(normal))
+                self.assertEqual(emergency_fallback_engine_tolerance(engine), Decimal(emergency))
+
+    def test_fallback_eligibility_does_not_inflate_engine_score(self):
+        target = PriceEstimateRequest(**payload(engine=4.7))
+        rows = [listing(i, engine=engine) for i, engine in enumerate(("4.4", "5.0", "4.39", "5.01", "3.5", "2.7"), 1)]
+        direct = PriceEstimateService._eligible(rows, target, (2015, 2020), "ICE", True, engine_tolerance=Decimal("2"))
+        self.assertEqual([car.engine for car in direct], [Decimal("4.4"), Decimal("5.0")])
+        normal = PriceEstimateService._eligible(rows, target, (2015, 2020), "ICE", False, "D", Decimal("1.2"))
+        emergency = PriceEstimateService._eligible(rows, target, (2015, 2020), "ICE", False, "D", Decimal("2"))
+        self.assertEqual(len(normal), 5)
+        self.assertEqual(len(emergency), 6)
+        # The original 0.3 scoring denominator stays fixed across retrieval stages.
+        for car in normal:
+            self.assertEqual(car.weight, next(other.weight for other in emergency if other.listing["id"] == car.listing["id"]))
+        perfect = Comparable(listing(), 14500, 2018, 120000, Decimal("4.7"), True)
+        distant = Comparable(listing(), 14500, 2018, 120000, Decimal("2.7"), False)
+        self.assertAlmostEqual(relevance_weight(perfect, target, (2015, 2020), "ICE"), 1.0)
+        self.assertAlmostEqual(relevance_weight(distant, target, (2015, 2020), "ICE"), 0.95)
+
     def test_actual_database_fuels_and_unknown(self):
         for fuel in ("Benzină", "Diesel", "Gaz", "Gaz / Benzină (metan)", "Gaz / Benzină (propan)"):
             self.assertEqual(get_powertrain_group(fuel), "ICE")
@@ -127,31 +159,46 @@ class MathTests(unittest.TestCase):
 
 
 class ServiceTests(unittest.IsolatedAsyncioTestCase):
-    async def run_estimate(self, direct, fallback=(), data=None, options_override=None):
+    async def run_estimate(self, direct, fallback=(), data=None, options_override=None, emergency=None):
         data = data or payload()
         self.calls = []
         options = {
             "brand": ["BMW"], "model": ["320"], "generation": [data["generation"]],
             "fuel_type": ["Benzină", "Diesel", "Electricitate", "Hybrid"],
-            "engine": [1.7, 2.0, 2.3], "gearbox": ["Automată", "Mecanică"],
+            "engine": [1.7, 2.0, 2.3, 4.7], "gearbox": ["Automată", "Mecanică"],
             "drivetrain": ["Din spate", "Din față", "4x4"], "body_type": ["Sedan"], "class": ["D"],
             **(options_override or {}),
         }
 
+        fallback_calls = 0
+
         def handle(request):
+            nonlocal fallback_calls
             self.calls.append(request)
             if request.url.path == "/listings/options":
                 return httpx.Response(200, json=options)
-            return httpx.Response(200, json=list(fallback) if "class" in request.url.params else direct)
+            if "class" in request.url.params:
+                fallback_calls += 1
+                rows = emergency if fallback_calls == 2 and emergency is not None else fallback
+                return httpx.Response(200, json=list(rows))
+            return httpx.Response(200, json=direct)
 
         async with httpx.AsyncClient(transport=httpx.MockTransport(handle), base_url="http://internal") as client:
-            return await PriceEstimateService(client).estimate(PriceEstimateRequest(**data))
+            result = await PriceEstimateService(client).estimate(PriceEstimateRequest(**data))
+        comparison = result.comparison
+        self.assertEqual(comparison.direct_count + comparison.normal_fallback_added + comparison.emergency_fallback_added,
+                         comparison.total_used)
+        return result
 
     async def test_eight_direct_stops_without_fallback(self):
         result = await self.run_estimate([listing(i) for i in range(1, 9)])
         self.assertTrue(result.comparison.same_model_only)
         self.assertEqual(result.comparison.total_used, 8)
         self.assertEqual(len(self.calls), 2)
+        self.assertEqual(result.comparison.comparison_mode, "direct")
+        self.assertFalse(result.comparison.limited_market_data)
+        self.assertEqual(result.comparison.direct_count, 8)
+        self.assertNotIn("engine_min", self.calls[-1].url.params)
         self.assertEqual(self.calls[-1].url.params["year_max"], "2020")
         self.assertEqual(self.calls[-1].url.params["generation"], "II (2011 - 2020)")
 
@@ -166,6 +213,7 @@ class ServiceTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.comparison.same_model_count, 3)
         self.assertEqual(result.comparison.similar_model_count, 25)
         self.assertEqual(result.comparison.eligible, 43)
+        self.assertEqual(result.comparison.normal_fallback_added, 25)
         self.assertLess(result.market_stats.highest_price, 20000)
         params = self.calls[-1].url.params
         self.assertEqual(params["class"], "D")
@@ -214,12 +262,150 @@ class ServiceTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.comparison.total_used, 7)
         self.assertEqual(result.comparison.same_model_count, 7)
         self.assertEqual(result.comparison.outliers_removed, 1)
+        self.assertEqual(result.comparison.direct_count, 7)
         self.assertEqual(sum(bar.count for bar in result.distribution.bars), 7)
 
     async def test_no_comparables(self):
-        with self.assertRaises(PriceEstimateError) as context:
-            await self.run_estimate([])
-        self.assertEqual(context.exception.status_code, 404)
+        result = await self.run_estimate([])
+        self.assertFalse(result.estimate_available)
+        self.assertEqual(result.comparison.comparison_mode, "no_comparables")
+        self.assertIsNone(result.estimate)
+        self.assertIsNone(result.reference_price)
+        self.assertIsNone(result.market_stats)
+        self.assertIsNone(result.distribution)
+        self.assertEqual(len(self.calls), 4)  # Metadata + three listings calls, never a fourth.
+
+    async def test_five_combined_stops_before_emergency(self):
+        exact = [listing(1, engine="4.7")]
+        normal = [listing(i, engine="3.5") for i in range(2, 6)]
+        result = await self.run_estimate(exact, exact + normal, payload(engine=4.7))
+        self.assertEqual(len(self.calls), 3)
+        self.assertEqual(result.comparison.comparison_mode, "normal_fallback")
+        self.assertFalse(result.comparison.limited_market_data)
+        self.assertEqual(result.comparison.direct_count, 1)
+        self.assertEqual(result.comparison.normal_fallback_added, 4)
+        self.assertEqual(result.comparison.emergency_fallback_added, 0)
+        self.assertEqual(self.calls[-1].url.params["engine_min"], "3.5")
+        self.assertEqual(self.calls[-1].url.params["engine_max"], "5.9")
+
+    async def test_emergency_union_preserves_origins_and_only_expands_engine(self):
+        exact = [listing(1, engine="4.7")]
+        normal = [listing(i, engine="3.5") for i in range(2, 4)]
+        new = [listing(i, engine="2.7", generation=None) for i in range(4, 9)]
+        result = await self.run_estimate(exact, exact + normal, payload(engine=4.7), emergency=exact + normal + new)
+        self.assertEqual(len(self.calls), 4)
+        self.assertEqual(result.comparison.comparison_mode, "emergency_fallback")
+        self.assertTrue(result.comparison.limited_market_data)
+        self.assertTrue(result.estimate_available)
+        self.assertEqual((result.comparison.direct_count, result.comparison.normal_fallback_added,
+                          result.comparison.emergency_fallback_added), (1, 2, 5))
+        self.assertEqual(result.comparison.total_used, 8)
+        self.assertIn("broader engine-size range", result.comparison.message)
+        normal_query, emergency_query = (dict(call.url.params) for call in self.calls[-2:])
+        self.assertEqual(emergency_query.pop("engine_min"), "2.7")
+        self.assertEqual(emergency_query.pop("engine_max"), "6.7")
+        normal_query.pop("engine_min")
+        normal_query.pop("engine_max")
+        self.assertEqual(normal_query, emergency_query)
+        self.assertNotIn("generation", emergency_query)
+        self.assertNotIn("brand", emergency_query)
+
+    async def test_duplicate_ids_do_not_prevent_emergency_search(self):
+        exact = [listing(1, engine="4.7")]
+        normal = [listing(i, engine="3.5") for i in range(2, 5)]
+        changed_duplicate = {**normal[0], "mileage": 125000, "url": "https://changed.test/2"}
+        result = await self.run_estimate(exact, exact + normal + [changed_duplicate] * 3,
+                                         payload(engine=4.7), emergency=exact + normal)
+        self.assertEqual(len(self.calls), 4)
+        self.assertEqual(result.comparison.total_used, 4)
+        self.assertEqual(result.comparison.comparison_mode, "very_limited")
+        self.assertEqual(result.comparison.emergency_fallback_added, 0)
+
+    async def test_emergency_rejects_every_other_incompatible_dimension(self):
+        invalid = ({"class": "C"}, {"body_type": "SUV"}, {"fuel_type": "Electricitate"},
+                   {"fuel_type": "Hybrid"}, {"year": 2021}, {"mileage": 160001},
+                   {"engine": "2.69"}, {"engine": "6.71"}, {"price_eur": None}, {"engine": None})
+        rows = [listing(i + 10, **{"engine": "2.7", **overrides}) for i, overrides in enumerate(invalid)]
+        rows += [listing(40, engine="2.7", generation=None), listing(41, engine="6.7", generation="unrelated")]
+        result = await self.run_estimate([], [], payload(engine=4.7), emergency=rows)
+        self.assertEqual(result.comparison.total_used, 2)
+        self.assertEqual(result.comparison.emergency_fallback_added, 2)
+        self.assertEqual(result.comparison.comparison_mode, "very_limited")
+
+    async def test_two_to_four_results_keep_actual_price_variance(self):
+        for count in (2, 3, 4):
+            with self.subTest(count=count):
+                rows = [listing(i + 1, engine="2.7", price_eur=str(price))
+                        for i, price in enumerate((14000, 21000, 32000, 38000)[:count])]
+                result = await self.run_estimate([], [], payload(engine=4.7), emergency=rows)
+                self.assertTrue(result.estimate_available)
+                self.assertEqual(result.comparison.comparison_mode, "very_limited")
+                self.assertTrue(result.comparison.limited_market_data)
+                self.assertEqual(result.market_stats.lowest_price, 14000)
+                self.assertEqual(result.market_stats.highest_price, float(rows[-1]["price_eur"]))
+                self.assertEqual(len(self.calls), 4)
+
+    async def test_single_reference_from_any_source_never_runs_estimator(self):
+        for source in ("direct", "normal_fallback", "emergency_fallback"):
+            with self.subTest(source=source), patch("services.price_estimate.weighted_percentile") as estimator:
+                row = listing(1, engine={"direct": "4.7", "normal_fallback": "3.5", "emergency_fallback": "2.7"}[source],
+                              price_eur="18900")
+                result = await self.run_estimate(
+                    [row] if source == "direct" else [],
+                    [row] if source == "normal_fallback" else [],
+                    payload(engine=4.7), emergency=[row],
+                )
+                estimator.assert_not_called()
+                self.assertFalse(result.estimate_available)
+                self.assertEqual(result.reference_price, 18900)
+                self.assertIsNone(result.estimate)
+                self.assertIsNone(result.market_stats)
+                self.assertIsNone(result.distribution)
+                self.assertEqual(result.comparison.comparison_mode, "single_comparable")
+                self.assertEqual(result.comparison.total_used, 1)
+                expected = tuple(int(source == origin) for origin in ("direct", "normal_fallback", "emergency_fallback"))
+                self.assertEqual((result.comparison.direct_count, result.comparison.normal_fallback_added,
+                                  result.comparison.emergency_fallback_added), expected)
+
+    async def test_sparse_evs_never_repeat_identical_displacement_query(self):
+        for count in range(5):
+            with self.subTest(count=count):
+                rows = [listing(i + 1, fuel_type="Electricitate", engine=None) for i in range(count)]
+                result = await self.run_estimate([], rows, payload(fuel_type="Electricitate", engine=None))
+                self.assertEqual(len(self.calls), 3)
+                self.assertEqual(result.comparison.total_used, count)
+                self.assertEqual(result.comparison.emergency_fallback_added, 0)
+                self.assertNotIn("engine_min", self.calls[-1].url.params)
+                self.assertNotIn("engine_max", self.calls[-1].url.params)
+                self.assertNotIn("broader engine", result.comparison.message)
+                self.assertEqual(result.estimate_available, count >= 2)
+
+    async def test_small_engine_emergency_never_allows_13_litre(self):
+        result = await self.run_estimate([listing()], [], emergency=[listing(2, engine="1.3")])
+        self.assertEqual(result.comparison.total_used, 1)
+        self.assertEqual(result.comparison.comparison_mode, "single_comparable")
+        self.assertEqual(self.calls[-1].url.params["engine_min"], "1.6")
+        self.assertEqual(self.calls[-1].url.params["engine_max"], "2.4")
+        self.assertNotIn("broader engine-size range", result.comparison.message)
+
+    async def test_source_counts_exclude_final_outliers(self):
+        exact = [listing(1, engine="4.7", price_eur="100000")]
+        normal = [listing(2, engine="3.5")]
+        emergency = [listing(i, engine="2.7") for i in range(3, 10)]
+        result = await self.run_estimate(exact, normal, payload(engine=4.7), emergency=exact + normal + emergency)
+        self.assertEqual(result.comparison.outliers_removed, 1)
+        self.assertEqual(result.comparison.direct_comparables_available, 1)
+        self.assertEqual(result.comparison.direct_count, 0)
+        self.assertEqual(result.comparison.normal_fallback_added, 1)
+        self.assertEqual(result.comparison.emergency_fallback_added, 7)
+
+    async def test_cleanup_below_five_warns_without_restarting_search(self):
+        rows = [listing(i, price_eur="14000") for i in range(1, 5)] + [listing(5, price_eur="100000")]
+        result = await self.run_estimate([], rows)
+        self.assertEqual(len(self.calls), 3)
+        self.assertEqual(result.comparison.total_used, 4)
+        self.assertEqual(result.comparison.comparison_mode, "very_limited")
+        self.assertTrue(result.comparison.limited_market_data)
 
     async def test_invalid_categories_and_missing_class(self):
         for values in ({"brand": "invented"}, {"engine": 1.9}, {"gearbox": "Automatic"}, {"engine": None}):
@@ -313,6 +499,47 @@ class RouteIntegrationTests(unittest.TestCase):
         for overrides in ({"brand": "Audi"}, {"year": 2021}, {"mileage_min": 130000}, {"body_type": "invented"}):
             response = self.client.post("/price-estimate", json=payload(**overrides))
             self.assertEqual(response.status_code, 422, response.text)
+
+    def test_single_and_no_data_responses_are_http_200(self):
+        with Session(self.engine) as db:
+            db.execute(delete(Listing).where(Listing.id.between(2, 8)))
+            db.commit()
+        for mileage_min, expected_mode, expected_price in (
+            (80000, "single_comparable", 14100.0),
+            (130000, "no_comparables", None),
+        ):
+            with self.subTest(mode=expected_mode):
+                self.statements.clear()
+                body = payload(mileage=140000, mileage_min=mileage_min)
+                response = self.client.post("/price-estimate", json=body)
+                self.assertEqual(response.status_code, 200, response.text)
+                result = response.json()
+                self.assertEqual(result["comparison"]["comparison_mode"], expected_mode)
+                self.assertFalse(result["estimate_available"])
+                self.assertEqual(result["reference_price"], expected_price)
+                for field in ("estimate", "market_stats", "distribution"):
+                    self.assertIsNone(result[field])
+                self.assertTrue(all(statement.lstrip().startswith("SELECT") for statement in self.statements))
+
+    def test_engine_emergency_through_real_listings_filters(self):
+        with Session(self.engine) as db:
+            db.execute(delete(Listing))
+            for i, displacement in enumerate(("4.7", "3.5", "5.9", "2.7", "6.7", "2.7", "6.7", "2.7"), 1):
+                row = listing(i, engine=displacement)
+                row["class_"] = row.pop("class")
+                db.add(Listing(**row))
+            db.commit()
+        self.statements.clear()
+        response = self.client.post("/price-estimate", json=payload(engine=4.7))
+        self.assertEqual(response.status_code, 200, response.text)
+        result = response.json()
+        self.assertEqual(result["comparison"]["comparison_mode"], "emergency_fallback")
+        self.assertEqual(result["comparison"]["direct_count"], 1)
+        self.assertEqual(result["comparison"]["normal_fallback_added"], 2)
+        self.assertEqual(result["comparison"]["emergency_fallback_added"], 5)
+        self.assertEqual(result["comparison"]["total_used"], 8)
+        self.assertTrue(result["estimate_available"])
+        self.assertTrue(all(statement.lstrip().startswith("SELECT") for statement in self.statements))
 
 
 if __name__ == "__main__":

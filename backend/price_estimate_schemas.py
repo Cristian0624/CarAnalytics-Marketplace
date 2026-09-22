@@ -2,7 +2,7 @@
 
 from datetime import date
 from decimal import Decimal
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -67,6 +67,14 @@ class Estimate(BaseModel):
 
 
 class Comparison(BaseModel):
+    comparison_mode: Literal[
+        "direct", "normal_fallback", "emergency_fallback",
+        "very_limited", "single_comparable", "no_comparables",
+    ]
+    limited_market_data: bool
+    direct_count: int
+    normal_fallback_added: int
+    emergency_fallback_added: int
     same_model_only: bool
     same_model_count: int
     similar_model_count: int
@@ -118,8 +126,10 @@ class Distribution(BaseModel):
 
 class PriceEstimateResponse(BaseModel):
     currency: str = "EUR"
-    estimate: Estimate
+    estimate_available: bool
+    estimate: Estimate | None
+    reference_price: float | None = None
     comparison: Comparison
     search: EstimateSearch
-    market_stats: MarketStats
-    distribution: Distribution
+    market_stats: MarketStats | None
+    distribution: Distribution | None
