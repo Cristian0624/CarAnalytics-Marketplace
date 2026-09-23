@@ -11,6 +11,7 @@ from repositories.user_queries import UserQueriesRepository
 from routers.users import get_current_user
 from schemas import ListingResponse, PaginatedListingsResponse, UserQueryCreate, UserQueryResponse, UserQueryUpdate
 from services.listings import ListingsService, UserQueriesService
+from price_estimate_schemas import ListingOptionsResponse
 
 
 router = APIRouter(tags=["listings"])
@@ -98,6 +99,20 @@ def search_listings_paginated(
     limit: int = Query(20, ge=1, le=100),
 ):
     return service.search_paginated(filters, page, limit)
+
+
+@router.get("/listings/options", response_model=ListingOptionsResponse)
+def get_listing_options(
+    service: Annotated[ListingsService, Depends(get_listings_service)],
+    brand: str | None = None,
+    model: str | None = None,
+    generation: str | None = None,
+):
+    if model is not None and brand is None:
+        raise HTTPException(status_code=422, detail="brand is required when selecting model")
+    if generation is not None and (brand is None or model is None):
+        raise HTTPException(status_code=422, detail="brand and model are required when selecting generation")
+    return service.get_options(brand, model, generation)
 
 
 @router.get("/listings/{listing_id}", response_model=ListingResponse)

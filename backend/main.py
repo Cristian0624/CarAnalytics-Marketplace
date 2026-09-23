@@ -9,8 +9,10 @@ if backend_dir not in sys.path:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers.users import router as users_router
+from routers.predictions import router as predictions_router
 from routers.recommendations import router as recommendations_router
 from routers.listings import router as listings_router
+from routers.price_estimate import router as price_estimate_router
 from database import Base, engine
 import models
 import threading
@@ -20,13 +22,20 @@ Base.metadata.create_all(bind=engine)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # run scoring in the background; skip if pandas isn't installed
-    try:
-        import eval
-        thread = threading.Thread(target=eval.evaluate_and_update_db, args=("listings_cleaned",), daemon=True)
-        thread.start()
-    except ImportError as e:
-        print(f"Skipping background scoring (missing dependency): {e}")
+    def _run_scoring_safely():
+        # run scoring in the background; never crash the server on DB
+        # permission errors (e.g. restricted user is not owner of
+        # market_metrics) — just log a short warning instead.
+        try:
+            import eval
+            eval.evaluate_and_update_db("listings_cleaned")
+        except ImportError as e:
+            print(f"Skipping background scoring (missing dependency): {e}")
+        except Exception as e:
+            print(f"Background scoring failed and was skipped: {e}")
+
+    thread = threading.Thread(target=_run_scoring_safely, daemon=True)
+    thread.start()
     yield
 
 app = FastAPI(
@@ -44,9 +53,10 @@ app.add_middleware(
 )
 
 app.include_router(users_router)
+app.include_router(predictions_router)
 app.include_router(recommendations_router)
 app.include_router(listings_router)
-
+app.include_router(price_estimate_router)
 
 @app.get("/")
 def root():

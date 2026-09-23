@@ -9,7 +9,7 @@ export function AuthProvider({ children }) {
 
   const refreshUser = useCallback(async () => {
     try {
-      const me = await getCurrentUser();
+      const me = await getCurrentUser(localStorage.getItem("token") || undefined);
       setUser(me);
       return me;
     } catch {
@@ -23,7 +23,10 @@ export function AuthProvider({ children }) {
   }, [refreshUser]);
 
   async function login(credentials) {
-    await apiLogin(credentials);
+    const result = await apiLogin(credentials);
+    if (result?.access_token) {
+      localStorage.setItem("token", result.access_token);
+    }
     return refreshUser();
   }
 
