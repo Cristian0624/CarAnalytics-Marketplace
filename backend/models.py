@@ -1,4 +1,7 @@
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, Numeric, String, Float, BigInteger, Text
+from sqlalchemy import (
+    Boolean, Column, DateTime, Date, ForeignKey, Integer, Numeric, String, Float,
+    BigInteger, Text, UniqueConstraint
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
@@ -136,3 +139,39 @@ class ModelClass(Base):
     market_segment = Column(Text, nullable=True)
     counterpart_brand = Column(Text, nullable=True)
     counterpart_model = Column(Text, nullable=True)
+
+
+class MarketTrend(Base):
+    __tablename__ = "market_trends"
+    __table_args__ = (
+        UniqueConstraint("brand", "model", "year", "snapshot_date", name="uq_market_trend_entry"),
+        {"extend_existing": True},
+    )
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    brand = Column(String, nullable=False, index=True)
+    model = Column(String, nullable=False, index=True)
+    year = Column(Integer, nullable=False, index=True)
+    snapshot_date = Column(Date, nullable=False, index=True)
+    avg_price = Column(Float, nullable=False)
+    median_price = Column(Float, nullable=False)
+    min_price = Column(Float, nullable=True)
+    max_price = Column(Float, nullable=True)
+    listing_count = Column(Integer, nullable=False)
+
+
+class ListingPriceHistory(Base):
+    __tablename__ = "listing_price_history"
+    __table_args__ = (
+        UniqueConstraint("listing_id", "scraped_at", name="uq_listing_price_history"),
+        {"extend_existing": True},
+    )
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    listing_id = Column(BigInteger, nullable=False, index=True)
+    brand = Column(String, nullable=True, index=True)
+    model = Column(String, nullable=True, index=True)
+    year = Column(Integer, nullable=True, index=True)
+    price_eur = Column(Float, nullable=False)
+    scraped_at = Column(DateTime(timezone=True), nullable=False, index=True)
+

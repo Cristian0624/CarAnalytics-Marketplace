@@ -13,27 +13,42 @@ from routers.predictions import router as predictions_router
 from routers.recommendations import router as recommendations_router
 from routers.listings import router as listings_router
 from routers.price_estimate import router as price_estimate_router
+from routers.trends import router as trends_router
 from database import Base, engine
 import models
-import eval
 import threading
 from contextlib import asynccontextmanager
 
 Base.metadata.create_all(bind=engine)
 
+def _run_eval():
+    try:
+        import eval
+        eval.evaluate_and_update_db("listings_cleaned")
+    except Exception as e:
+        print(f"Background evaluation worker skipped: {e}")
+
+    try:
+        from database import SessionLocal
+        from services.trends import sync_all_unprocessed_trends
+        with SessionLocal() as db:
+            synced = sync_all_unprocessed_trends(db)
+            if synced:
+                print(f"[TRENDS] Auto-synced {len(synced)} new trend snapshot(s).", flush=True)
+    except Exception as e:
+        print(f"[TRENDS] Background trends sync skipped: {e}", flush=True)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # run in the background
-    thread = threading.Thread(target=eval.evaluate_and_update_db, args=("listings_cleaned",), daemon=True)
+    thread = threading.Thread(target=_run_eval, daemon=True)
     thread.start()
     yield
-
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="Car Analytics Marketplace API",
     description="Backend API for the automotive marketplace with intelligent car recommendations",
     version="1.0.0",
+    lifespan=lifespan,
 )
 app.add_middleware(
     CORSMiddleware,
@@ -56,6 +71,7 @@ app.include_router(predictions_router)
 app.include_router(recommendations_router)
 app.include_router(listings_router)
 app.include_router(price_estimate_router)
+app.include_router(trends_router)
 
 @app.get("/")
 def root():
