@@ -23,6 +23,7 @@ export async function registerUser({ name, email, password, phone, seller_type }
   const res = await fetch(`${API_URL}/users/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify({ name, email, password, phone, seller_type }),
   });
   return handleResponse(res, "Registration failed");
@@ -32,14 +33,28 @@ export async function loginUser({ email, password }) {
   const res = await fetch(`${API_URL}/users/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify({ email, password }),
   });
-  return handleResponse(res, "Login failed");
+  const data = await handleResponse(res, "Login failed");
+  if (data?.access_token) {
+    localStorage.setItem("token", data.access_token);
+  }
+  return data;
 }
 
-export async function getCurrentUser(token) {
+export async function getCurrentUser() {
   const res = await fetch(`${API_URL}/users/me`, {
-    headers: { Authorization: `Bearer ${token}` },
+    credentials: "include",
   });
   return handleResponse(res, "Failed to load user");
+}
+
+export async function logoutUser() {
+  const res = await fetch(`${API_URL}/users/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
+  localStorage.removeItem("token");
+  return handleResponse(res, "Logout failed");
 }

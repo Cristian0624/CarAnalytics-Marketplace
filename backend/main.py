@@ -13,7 +13,6 @@ from routers.recommendations import router as recommendations_router
 from routers.listings import router as listings_router
 from database import Base, engine
 import models
-import eval
 import threading
 from contextlib import asynccontextmanager
 
@@ -21,19 +20,25 @@ Base.metadata.create_all(bind=engine)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # run in the background
-    thread = threading.Thread(target=eval.evaluate_and_update_db, args=("listings_cleaned",), daemon=True)
-    thread.start()
+    # run scoring in the background; skip if pandas isn't installed
+    try:
+        import eval
+        thread = threading.Thread(target=eval.evaluate_and_update_db, args=("listings_cleaned",), daemon=True)
+        thread.start()
+    except ImportError as e:
+        print(f"Skipping background scoring (missing dependency): {e}")
     yield
 
 app = FastAPI(
     title="Car Analytics Marketplace API",
     description="Backend API for the automotive marketplace with intelligent car recommendations",
     version="1.0.0",
+    lifespan=lifespan,
 )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
