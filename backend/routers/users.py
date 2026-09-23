@@ -304,7 +304,7 @@ def change_current_user_password(
     now = datetime.now(timezone.utc)
 
     db.query(UserSession).filter(
-        UserSession.user.id == current_user.id,
+        UserSession.user_id == current_user.id,
         UserSession.revoked_at.is_(None)
     ).update(
         {
@@ -314,12 +314,12 @@ def change_current_user_password(
     )
     db.commit()
 
-    response.delete_cookies(
+    response.delete_cookie(
         key=ACCESS_COOKIE_NAME,
         path="/"
     )
 
-    response.delete_cookies(
+    response.delete_cookie(
         key=REFRESH_COOKIE_NAME,
         path="/auth"
     )
