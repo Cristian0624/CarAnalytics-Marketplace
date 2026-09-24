@@ -7,10 +7,10 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background-color: #2563eb;
+  background-color: #083b08;
   color: white;
   border: none;
-  padding: 8px 14px;
+  padding: 11px 21px;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
@@ -18,7 +18,7 @@
 }
 
 .auth-button:hover {
-  background-color: #1d4ed8;
+  background-color: #105210;
 }
 
 .auth-dropdown {
@@ -76,5 +76,5 @@
 }
 
 .chevron-open {
-    transform: rotate(180deg);
+    transform: rotate(90deg);
 }
