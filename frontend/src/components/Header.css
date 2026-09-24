@@ -1,3 +1,11 @@
+
+.header-wrapper {
+  position: relative;
+  height: 200px; 
+  width: 100%;
+  pointer-events: none; 
+}
+
 .site-header {
   width: 100%;
   box-sizing: border-box;
@@ -5,7 +13,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 12px 24px;
+  padding: 20px 24px;
   background: rgba(255, 255, 255, 0.42);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -13,6 +21,7 @@
   position: sticky;
   top: 0;
   z-index: 50;
+  pointer-events: auto;
 }
 
 .header-left,

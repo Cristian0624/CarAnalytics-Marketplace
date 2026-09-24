@@ -1,0 +1,258 @@
+.listing-filters {
+    width: 100%;
+    margin-bottom: 42px;
+    padding: 28px;
+    border-radius: 24px;
+    background: #ffffff;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+    box-sizing: border-box;
+}
+
+.filters-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.filters-header h2 {
+    margin: 0;
+    font-size: 25px;
+    font-weight: 700;
+     color: #000000;
+}
+
+.filters-header p {
+    margin: 6px 0 0;
+    color: #000000;
+    font-size: 14px;
+}
+
+.reset-filters-button {
+    border: none;
+    background: transparent;
+    color: #666;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+
+.reset-filters-button:hover {
+    background: #f2f2f2;
+}
+
+.listing-search-wrapper {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 56px;
+    margin-bottom: 26px;
+    border: 1px solid #dedede;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fafafa;
+    box-sizing: border-box;
+}
+
+.search-icon {
+    padding-left: 17px;
+    font-size: 23px;
+    color: #777;
+}
+
+.listing-search-wrapper input {
+    flex: 1;
+    height: 100%;
+    border: none;
+    outline: none;
+    padding: 0 14px;
+    background: transparent;
+    font-size: 15px;
+    color: #000000;
+}
+
+.clear-search {
+    border: none;
+    background: transparent;
+    font-size: 22px;
+    color: #888;
+    cursor: pointer;
+    padding: 0 12px;
+}
+
+.search-button {
+    height: 100%;
+    border: none;
+    padding: 0 24px;
+    background: #111;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.search-button:hover {
+    background: #292929;
+}
+
+.search-button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.filter-group {
+    min-width: 0;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+}
+
+.filter-group input,
+.filter-group select {
+    width: 100%;
+    height: 42px;
+    padding: 0 11px;
+    border: 1px solid #dedede;
+    border-radius: 9px;
+    background: #fff;
+    color: #222;
+    font-size: 14px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+    border-color: #111;
+}
+
+.range-inputs {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.range-inputs input {
+    min-width: 0;
+}
+
+.range-inputs span {
+    color: #888;
+}
+
+.multi-select {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 42px;
+}
+
+.multi-option {
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #555;
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: 0.15s ease;
+}
+
+.multi-option:hover {
+    border-color: #999;
+}
+
+.multi-option.selected {
+    background: #111;
+    border-color: #111;
+    color: #fff;
+}
+
+.text-hint {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #888;
+}
+
+.filters-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.apply-filters-button {
+    min-width: 170px;
+    height: 46px;
+    border: none;
+    border-radius: 10px;
+    background: #111;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.apply-filters-button:hover {
+    background: #292929;
+}
+
+.apply-filters-button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+@media (max-width: 1100px) {
+    .filter-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 800px) {
+    .filter-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 560px) {
+    .listing-filters {
+        padding: 18px;
+    }
+
+    .filters-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .listing-search-wrapper {
+        height: auto;
+        min-height: 52px;
+        flex-wrap: wrap;
+    }
+
+    .listing-search-wrapper input {
+        min-width: 100px;
+    }
+
+    .search-button {
+        height: 48px;
+        width: 100%;
+    }
+}
