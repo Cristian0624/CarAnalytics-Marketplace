@@ -70,7 +70,7 @@ def evaluate_and_update_db(table_name="listings_cleaned"):
             'dep_per_10k': dep_per_10k
         })
 
-    group_cols = ['brand', 'model', 'generation', 'engine_size', 'fuel_type', 'gearbox']
+    group_cols = ['brand', 'model', 'generation', 'year', 'engine_size', 'fuel_type', 'gearbox']
     print("Calculating market depreciation rates per 10,000km...")
     metrics = full_df.groupby(group_cols, dropna=False).apply(calc_metrics, include_groups=False).reset_index()
     
