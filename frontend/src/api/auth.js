@@ -33,7 +33,15 @@ export async function loginUser({
 }
 
 export async function getCurrentUser(token) {
-  return apiRequest("users/me", {
-    token, 
+  return apiRequest("/users/me", {
+    token,
   });
+}
+
+export async function logoutUser() {
+  const data = await apiRequest("/users/logout", {
+    method: "POST",
+  });
+  localStorage.removeItem("token");
+  return data;
 }

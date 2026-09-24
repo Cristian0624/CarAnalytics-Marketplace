@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { loginUser } from "../api/auth";
+import { useAuth } from "../context/AuthContext";
 
 function LoginPage() {
+  const { login } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -15,8 +16,7 @@ function LoginPage() {
     e.preventDefault();
     setError("");
     try {
-      const result = await loginUser(form);
-      localStorage.setItem("token", result.access_token);
+      await login(form);
       navigate("/");
     } catch (err) {
       setError(err.message);

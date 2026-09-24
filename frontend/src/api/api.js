@@ -1,5 +1,5 @@
 const API_URL =
-  import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
+  import.meta.env.VITE_API_URL ?? `http://${window.location.hostname}:8000`;
 
 function getErrorMessage(data, fallback) {
   const detail = data?.detail;
@@ -47,6 +47,7 @@ export async function apiRequest(
   const res = await fetch(`${API_URL}${endpoint}`, {
     method,
     headers: requestHeaders,
+    credentials: "include",
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 

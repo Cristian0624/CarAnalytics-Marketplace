@@ -75,7 +75,13 @@ def evaluate_and_update_db(table_name="listings_cleaned"):
     metrics = full_df.groupby(group_cols, dropna=False).apply(calc_metrics, include_groups=False).reset_index()
     
     print("Saving market metrics to database for real-time predictions...")
-    metrics.to_sql('market_metrics', db_engine, if_exists='replace', index=False)
+    try:
+        metrics.to_sql('market_metrics', db_engine, if_exists='replace', index=False)
+    except Exception as e:
+        # e.g. must be owner of table market_metrics when running as a
+        # restricted DB user. Metrics are already in memory, so scoring
+        # can continue without persisting them.
+        print(f"Warning: could not save market_metrics ({e}). Continuing with in-memory metrics.")
     
     # Merge metrics back into the unscored cars
     df = df.merge(metrics, on=group_cols, how='left')
@@ -186,6 +192,10 @@ def evaluate_and_update_db(table_name="listings_cleaned"):
                 page_size=5000
             )
         raw_conn.commit()
+    except Exception as e:
+        raw_conn.rollback()
+        print(f"Warning: could not write scores to {table_name} ({e}).")
+        return
     finally:
         raw_conn.close()
         
