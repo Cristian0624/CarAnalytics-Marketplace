@@ -71,6 +71,7 @@ def predict_price(
         WHERE brand = :brand 
           AND model = :model 
           AND generation = :generation
+          AND year = :year
           AND engine_size = :engine_size
           AND fuel_type = :fuel_type
           AND gearbox = :gearbox
@@ -79,6 +80,7 @@ def predict_price(
         "brand": brand, 
         "model": model, 
         "generation": generation,
+        "year": year,
         "engine_size": engine_size,
         "fuel_type": fuel_type,
         "gearbox": gearbox
@@ -90,6 +92,7 @@ def predict_price(
             "brand": brand, 
             "model": model, 
             "generation": gen_cyrillic,
+            "year": year,
             "engine_size": engine_size,
             "fuel_type": fuel_type,
             "gearbox": gearbox
