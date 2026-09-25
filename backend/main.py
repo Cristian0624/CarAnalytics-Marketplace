@@ -13,6 +13,7 @@ from routers.predictions import router as predictions_router
 from routers.recommendations import router as recommendations_router
 from routers.listings import router as listings_router
 from routers.price_estimate import router as price_estimate_router
+from routers.anomaly_risk import router as anomaly_risk_router
 from routers.trends import router as trends_router
 from database import Base, engine
 import models
@@ -65,6 +66,7 @@ app.include_router(predictions_router)
 app.include_router(recommendations_router)
 app.include_router(listings_router)
 app.include_router(price_estimate_router)
+app.include_router(anomaly_risk_router)
 app.include_router(trends_router)
 
 @app.get("/")
