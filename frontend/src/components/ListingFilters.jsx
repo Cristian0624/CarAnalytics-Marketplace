@@ -282,7 +282,28 @@ function ListingFilters({
   return (
     <section className="listing-filters">
 
-      {/* MAIN SEARCH */}
+        <button
+            type="button"
+            className="recommendations-button"
+            onClick={() => {
+                window.location.href =
+                    "/recommendations";
+            }}
+        >
+            <span className="recommendations-button-icon">
+                ✨
+            </span>
+
+            <span>
+                Find recommended cars
+            </span>
+
+            <span className="recommendations-button-new">
+                New
+            </span>
+        </button>
+
+        {/* MAIN SEARCH */}
       <div
         className="listing-search-container"
         ref={searchContainerRef}
