@@ -33,7 +33,30 @@ def _get_database_url() -> str:
 
 DATABASE_URL = _get_database_url()
 
-engine = create_engine(DATABASE_URL)
+def _create_engine():
+    try:
+        import psycopg2  # noqa: F401
+        return create_engine(DATABASE_URL)
+    except Exception:
+        # Fallback to pg8000 for environments where psycopg2 C-extensions are blocked (e.g. Windows WDAC)
+        import ssl
+        from urllib.parse import urlparse, urlunparse
+
+        parsed = urlparse(DATABASE_URL)
+        pg8000_url = urlunparse((
+            "postgresql+pg8000",
+            parsed.netloc,
+            parsed.path,
+            parsed.params,
+            "",
+            parsed.fragment
+        ))
+        ssl_ctx = ssl.create_default_context()
+        ssl_ctx.check_hostname = False
+        ssl_ctx.verify_mode = ssl.CERT_NONE
+        return create_engine(pg8000_url, connect_args={"ssl_context": ssl_ctx})
+
+engine = _create_engine()
 
 SessionLocal = sessionmaker(
     autocommit=False,

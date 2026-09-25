@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from pydantic import AliasChoices, BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
@@ -276,4 +276,73 @@ class PaginatedCarsResponse(BaseModel):
     page: int
     page_size: int
     items: list[CarListingBase]
+
+
+# Market Trends Schemas
+class TrendPoint(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    snapshot_date: date
+    median_price: float
+    avg_price: float
+    min_price: float | None = None
+    max_price: float | None = None
+    listing_count: int
+
+
+class MarketTrendResponse(BaseModel):
+    brand: str
+    model: str
+    year: int
+    total_snapshots: int
+    earliest_date: date | None = None
+    latest_date: date | None = None
+    latest_median_price: float | None = None
+    overall_change_eur: float | None = None
+    overall_change_pct: float | None = None
+    trend_direction: str = "stable"  # "up", "down", or "stable"
+    data_points: list[TrendPoint]
+
+
+class YearPriceSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    year: int
+    median_price: float
+    avg_price: float
+    listing_count: int
+
+
+class TrendFilterOptionsResponse(BaseModel):
+    brands: list[str] = Field(default_factory=list)
+    models: list[str] = Field(default_factory=list)
+    years: list[YearPriceSummary] = Field(default_factory=list)
+
+
+class ListingPricePoint(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    price_eur: float
+    scraped_at: datetime
+
+
+class ListingPriceHistoryResponse(BaseModel):
+    listing_id: int
+    brand: str | None = None
+    model: str | None = None
+    year: int | None = None
+    first_observed_price: float | None = None
+    latest_price: float | None = None
+    price_change_eur: float | None = None
+    price_change_pct: float | None = None
+    is_price_drop: bool = False
+    history: list[ListingPricePoint]
+
+
+class TrendsSyncResponse(BaseModel):
+    message: str
+    snapshot_date: date
+    trends_records_processed: int
+    observations_recorded: int
+
 

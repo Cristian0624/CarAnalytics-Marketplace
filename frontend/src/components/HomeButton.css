@@ -2,17 +2,21 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: #2563eb;
+  background: linear-gradient(135deg, #083b08, #116211);
   color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(8, 59, 8, 0.2);
+  padding: 10px 16px;
+  border-radius: 10px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   text-decoration: none;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .home-button:hover {
-  background-color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(8, 59, 8, 0.3);
+  background: linear-gradient(135deg, #0a4a0a, #157a15);
 }

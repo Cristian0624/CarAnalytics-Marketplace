@@ -70,12 +70,18 @@ def evaluate_and_update_db(table_name="listings_cleaned"):
             'dep_per_10k': dep_per_10k
         })
 
-    group_cols = ['brand', 'model', 'generation', 'engine_size', 'fuel_type', 'gearbox']
+    group_cols = ['brand', 'model', 'generation', 'year', 'engine_size', 'fuel_type', 'gearbox']
     print("Calculating market depreciation rates per 10,000km...")
     metrics = full_df.groupby(group_cols, dropna=False).apply(calc_metrics, include_groups=False).reset_index()
     
     print("Saving market metrics to database for real-time predictions...")
-    metrics.to_sql('market_metrics', db_engine, if_exists='replace', index=False)
+    try:
+        metrics.to_sql('market_metrics', db_engine, if_exists='replace', index=False)
+    except Exception as e:
+        # e.g. must be owner of table market_metrics when running as a
+        # restricted DB user. Metrics are already in memory, so scoring
+        # can continue without persisting them.
+        print(f"Warning: could not save market_metrics ({e}). Continuing with in-memory metrics.")
     
     # Merge metrics back into the unscored cars
     df = df.merge(metrics, on=group_cols, how='left')
@@ -108,22 +114,27 @@ def evaluate_and_update_db(table_name="listings_cleaned"):
             bonus = 0
             remaining = pct
             
-            t1 = min(remaining, 20.0)
+            t1 = min(remaining, 10.0) # 0 to 10%
             bonus += t1 * 1.3
             remaining -= t1
             
             if remaining > 0:
-                t2 = min(remaining, 10.0)
+                t2 = min(remaining, 10.0) # 10 to 20%
                 bonus += t2 * 1.0
                 remaining -= t2
                 
             if remaining > 0:
-                t3 = min(remaining, 10.0)
+                t3 = min(remaining, 10.0) # 20 to 30%
                 bonus += t3 * 0.5
                 remaining -= t3
                 
             if remaining > 0:
-                bonus += remaining * 0.2
+                t4 = min(remaining, 5.0) # 30 to 35% plateau
+                bonus += 0
+                remaining -= t4
+                
+            if remaining > 0:
+                bonus -= remaining * 2.0 # > 35% cheaper (PENALTY!)
                 
             return bonus
         else:
@@ -151,15 +162,26 @@ def evaluate_and_update_db(table_name="listings_cleaned"):
 
     df['calc_score'] += df['price_diff_pct'].apply(calculate_score_mod)
 
-    # Suspiciously low mileage penalty (also penalize spam mileage)
+    # Scam Detector 1: Suspiciously low mileage (and spam mileage)
     is_low_mileage = (df['mileage'] < suspiciously_low_threshold) | is_spam_mileage
     
-    df.loc[is_low_mileage & (df['age'] <= 3), 'calc_score'] -= 7.0
-    df.loc[is_low_mileage & (df['age'] > 3), 'calc_score'] -= 15.0
+    # Old cars with <6000km/yr get harsher penalty now (-30 instead of -15)
+    df.loc[is_low_mileage & (df['age'] <= 3), 'calc_score'] -= 15.0
+    df.loc[is_low_mileage & (df['age'] > 3), 'calc_score'] -= 30.0
 
+    # Scam Detector 2: Too Good To Be True Cap
+    # >20% cheaper AND suspiciously low mileage -> hard cap at 20
+    scam_mask = (df['price_diff_pct'] > 20.0) & is_low_mileage
+    df.loc[scam_mask, 'calc_score'] = np.minimum(df.loc[scam_mask, 'calc_score'], 20.0)
+
+    # Scam Detector 3: Ex-Taxi / Ride-Share Penalty
+    is_taxi = (df['mileage'] / df['age']) > 45000
+    df.loc[is_taxi, 'calc_score'] -= 20.0
+
+    # Scam Detector 4: Damaged / No Papers / Parts
     if 'state' in df.columns:
-        damaged_mask = df['state'].str.lower().str.contains('damage|salvage|crash|wreck|defect', na=False)
-        df.loc[damaged_mask, 'calc_score'] = np.minimum(df.loc[damaged_mask, 'calc_score'], 30.0)
+        damaged_mask = df['state'].str.lower().str.contains('damage|salvage|crash|wreck|defect|piese|acte', na=False)
+        df.loc[damaged_mask, 'calc_score'] = np.minimum(df.loc[damaged_mask, 'calc_score'], 10.0)
 
     df['final_score'] = df['calc_score'].clip(0, 100).round(2)
     df.loc[df['med_price'].isna(), 'final_score'] = 50.0
@@ -186,6 +208,10 @@ def evaluate_and_update_db(table_name="listings_cleaned"):
                 page_size=5000
             )
         raw_conn.commit()
+    except Exception as e:
+        raw_conn.rollback()
+        print(f"Warning: could not write scores to {table_name} ({e}).")
+        return
     finally:
         raw_conn.close()
         

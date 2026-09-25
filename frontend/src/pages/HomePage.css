@@ -1,24 +1,359 @@
-.home-main {
-  width: 1126px;
-  max-width: 100%;
+/* HomePage.css - Modern Landing Page Styles */
+
+.landing-page {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #1a1a1a;
+  background-color: #fafafa;
+  overflow-x: hidden;
+}
+
+section {
+  padding: 80px 20px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 32px 24px;
-  box-sizing: border-box;
 }
 
-.listings-placeholder {
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 32px 24px;
+h2 {
   text-align: center;
+  font-size: 2.2rem;
+  margin-bottom: 40px;
+  font-weight: 700;
+  color: #111;
 }
 
-.listings-placeholder h2 {
-  margin-bottom: 8px;
-  color: #000;
+/* HERO SECTION */
+.hero-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 50px;
+  min-height: 80vh;
+  padding-top: 100px;
 }
 
-.listings-placeholder p {
+.hero-content {
+  flex: 1;
+}
+
+.hero-badge {
+  display: inline-block;
+  background: #f0f4ff;
+  color: #2563eb;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  line-height: 1.1;
+  font-weight: 800;
+  margin-bottom: 24px;
+  color: #0f172a;
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: #475569;
+  margin-bottom: 32px;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 16px;
+}
+
+.btn-primary, .btn-secondary {
+  padding: 14px 28px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.btn-primary {
+  background-color: #000;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: #333;
+}
+
+.btn-secondary {
+  background-color: #fff;
   color: #000;
+  border: 1px solid #ccc;
+}
+
+.btn-secondary:hover {
+  background-color: #f1f1f1;
+}
+
+.large {
+  font-size: 1.1rem;
+  padding: 16px 36px;
+}
+
+.hero-image-placeholder {
+  flex: 1;
+  background: #e2e8f0;
+  height: 400px;
+  border-radius: 24px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+}
+
+.abstract-ui {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 80%;
+}
+
+.ui-card {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  font-weight: 600;
+  animation: float 4s ease-in-out infinite;
+}
+
+.ui-card.top { color: #16a34a; transform: translateX(-20px); }
+.ui-card.mid { color: #475569; animation-delay: 1s; }
+.ui-card.bot { color: #dc2626; transform: translateX(20px); animation-delay: 2s; }
+
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+
+/* PARTNERS */
+.partners-section {
+  text-align: center;
+  padding: 40px 20px;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+
+.partners-section p {
+  color: #64748b;
+  margin-bottom: 24px;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.partners-logos {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+  color: #94a3b8;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+/* FEATURES */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 24px;
+}
+
+.feature-card {
+  background: #fff;
+  padding: 32px;
+  border-radius: 16px;
+  border: 1px solid #eee;
+  transition: transform 0.2s;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.feature-card h3 {
+  font-size: 1.4rem;
+  margin-bottom: 16px;
+}
+
+.feature-card p {
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* WHY US */
+.why-us-section {
+  background: #f8fafc;
+  max-width: 100%;
+}
+
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.why-item {
+  text-align: center;
+  padding: 20px;
+}
+
+.why-icon {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+}
+
+.why-icon img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.why-item h4 {
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+}
+
+.why-item p {
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+/* REVIEWS */
+.reviews-empty {
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  border: 1px dashed #ccc;
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.reviews-empty p {
+  color: #64748b;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+/* FAQ */
+.faq-list {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.faq-item {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid #eee;
+}
+
+.faq-item h4 {
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+}
+
+.faq-item p {
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* CTA SECTION */
+.cta-section {
+  max-width: 100%;
+  padding-bottom: 0;
+}
+
+.cta-box {
+  background: #0f172a;
+  color: white;
+  text-align: center;
+  padding: 80px 20px;
+  border-radius: 24px;
+  max-width: 1200px;
+  margin: 0 auto 80px;
+}
+
+.cta-box h2 {
+  color: white;
+  margin-bottom: 16px;
+}
+
+.cta-box p {
+  color: #94a3b8;
+  margin-bottom: 32px;
+  font-size: 1.2rem;
+}
+
+/* FOOTER */
+.footer-section {
+  background: #fff;
+  border-top: 1px solid #eee;
+  padding: 40px 20px;
+  max-width: 100%;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.footer-logo {
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+
+.footer-links a {
+  color: #64748b;
+  text-decoration: none;
+  margin: 0 12px;
+  font-size: 0.9rem;
+}
+
+.footer-links a:hover {
+  color: #0f172a;
+}
+
+
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .hero-section {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .hero-buttons {
+    justify-content: center;
+  }
+  
+  .why-grid, .reviews-container {
+    grid-template-columns: 1fr;
+  }
 }
