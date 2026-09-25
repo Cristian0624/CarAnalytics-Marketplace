@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import "@google/model-viewer";
 import "./HomePage.css";
 
 function HomePage() {
@@ -22,6 +23,19 @@ function HomePage() {
             <div className="ui-card top">Score: 80/80 (Perfect Deal)</div>
             <div className="ui-card mid">Market Average: 14,000 €</div>
             <div className="ui-card bot">Scam Alert: Odometer Rolled Back</div>
+          </div>
+          <div className="hero-3d-model">
+            <model-viewer
+              src="/r8.glb"
+              alt="A 3D model of an Audi R8"
+              camera-orbit="35deg 80deg auto"
+              disable-zoom="true"
+              shadow-intensity="1"
+              shadow-softness="1"
+              environment-image="neutral"
+              exposure="1.1"
+              className="floating-model"
+            ></model-viewer>
           </div>
         </div>
       </section>
@@ -51,6 +65,19 @@ function HomePage() {
 
       {/* 4. Why Us Section */}
       <section className="why-us-section">
+        <div className="why-3d-model">
+          <model-viewer
+            src="/lada.glb"
+            alt="A 3D model of a Lada"
+            camera-orbit="-45deg 75deg auto"
+            disable-zoom="true"
+            shadow-intensity="1"
+            shadow-softness="1"
+            environment-image="neutral"
+            exposure="1.0"
+            className="floating-model"
+          ></model-viewer>
+        </div>
         <h2>Why Choose CarAnalytics?</h2>
         <div className="why-grid">
           <div className="why-item">

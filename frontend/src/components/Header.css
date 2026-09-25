@@ -15,8 +15,8 @@
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(8, 59, 8, 0.1);
-  box-shadow: 0 4px 30px rgba(8, 59, 8, 0.05);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+  box-shadow: 0 4px 30px rgba(15, 23, 42, 0.05);
   position: sticky;
   top: 0;
   z-index: 50;
@@ -26,40 +26,55 @@
 
 .header-left,
 .header-right {
-  flex: 1;
   display: flex;
   align-items: center;
 }
 
 .header-left {
+  flex: 1;
   justify-content: flex-start;
 }
 
 .header-right {
+  flex: 2;
   justify-content: flex-end;
+  gap: 8px;
 }
 
 .header-nav-link {
-  margin-left: 24px;
-  color: #334155;
+  color: #64748b;
   text-decoration: none;
   font-weight: 600;
   font-size: 15px;
   transition: all 0.2s ease;
   padding: 8px 12px;
-  border-radius: 8px;
+  margin-right: 8px;
+  position: relative;
 }
 
 .header-nav-link:hover {
-  color: #083b08;
-  background: rgba(8, 59, 8, 0.05);
+  color: #0f172a;
+}
+
+.header-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: #0f172a;
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.header-nav-link:hover::after {
+  width: 60%;
 }
 
 .header-brand {
-  flex: 1;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 12px;
   text-decoration: none;
   font-weight: 800;
@@ -68,18 +83,26 @@
   white-space: nowrap;
 }
 
-.header-brand span {
-  background: linear-gradient(135deg, #083b08, #22c55e);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.brand-icon {
+  width: 40px;
+  height: 40px;
+  background: #0f172a;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
 }
 
-.header-brand img {
-  width: 32px;
-  height: 32px;
+.brand-icon img {
+  width: 24px;
+  height: 24px;
   object-fit: contain;
-  flex-shrink: 0;
-  filter: drop-shadow(0 2px 4px rgba(8, 59, 8, 0.2));
+  filter: brightness(0) invert(1);
+}
+
+.header-brand span {
+  color: #0f172a;
 }
 
 @media (max-width: 640px) {
@@ -92,8 +115,8 @@
   }
   
   .header-nav-link {
-    margin-left: 12px;
     font-size: 14px;
     padding: 6px;
+    margin-right: 4px;
   }
 }
