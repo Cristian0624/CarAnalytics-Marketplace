@@ -17,7 +17,7 @@
   }
   
   .car-card:hover:not(.car-card-expanded) {
-    transform: translateY(-4px);
+    transform: translateY(-4px) scale(1.05);
   
     box-shadow:
       0 8px 22px rgba(0, 0, 0, 0.08);
@@ -339,7 +339,6 @@
   
   .original-listing-button:hover {
     background: #f1f1f1;
-    transform: translateY(-1px);
   }
 
   .close-card-button {
