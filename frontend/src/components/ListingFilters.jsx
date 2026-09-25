@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./ListingFilters.css";
+import Autocomplete from "./Autocomplete";
+import { getPredictionBrands, getPredictionModels, getPredictionGenerations } from "../api/predictions";
 
 const API_URL =
   import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
@@ -43,8 +45,8 @@ const DRIVETRAINS = [
 ];
 
 const SELLER_TYPES = [
-  "Private",
-  "Dealer",
+  "Persoană fizică",
+  "Dealer auto",
 ];
 
 const REGISTRATION_COUNTRIES = [
@@ -447,17 +449,18 @@ function ListingFilters({
                 Brand
               </label>
 
-              <input
-                type="text"
-                value={
-                  filters.brandText ?? ""
-                }
-                onChange={(e) =>
-                  update(
-                    "brandText",
-                    e.target.value
-                  )
-                }
+              <Autocomplete
+                value={filters.brandText ?? ""}
+                onChange={(v) => update("brandText", v)}
+                onSelect={(v) => update("brandText", v)}
+                fetchSuggestions={async (query) => {
+                  try {
+                    const data = await getPredictionBrands(query);
+                    return data.brands || [];
+                  } catch (e) {
+                    return [];
+                  }
+                }}
                 placeholder="e.g. BMW"
               />
             </div>
@@ -468,18 +471,21 @@ function ListingFilters({
                 Model
               </label>
 
-              <input
-                type="text"
-                value={
-                  filters.modelText ?? ""
-                }
-                onChange={(e) =>
-                  update(
-                    "modelText",
-                    e.target.value
-                  )
-                }
+              <Autocomplete
+                value={filters.modelText ?? ""}
+                onChange={(v) => update("modelText", v)}
+                onSelect={(v) => update("modelText", v)}
+                fetchSuggestions={async (query) => {
+                  if (!filters.brandText) return [];
+                  try {
+                    const data = await getPredictionModels(filters.brandText, query);
+                    return data.models || [];
+                  } catch (e) {
+                    return [];
+                  }
+                }}
                 placeholder="e.g. 3 Series"
+                disabled={!filters.brandText}
               />
             </div>
 
@@ -489,19 +495,21 @@ function ListingFilters({
                 Generation
               </label>
 
-              <input
-                type="text"
-                value={
-                  filters.generationText ??
-                  ""
-                }
-                onChange={(e) =>
-                  update(
-                    "generationText",
-                    e.target.value
-                  )
-                }
+              <Autocomplete
+                value={filters.generationText ?? ""}
+                onChange={(v) => update("generationText", v)}
+                onSelect={(v) => update("generationText", v)}
+                fetchSuggestions={async (query) => {
+                  if (!filters.brandText || !filters.modelText) return [];
+                  try {
+                    const data = await getPredictionGenerations(filters.brandText, filters.modelText, query);
+                    return data.generations || [];
+                  } catch (e) {
+                    return [];
+                  }
+                }}
                 placeholder="e.g. G20"
+                disabled={!filters.modelText}
               />
             </div>
 
@@ -953,7 +961,7 @@ function ListingFilters({
                 }
               >
                 <option value="">
-                  Default
+                  Nothing
                 </option>
 
                 <option value="score">
@@ -992,7 +1000,7 @@ function ListingFilters({
                 }
               >
                 <option value="">
-                  Default
+                  Random
                 </option>
 
                 <option value="asc">

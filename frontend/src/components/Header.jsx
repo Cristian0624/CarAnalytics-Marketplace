@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import HomeButton from "./HomeButton";
 import AuthButton from "./AuthButton";
 import "./Header.css";
@@ -8,6 +9,9 @@ function Header() {
       <header className="site-header">
         <div className="header-left">
           <HomeButton />
+          <Link to="/listings" className="header-nav-link">
+            Marketplace
+          </Link>
         </div>
         <div className="header-brand" aria-label="Used-Car Marketplace">
           <img src="/icon1.png" alt="Used-Car Marketplace logo" />

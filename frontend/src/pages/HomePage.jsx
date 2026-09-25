@@ -1,518 +1,133 @@
-
-import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
-import { searchListingsPaginated } from "../api/listings";
-import CarCard from "../components/CarCard";
-import ListingFilters from "../components/ListingFilters";
+import { Link } from "react-router-dom";
 import "./HomePage.css";
 
-const ITEMS_PER_PAGE = 45;
-
-const INITIAL_FILTERS = {
-  search: "",
-
-  brandText: "",
-  modelText: "",
-  generationText: "",
-
-  price_min: "",
-  price_max: "",
-
-  mileage_min: "",
-  mileage_max: "",
-
-  year_min: "",
-  year_max: "",
-
-  engine_min: "",
-  engine_max: "",
-
-  horsepower_min: "",
-  horsepower_max: "",
-
-  fuel_type: [],
-  gearbox: [],
-  body_types: [],
-  state: [],
-  drivetrains: [],
-
-  doors_min: "",
-  doors_max: "",
-
-  seats_min: "",
-  seats_max: "",
-
-  seller_type: [],
-  registration_country: [],
-
-  same_model: null,
-
-  class: [],
-
-  score_min: "",
-  score_max: "",
-
-  sort_by: "",
-  sort_order: "",
-};
-
 function HomePage() {
-  const { user, loading: authLoading } = useAuth();
-
-  const [cars, setCars] = useState([]);
-  const [page, setPage] = useState(1);
-
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalCars, setTotalCars] = useState(0);
-
-  const [filters, setFilters] = useState(INITIAL_FILTERS);
-
-  const [expandedCarId, setExpandedCarId] = useState(null);
-
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  async function loadListings(currentFilters, currentPage) {
-    setLoading(true);
-    setError("");
-
-    try {
-
-      const apiFilters = {};
-
-      if (currentFilters.search.trim()) {
-        apiFilters.search =
-          currentFilters.search.trim();
-      }
-
-      if (currentFilters.brandText.trim()) {
-        apiFilters.brand = [
-          currentFilters.brandText.trim(),
-        ];
-      }
-
-      if (currentFilters.modelText.trim()) {
-        apiFilters.model = [
-          currentFilters.modelText.trim(),
-        ];
-      }
-
-      if (currentFilters.generationText.trim()) {
-        apiFilters.generation = [
-          currentFilters.generationText.trim(),
-        ];
-      }
-      if (currentFilters.price_min !== "") {
-        apiFilters.price_min = Number(
-          currentFilters.price_min
-        );
-      }
-
-      if (currentFilters.price_max !== "") {
-        apiFilters.price_max = Number(
-          currentFilters.price_max
-        );
-      }
-
-      if (currentFilters.mileage_min !== "") {
-        apiFilters.mileage_min = Number(
-          currentFilters.mileage_min
-        );
-      }
-
-      if (currentFilters.mileage_max !== "") {
-        apiFilters.mileage_max = Number(
-          currentFilters.mileage_max
-        );
-      }
-
-      if (currentFilters.year_min !== "") {
-        apiFilters.year_min = Number(
-          currentFilters.year_min
-        );
-      }
-
-      if (currentFilters.year_max !== "") {
-        apiFilters.year_max = Number(
-          currentFilters.year_max
-        );
-      }
-
-      if (currentFilters.engine_min !== "") {
-        apiFilters.engine_min = Number(
-          currentFilters.engine_min
-        );
-      }
-
-      if (currentFilters.engine_max !== "") {
-        apiFilters.engine_max = Number(
-          currentFilters.engine_max
-        );
-      }
-
-      if (currentFilters.horsepower_min !== "") {
-        apiFilters.horsepower_min = Number(
-          currentFilters.horsepower_min
-        );
-      }
-
-      if (currentFilters.horsepower_max !== "") {
-        apiFilters.horsepower_max = Number(
-          currentFilters.horsepower_max
-        );
-      }
-
-      if (currentFilters.doors_min !== "") {
-        apiFilters.doors_min = Number(
-          currentFilters.doors_min
-        );
-      }
-
-      if (currentFilters.doors_max !== "") {
-        apiFilters.doors_max = Number(
-          currentFilters.doors_max
-        );
-      }
-
-      if (currentFilters.seats_min !== "") {
-        apiFilters.seats_min = Number(
-          currentFilters.seats_min
-        );
-      }
-
-      if (currentFilters.seats_max !== "") {
-        apiFilters.seats_max = Number(
-          currentFilters.seats_max
-        );
-      }
-
-      if (currentFilters.score_min !== "") {
-        apiFilters.score_min = Number(
-          currentFilters.score_min
-        );
-      }
-
-      if (currentFilters.score_max !== "") {
-        apiFilters.score_max = Number(
-          currentFilters.score_max
-        );
-      }
-
-
-      if (currentFilters.fuel_type.length > 0) {
-        apiFilters.fuel_type =
-          currentFilters.fuel_type;
-      }
-
-      if (currentFilters.gearbox.length > 0) {
-        apiFilters.gearbox =
-          currentFilters.gearbox;
-      }
-
-      if (currentFilters.body_types.length > 0) {
-        apiFilters.body_types =
-          currentFilters.body_types;
-      }
-
-      if (currentFilters.state.length > 0) {
-        apiFilters.state =
-          currentFilters.state;
-      }
-
-      if (currentFilters.drivetrains.length > 0) {
-        apiFilters.drivetrains =
-          currentFilters.drivetrains;
-      }
-
-      if (currentFilters.seller_type.length > 0) {
-        apiFilters.seller_type =
-          currentFilters.seller_type;
-      }
-
-      if (
-        currentFilters.registration_country.length > 0
-      ) {
-        apiFilters.registration_country =
-          currentFilters.registration_country;
-      }
-
-      if (currentFilters.class.length > 0) {
-        apiFilters.class =
-          currentFilters.class;
-      }
-      if (currentFilters.same_model !== null) {
-        apiFilters.same_model =
-          currentFilters.same_model;
-      }
-
-      if (currentFilters.sort_by) {
-        apiFilters.sort_by =
-          currentFilters.sort_by;
-      }
-
-      if (currentFilters.sort_order) {
-        apiFilters.sort_order =
-          currentFilters.sort_order;
-      }
-
-      console.log(
-        "Listing filters sent to backend:",
-        apiFilters
-      );
-
-      const data = await searchListingsPaginated(
-        apiFilters,
-        currentPage,
-        ITEMS_PER_PAGE
-      );
-
-      setCars(data.items ?? []);
-      setTotalPages(data.pages ?? 1);
-      setTotalCars(data.total ?? 0);
-
-      setExpandedCarId(null);
-    } catch (err) {
-      console.error(
-        "Failed to load listings:",
-        err
-      );
-
-      setError(
-        err.message ||
-          "Failed to load car listings."
-      );
-
-      setCars([]);
-      setTotalPages(1);
-      setTotalCars(0);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => {
-    if (!authLoading) {
-      loadListings(filters, page);
-    }
-  }, [page, authLoading]);
-
-  function handleSearch() {
-
-    setPage(1);
-
-    loadListings(filters, 1);
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  }
-
-  function handleReset() {
-    setFilters(INITIAL_FILTERS);
-    setPage(1);
-
-    loadListings(INITIAL_FILTERS, 1);
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  }
-
-  function handleCardClick(carId) {
-    setExpandedCarId((current) =>
-      current === carId ? null : carId
-    );
-  }
-
-  function handlePreviousPage() {
-    if (page > 1) {
-      setPage((current) => current - 1);
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }
-  }
-
-  function handleNextPage() {
-    if (page < totalPages) {
-      setPage((current) => current + 1);
-
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }
-  }
-
-  if (authLoading) {
-    return (
-      <main className="home-main">
-        <div className="marketplace-loading">
-          Loading...
-        </div>
-      </main>
-    );
-  }
-
-  const rows = [];
-
-  for (let i = 0; i < cars.length; i += 3) {
-    rows.push(cars.slice(i, i + 3));
-  }
-
   return (
-    <main className="home-main">
-
-
-      <ListingFilters
-        filters={filters}
-        setFilters={setFilters}
-        onSearch={handleSearch}
-        onReset={handleReset}
-        loading={loading}
-      />
-
-      {loading && (
-        <div className="marketplace-loading">
-          <p>Loading cars...</p>
-        </div>
-      )}
-
-      {!loading && error && (
-        <div className="marketplace-error">
-          <p>{error}</p>
-
-          <button
-            onClick={() =>
-              loadListings(filters, page)
-            }
-          >
-            Try again
-          </button>
-        </div>
-      )}
-
-      {!loading &&
-        !error &&
-        cars.length === 0 && (
-          <div className="marketplace-empty">
-            <h2>No cars found</h2>
-
-            <p>
-              Try changing your filters or search
-              criteria.
-            </p>
+    <div className="landing-page">
+      {/* 1. Hero Section */}
+      <section className="hero-section">
+        <div className="hero-content">
+          <div className="hero-badge">Powered by Advanced Algorithm Pricing</div>
+          <h1 className="hero-title">Find the True Value of Any Car Instantly.</h1>
+          <p className="hero-subtitle">
+            Stop overpaying for used cars. Our algorithm analyzes thousands of market data points to accurately grade every listing and instantly spot overpriced scams.
+          </p>
+          <div className="hero-buttons">
+            <Link to="/listings" className="btn-primary">Browse Marketplace</Link>
+            <Link to="/register" className="btn-secondary">Sign Up Free</Link>
           </div>
-        )}
+        </div>
+        <div className="hero-image-placeholder">
+          <div className="abstract-ui">
+            <div className="ui-card top">Score: 80/80 (Perfect Deal)</div>
+            <div className="ui-card mid">Market Average: 14,000 €</div>
+            <div className="ui-card bot">Scam Alert: Odometer Rolled Back</div>
+          </div>
+        </div>
+      </section>
 
-      {!loading &&
-        !error &&
-        cars.length > 0 && (
-          <>
-            <div className="cars-marketplace">
-              {rows.map((row, rowIndex) => {
-                const expandedCarIndex =
-                  row.findIndex(
-                    (car) =>
-                      car.id === expandedCarId
-                  );
+      {/* 3. Features Section */}
+      <section className="features-section">
+        <h2>Unmatched Market Intelligence</h2>
+        <div className="features-grid">
+          <div className="feature-card">
+            <h3>Algorithm Deal Scoring</h3>
+            <p>Every single car is mathematically scored up to a maximum of 80 based on exact depreciation, real market medians, and hidden anomalies.</p>
+          </div>
+          <div className="feature-card">
+            <h3>Scam & Fraud Detection</h3>
+            <p>Our algorithm catches hidden "Ex-Taxi" vehicles, rolled-back odometers, and missing documentation instantly.</p>
+          </div>
+          <div className="feature-card">
+            <h3>Dynamic Price Targets</h3>
+            <p>Tell us what score you want (Fair, Good, Excellent), and we will reverse-engineer the exact target price you should negotiate for.</p>
+          </div>
+          <div className="feature-card">
+            <h3>Price Recommendations for Listings</h3>
+            <p>Sellers can use our algorithm to get the perfect price recommendation for adding a new listing, ensuring their car is competitive and sells fast.</p>
+          </div>
+        </div>
+      </section>
 
-                const expandedCar =
-                  expandedCarIndex !== -1
-                    ? row[expandedCarIndex]
-                    : null;
+      {/* 4. Why Us Section */}
+      <section className="why-us-section">
+        <h2>Why Choose CarAnalytics?</h2>
+        <div className="why-grid">
+          <div className="why-item">
+            <div className="why-icon"><img src="/icon_chart.png" alt="Data-Driven icon" /></div>
+            <h4>Data-Driven</h4>
+            <p>We do not rely on subjective opinions. Pure math and market medians dictate the score.</p>
+          </div>
+          <div className="why-item">
+            <div className="why-icon"><img src="/icon_shield.png" alt="Unbiased icon" /></div>
+            <h4>Unbiased</h4>
+            <p>Sellers cannot manipulate the algorithm. You get raw, unfiltered truth about the deal.</p>
+          </div>
+          <div className="why-item">
+            <div className="why-icon"><img src="/icon_lightning.png" alt="Real-Time icon" /></div>
+            <h4>Real-Time</h4>
+            <p>As the market shifts, so do our baselines. You always get today's accurate market value.</p>
+          </div>
+          <div className="why-item">
+            <div className="why-icon"><img src="/icon_money.png" alt="Save Money icon" /></div>
+            <h4>Save Money</h4>
+            <p>Never overpay for a high-mileage car disguised as a good deal ever again.</p>
+          </div>
+        </div>
+      </section>
 
-                const expandedPosition =
-                  expandedCarIndex === 0
-                    ? "left"
-                    : expandedCarIndex === 1
-                    ? "middle"
-                    : "right";
+      {/* 5. Review Section */}
+      <section className="reviews-section">
+        <h2>Community Reviews</h2>
+        <div className="reviews-empty">
+          <p>We're building a new community of smart car buyers. Be the first to leave a review of our platform!</p>
+          <button className="btn-secondary" onClick={() => alert("Review submission form coming soon!")}>Write a Review</button>
+        </div>
+      </section>
 
-                return (
-                  <div
-                    className="car-row"
-                    key={rowIndex}
-                  >
-                    {expandedCar ? (
-                      <CarCard
-                        car={expandedCar}
-                        expanded={true}
-                        position={
-                          expandedPosition
-                        }
-                        onClick={() =>
-                          handleCardClick(
-                            expandedCar.id
-                          )
-                        }
-                      />
-                    ) : (
-                      row.map((car, index) => {
-                        const position =
-                          index === 0
-                            ? "left"
-                            : index === 1
-                            ? "middle"
-                            : "right";
+      {/* 6. FAQ Section */}
+      <section className="faq-section">
+        <h2>Frequently Asked Questions</h2>
+        <div className="faq-list">
+          <div className="faq-item">
+            <h4>How does the Algorithm Scoring work?</h4>
+            <p>We group cars by Brand, Model, Generation, Year, and Engine Size to calculate true median prices and baseline mileages. We then apply complex depreciation math to score each specific car.</p>
+          </div>
+          <div className="faq-item">
+            <h4>How do you catch scams?</h4>
+            <p>Our algorithm penalizes listings with impossible mileage-to-age ratios, hidden keywords (like missing documents), or prices that are statistically "too good to be true".</p>
+          </div>
+          <div className="faq-item">
+            <h4>Is it free to use?</h4>
+            <p>Yes, browsing the marketplace and viewing the algorithm scores is completely free for all buyers.</p>
+          </div>
+        </div>
+      </section>
 
-                        return (
-                          <CarCard
-                            key={car.id}
-                            car={car}
-                            expanded={false}
-                            position={position}
-                            onClick={() =>
-                              handleCardClick(
-                                car.id
-                              )
-                            }
-                          />
-                        );
-                      })
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+      {/* 7. CTA Section */}
+      <section className="cta-section">
+        <div className="cta-box">
+          <h2>Ready to find your perfect car?</h2>
+          <p>Join thousands of smart buyers using data to beat the market.</p>
+          <Link to="/listings" className="btn-primary large">Start Browsing Now</Link>
+        </div>
+      </section>
 
-            <nav className="pagination">
-              <button
-                className="pagination-button"
-                disabled={
-                  page === 1 || loading
-                }
-                onClick={
-                  handlePreviousPage
-                }
-              >
-                ← Previous
-              </button>
-
-              <span className="pagination-info">
-                Page {page} of {totalPages}
-              </span>
-
-              <button
-                className="pagination-button"
-                disabled={
-                  page === totalPages ||
-                  loading
-                }
-                onClick={handleNextPage}
-              >
-                Next →
-              </button>
-            </nav>
-          </>
-        )}
-    </main>
+      {/* 8. Footer */}
+      <footer className="footer-section">
+        <div className="footer-content">
+          <div className="footer-logo">CarAnalytics</div>
+          <div className="footer-links">
+            <a href="#">About Us</a>
+            <a href="#">Features</a>
+            <a href="#">Pricing</a>
+            <a href="#">Terms & Conditions</a>
+            <a href="#">Privacy Policy</a>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 }
 
 export default HomePage;
-
