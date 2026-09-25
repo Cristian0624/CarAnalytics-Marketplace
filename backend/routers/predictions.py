@@ -121,20 +121,23 @@ def predict_price(
         penalty = 0
         if (mileage < suspiciously_low_threshold or mileage in spam_mileages):
             if age <= 3:
-                penalty = 7.0
-            else:
                 penalty = 15.0
+            else:
+                penalty = 30.0
+                
+        is_taxi = (mileage / age) > 45000
+        if is_taxi:
+            penalty += 20.0
                 
         required_calc_score = target_score + penalty
-        
         diff_from_50 = required_calc_score - 50.0
         
         if diff_from_50 >= 0:
-            # We need a bonus. Reverse the bonus piecewise function
-            bonus = diff_from_50
+            # New max possible bonus is 28 (13 + 10 + 5)
+            bonus = min(diff_from_50, 28.0) 
             pct = 0.0
             
-            t1 = min(bonus, 26.0) # 20% * 1.3
+            t1 = min(bonus, 13.0) # 10% * 1.3
             pct += t1 / 1.3
             bonus -= t1
             
@@ -147,9 +150,6 @@ def predict_price(
                 t3 = min(bonus, 5.0) # 10% * 0.5
                 pct += t3 / 0.5
                 bonus -= t3
-                
-            if bonus > 0:
-                pct += bonus / 0.2
                 
             price_diff_pct = pct
         else:
@@ -180,8 +180,8 @@ def predict_price(
         return round(target_price)
 
     fair_price = get_price_for_score(50)
-    good_deal_price = get_price_for_score(75)
-    excellent_deal_price = get_price_for_score(90)
+    good_deal_price = get_price_for_score(65)
+    excellent_deal_price = get_price_for_score(75)
 
     return {
         "car": f"{brand} {model} {generation} {engine_size} {fuel_type} {gearbox}",
@@ -193,14 +193,14 @@ def predict_price(
                 "expected_score": 50
             },
             {
-                "description": "Good Deal (Sells faster, Score: ~75)",
+                "description": "Good Deal (Sells faster, Score: ~65)",
                 "recommended_price_eur": good_deal_price,
-                "expected_score": 75
+                "expected_score": 65
             },
             {
-                "description": "Excellent Deal (Sells immediately, Score: ~90)",
+                "description": "Excellent Deal (Sells immediately, Score: ~75)",
                 "recommended_price_eur": excellent_deal_price,
-                "expected_score": 90
+                "expected_score": 75
             }
         ]
     }
