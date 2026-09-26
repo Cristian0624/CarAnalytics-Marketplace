@@ -1,4 +1,9 @@
 .listing-filters {
+  background-color: #eef2f6;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+
     width: 100%;
     margin-bottom: 42px;
     box-sizing: border-box;
@@ -219,17 +224,9 @@
     gap: 18px;
 }
 
-.filter-group {
-    min-width: 0;
-}
 
-.filter-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #333;
-}
+
+
 
 .filter-group input,
 .filter-group select {
@@ -454,4 +451,305 @@
     0% { background-position: 0 0; }
     50% { background-position: 400% 0; }
     100% { background-position: 0 0; }
+}
+
+/* Custom MultiSelect Dropdown */
+.multi-select-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.multi-select-toggle {
+  width: 100%;
+  padding: 10px 15px;
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #374151;
+}
+
+.multi-select-toggle:hover {
+  border-color: #9ca3af;
+}
+
+.multi-select-toggle .chevron {
+  font-size: 10px;
+  transition: transform 0.2s ease;
+}
+
+.multi-select-toggle .chevron.open {
+  transform: rotate(180deg);
+}
+
+.multi-select-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 250px;
+  overflow-y: auto;
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  margin-top: 4px;
+  z-index: 1000;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 5px 0;
+}
+
+.multi-select-option {
+  display: flex;
+  align-items: center;
+  padding: 8px 15px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #374151;
+}
+
+.multi-select-option:hover {
+  background-color: #f3f4f6;
+}
+
+.multi-select-option input[type="checkbox"] {
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+/* Active Filter Pills */
+.active-filters-pills {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.pills-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.pills-header span {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.clear-all-btn {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.clear-all-btn:hover {
+  text-decoration: underline;
+}
+
+.pills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-pill {
+  display: flex;
+  align-items: center;
+  background-color: #1f2937;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-size: 13px;
+}
+
+.pill-remove-btn {
+  background: white;
+  color: #1f2937;
+  border: none;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  line-height: 1;
+  margin-left: 8px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.pill-remove-btn:hover {
+  background-color: #e5e7eb;
+}
+
+/* Filter Modal Overlay */
+.filter-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.filter-modal-content {
+  background-color: white;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+  overflow: hidden;
+  animation: modalPopIn 0.3s ease-out;
+}
+
+@keyframes modalPopIn {
+  0% { transform: scale(0.95); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.filter-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.filter-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #111827;
+}
+
+.filter-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6b7280;
+  line-height: 1;
+}
+
+.filter-modal-close:hover {
+  color: #111827;
+}
+
+
+
+
+
+
+
+.filter-modal-footer {
+  padding: 16px 20px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filter-modal-footer .btn-primary {
+  padding: 8px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+
+
+
+
+
+
+
+/* Filter Group Titles */
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filter-group label {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb; /* Thin line under title */
+  margin-bottom: 4px;
+}
+
+/* Modal Boxes -> Pill style matching the image */
+.filter-modal-body.grid-boxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 16px 20px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.filter-box-btn {
+  background-color: white;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  padding: 6px 16px 6px 12px; /* Slight padding adjust for circle */
+  border-radius: 9999px; /* Pill shape */
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  min-height: 36px;
+}
+
+.filter-box-btn:hover {
+  background-color: #f9fafb;
+  border-color: #9ca3af;
+}
+
+/* The circle checkbox indicator */
+.filter-box-btn::before {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 50%;
+  background-color: white;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+/* Selected State */
+.filter-box-btn.selected {
+  background-color: white;
+  color: #111827;
+  border-color: #d1d5db;
+}
+
+.filter-box-btn.selected::before {
+  background-color: #0f172a; /* Header auth button color */
+  border-color: #0f172a;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+  background-size: 10px;
+  background-position: center;
+  background-repeat: no-repeat;
 }

@@ -5,7 +5,7 @@ function ProfilePage() {
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
 
-  async function handleLogout() {
+  async function handleDeconectare() {
     await logout();
     navigate("/");
   }
@@ -14,8 +14,8 @@ function ProfilePage() {
     return (
       <div className="auth-page">
         <div className="auth-form">
-          <h2>My profile</h2>
-          <p>Loading...</p>
+          <h2>Profilul Meu</h2>
+          <p>Se încarcă...</p>
         </div>
       </div>
     );
@@ -25,8 +25,8 @@ function ProfilePage() {
     return (
       <div className="auth-page">
         <div className="auth-form">
-          <h2>My profile</h2>
-          <p className="auth-error">You are not logged in.</p>
+          <h2>Profilul Meu</h2>
+          <p className="auth-error">Nu ești autentificat.</p>
         </div>
       </div>
     );
@@ -35,12 +35,12 @@ function ProfilePage() {
   return (
     <div className="auth-page">
       <div className="auth-form">
-        <h2>My profile</h2>
+        <h2>Profilul Meu</h2>
         <p><strong>Name:</strong> {user.name}</p>
         <p><strong>Email:</strong> {user.email}</p>
         {user.phone && <p><strong>Phone:</strong> {user.phone}</p>}
-        {user.seller_type && <p><strong>Account type:</strong> {user.seller_type}</p>}
-        <button className="auth-submit" onClick={handleLogout}>Logout</button>
+        {user.seller_type && <p><strong>Tip Cont:</strong> {user.seller_type}</p>}
+        <button className="auth-submit" onClick={handleDeconectare}>Deconectare</button>
       </div>
     </div>
   );

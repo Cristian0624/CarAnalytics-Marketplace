@@ -7,65 +7,83 @@ const API_URL =
   import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
 
 const FUEL_TYPES = [
-  "Petrol",
-  "Diesel",
+  "Gaz / Benzină (propan)",
   "Hybrid",
-  "Electric",
-  "LPG",
+  "Gaz / Benzină (metan)",
+  "Plug-in Hybrid (diesel)",
+  "Diesel",
+  "Benzină",
+  "Mild Hybrid (diesel)",
+  "Gaz",
+  "Electricitate",
+  "Plug-in Hybrid (benzină)",
+  "Mild Hybrid (benzină)"
 ];
 
 const GEARBOXES = [
-  "Manual",
-  "Automatic",
-  "Semi-automatic",
+  "Mecanică",
+  "Variator",
+  "Robotizată",
+  "Automată",
+  "Automat-Tiptronic"
 ];
 
 const BODY_TYPES = [
-  "Sedan",
   "Hatchback",
+  "Microvan",
   "SUV",
-  "Coupe",
-  "Convertible",
-  "Wagon",
-  "Minivan",
   "Pickup",
+  "Cabriolet",
+  "Roadster",
+  "Coupe",
+  "Crossover",
+  "Camionetă",
+  "Sedan",
+  "Combi",
+  "Universal",
+  "Minivan",
+  "Furgon",
+  "Microautobus",
+  "Platformă deschisă"
 ];
 
 const STATES = [
-  "New",
-  "Used",
-  "Damaged",
+  "Cu rulaj",
+  "Uzat",
+  "Necesită reparații"
 ];
 
 const DRIVETRAINS = [
-  "FWD",
-  "RWD",
-  "AWD",
-  "4WD",
+  "4x2",
+  "Din față",
+  "Din spate",
+  "4x4"
 ];
 
 const SELLER_TYPES = [
   "Persoană fizică",
-  "Dealer auto",
+  "Dealer auto"
 ];
 
 const REGISTRATION_COUNTRIES = [
-  "Moldova",
-  "Germany",
-  "Romania",
-  "France",
-  "Italy",
-  "Other",
+  "Republica Moldova"
 ];
 
 const CAR_CLASSES = [
-  "A",
-  "B",
-  "C",
-  "D",
-  "E",
-  "F",
-  "S",
+  "C-segment (Compact)",
+  "F (Groot)",
+  "L (Lower-Suv)",
+  "K (Upper-Mpv)",
+  "J (Lower-Mpv)",
+  "I (Luxe)",
+  "E (Groot Midden)",
+  "D-segment (Mid-size)",
+  "A-segment (Mini)",
+  "G (Sportief)",
+  "N (Bestelauto)",
+  "B-segment (Supermini)",
+  "H (Sport)",
+  "M (Upper-Suv)"
 ];
 
 function RangeInput({
@@ -118,7 +136,11 @@ function MultiSelect({
   options,
   selected = [],
   onChange,
+  label = "Selectează",
+  title = "Alege opțiunile"
 }) {
+  const [isOpen, setIsOpen] = useState(false);
+
   function toggleOption(option) {
     if (selected.includes(option)) {
       onChange(
@@ -132,24 +154,42 @@ function MultiSelect({
   }
 
   return (
-    <div className="multi-select">
-      {options.map((option) => (
-        <button
-          type="button"
-          key={option}
-          className={`multi-option ${
-            selected.includes(option)
-              ? "selected"
-              : ""
-          }`}
-          onClick={() =>
-            toggleOption(option)
-          }
-        >
-          {option}
-        </button>
-      ))}
-    </div>
+    <>
+      <button
+        type="button"
+        className="multi-select-toggle"
+        onClick={() => setIsOpen(true)}
+      >
+        {selected.length > 0 ? `${label} (${selected.length})` : label}
+        <span className="chevron">▼</span>
+      </button>
+
+      {isOpen && (
+        <div className="filter-modal-overlay" onClick={() => setIsOpen(false)}>
+          <div className="filter-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="filter-modal-header">
+              <h3>{title}</h3>
+              <button className="filter-modal-close" onClick={() => setIsOpen(false)}>×</button>
+            </div>
+                        <div className="filter-modal-body grid-boxes">
+              {options.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  className={`filter-box-btn ${selected.includes(option) ? "selected" : ""}`}
+                  onClick={() => toggleOption(option)}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+            <div className="filter-modal-footer">
+              <button className="btn-primary" onClick={() => setIsOpen(false)}>Gata</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -182,7 +222,7 @@ function ListingFilters({
   /*
    * WORD COMPLETION
    *
-   * Searches the backend as the user types.
+   * Cautăes the backend as the user types.
    *
    * IMPORTANT:
    * This expects your backend to have:
@@ -274,12 +314,77 @@ function ListingFilters({
     setShowSuggestions(false);
   }
 
-  function handleSearchKeyDown(event) {
+  function handleCautăKeyDown(event) {
     if (event.key === "Enter") {
       setShowSuggestions(false);
       onSearch();
     }
   }
+  // Function to remove a specific array filter
+  function removeArrayFilter(field, value) {
+    const newArray = filters[field].filter((item) => item !== value);
+    const newFilters = { ...filters, [field]: newArray };
+    update(field, newArray);
+    if (onSearch) onSearch(newFilters);
+  }
+
+  function removeRangeFilter(minField, maxField) {
+    const newFilters = { ...filters, [minField]: "", [maxField]: "" };
+    setFilters(current => ({ ...current, [minField]: "", [maxField]: "" }));
+    if (onSearch) onSearch(newFilters);
+  }
+
+  function removeStringFilter(field) {
+    const newFilters = { ...filters, [field]: "" };
+    setFilters(current => ({ ...current, [field]: "" }));
+    if (onSearch) onSearch(newFilters);
+  }
+
+  function removeBooleanFilter(field) {
+    setFilters((current) => ({
+      ...current,
+      [field]: null,
+    }));
+  }
+
+  // Generate pills
+  const activePills = [];
+  
+  const arrayFields = ['fuel_type', 'gearbox', 'body_types', 'state', 'drivetrains', 'seller_type', 'registration_country', 'class'];
+  arrayFields.forEach(field => {
+    if (filters[field] && filters[field].length > 0) {
+      filters[field].forEach(val => {
+        activePills.push({
+          label: val,
+          onRemove: () => removeArrayFilter(field, val)
+        });
+      });
+    }
+  });
+
+  const rangeFields = [
+    { min: 'price_min', max: 'price_max', label: 'Preț', unit: '€' },
+    { min: 'mileage_min', max: 'mileage_max', label: 'Rulaj', unit: 'km' },
+    { min: 'year_min', max: 'year_max', label: 'An', unit: '' },
+    { min: 'engine_min', max: 'engine_max', label: 'Motor', unit: 'cm3' },
+    { min: 'horsepower_min', max: 'horsepower_max', label: 'CP', unit: 'CP' },
+    { min: 'score_min', max: 'score_max', label: 'Scor', unit: '' },
+  ];
+
+  rangeFields.forEach(rf => {
+    if (filters[rf.min] || filters[rf.max]) {
+      const minText = filters[rf.min] ? filters[rf.min] : "0";
+      const maxText = filters[rf.max] ? filters[rf.max] : "Max";
+      activePills.push({
+        label: `${rf.label}: ${minText}-${maxText} ${rf.unit}`,
+        onRemove: () => removeRangeFilter(rf.min, rf.max)
+      });
+    }
+  });
+
+  if (filters.brandText) activePills.push({ label: `Marcă: ${filters.brandText}`, onRemove: () => removeStringFilter('brandText') });
+  if (filters.modelText) activePills.push({ label: `Model: ${filters.modelText}`, onRemove: () => removeStringFilter('modelText') });
+
 
   return (
     <section className="listing-filters">
@@ -332,9 +437,9 @@ function ListingFilters({
               }
             }}
             onKeyDown={
-              handleSearchKeyDown
+              handleCautăKeyDown
             }
-            placeholder="Search by brand, model, generation..."
+            placeholder="Caută by brand, model, generation..."
             autoComplete="off"
           />
 
@@ -361,7 +466,7 @@ function ListingFilters({
             }}
             disabled={loading}
           >
-            Search
+            Caută
           </button>
         </div>
 
@@ -424,11 +529,10 @@ function ListingFilters({
 
           <div className="filters-header">
             <div>
-              <h2>Advanced filters</h2>
+              <h2>Filtre avansate</h2>
 
               <p>
-                Narrow down the listings
-                using specific criteria.
+                Reduceți numărul de anunțuri folosind criterii specifice
               </p>
             </div>
 
@@ -437,7 +541,7 @@ function ListingFilters({
               className="reset-filters-button"
               onClick={onReset}
             >
-              Reset filters
+              Resetează filtrele
             </button>
           </div>
 
@@ -445,9 +549,7 @@ function ListingFilters({
 
             {/* BRAND */}
             <div className="filter-group">
-              <label>
-                Brand
-              </label>
+              <label>Marcă</label>
 
               <Autocomplete
                 value={filters.brandText ?? ""}
@@ -467,9 +569,7 @@ function ListingFilters({
 
             {/* MODEL */}
             <div className="filter-group">
-              <label>
-                Model
-              </label>
+              <label>Model</label>
 
               <Autocomplete
                 value={filters.modelText ?? ""}
@@ -491,9 +591,7 @@ function ListingFilters({
 
             {/* GENERATION */}
             <div className="filter-group">
-              <label>
-                Generation
-              </label>
+              <label>Generație</label>
 
               <Autocomplete
                 value={filters.generationText ?? ""}
@@ -544,7 +642,7 @@ function ListingFilters({
             {/* MILEAGE */}
             <div className="filter-group">
               <label>
-                Mileage (km)
+                Kilometraj (km)
               </label>
 
               <RangeInput
@@ -571,9 +669,7 @@ function ListingFilters({
 
             {/* YEAR */}
             <div className="filter-group">
-              <label>
-                Year
-              </label>
+              <label>An</label>
 
               <RangeInput
                 minValue={
@@ -600,7 +696,7 @@ function ListingFilters({
             {/* ENGINE */}
             <div className="filter-group">
               <label>
-                Engine (L)
+                Capacitatea Motorului (L)
               </label>
 
               <RangeInput
@@ -628,9 +724,7 @@ function ListingFilters({
 
             {/* HORSEPOWER */}
             <div className="filter-group">
-              <label>
-                Horsepower
-              </label>
+              <label>Cai putere</label>
 
               <RangeInput
                 minValue={
@@ -657,7 +751,7 @@ function ListingFilters({
             {/* FUEL */}
             <div className="filter-group">
               <label>
-                Fuel
+                Combustibil
               </label>
 
               <MultiSelect
@@ -676,9 +770,7 @@ function ListingFilters({
 
             {/* GEARBOX */}
             <div className="filter-group">
-              <label>
-                Gearbox
-              </label>
+              <label>Cutie de viteze</label>
 
               <MultiSelect
                 options={GEARBOXES}
@@ -696,9 +788,7 @@ function ListingFilters({
 
             {/* BODY TYPE */}
             <div className="filter-group">
-              <label>
-                Body type
-              </label>
+              <label>Caroserie</label>
 
               <MultiSelect
                 options={BODY_TYPES}
@@ -716,9 +806,7 @@ function ListingFilters({
 
             {/* STATE */}
             <div className="filter-group">
-              <label>
-                State
-              </label>
+              <label>Stare</label>
 
               <MultiSelect
                 options={STATES}
@@ -736,9 +824,7 @@ function ListingFilters({
 
             {/* DRIVETRAIN */}
             <div className="filter-group">
-              <label>
-                Drivetrain
-              </label>
+              <label>Tracțiune</label>
 
               <MultiSelect
                 options={DRIVETRAINS}
@@ -756,9 +842,7 @@ function ListingFilters({
 
             {/* DOORS */}
             <div className="filter-group">
-              <label>
-                Doors
-              </label>
+              <label>Uși</label>
 
               <RangeInput
                 minValue={
@@ -784,9 +868,7 @@ function ListingFilters({
 
             {/* SEATS */}
             <div className="filter-group">
-              <label>
-                Seats
-              </label>
+              <label>Locuri</label>
 
               <RangeInput
                 minValue={
@@ -812,9 +894,7 @@ function ListingFilters({
 
             {/* SELLER */}
             <div className="filter-group">
-              <label>
-                Seller
-              </label>
+              <label>Vânzător</label>
 
               <MultiSelect
                 options={SELLER_TYPES}
@@ -833,9 +913,7 @@ function ListingFilters({
 
             {/* REGISTRATION */}
             <div className="filter-group">
-              <label>
-                Registration country
-              </label>
+              <label>Țara de înmatriculare</label>
 
               <MultiSelect
                 options={
@@ -856,9 +934,7 @@ function ListingFilters({
 
             {/* CLASS */}
             <div className="filter-group">
-              <label>
-                Car class
-              </label>
+              <label>Clasa mașinii</label>
 
               <MultiSelect
                 options={CAR_CLASSES}
@@ -876,9 +952,7 @@ function ListingFilters({
 
             {/* SCORE */}
             <div className="filter-group">
-              <label>
-                Score
-              </label>
+              <label>Scor</label>
 
               <RangeInput
                 minValue={
@@ -905,9 +979,7 @@ function ListingFilters({
 
             {/* SAME MODEL */}
             <div className="filter-group">
-              <label>
-                Same model
-              </label>
+              <label>Același model</label>
 
               <select
                 value={
@@ -929,25 +1001,17 @@ function ListingFilters({
                   );
                 }}
               >
-                <option value="">
-                  Any
-                </option>
+                <option value="">Oricare</option>
 
-                <option value="true">
-                  Yes
-                </option>
+                <option value="true">Da</option>
 
-                <option value="false">
-                  No
-                </option>
+                <option value="false">Nu</option>
               </select>
             </div>
 
             {/* SORT */}
             <div className="filter-group">
-              <label>
-                Sort by
-              </label>
+              <label>Sortează după</label>
 
               <select
                 value={
@@ -960,33 +1024,21 @@ function ListingFilters({
                   )
                 }
               >
-                <option value="">
-                  Nothing
-                </option>
+                <option value="">Nimic</option>
 
-                <option value="score">
-                  Score
-                </option>
+                <option value="score">Scor</option>
 
-                <option value="price_eur">
-                  Price
-                </option>
+                <option value="price_eur">Preț</option>
 
-                <option value="year">
-                  Year
-                </option>
+                <option value="year">An</option>
 
-                <option value="mileage">
-                  Mileage
-                </option>
+                <option value="mileage">Rulaj</option>
               </select>
             </div>
 
             {/* SORT ORDER */}
             <div className="filter-group">
-              <label>
-                Sort order
-              </label>
+              <label>Ordine sortare</label>
 
               <select
                 value={
@@ -999,17 +1051,11 @@ function ListingFilters({
                   )
                 }
               >
-                <option value="">
-                  Random
-                </option>
+                <option value="">Aleatoriu</option>
 
-                <option value="asc">
-                  Ascending
-                </option>
+                <option value="asc">Crescător</option>
 
-                <option value="desc">
-                  Descending
-                </option>
+                <option value="desc">Descrescător</option>
               </select>
             </div>
           </div>
@@ -1021,11 +1067,29 @@ function ListingFilters({
               onClick={onSearch}
               disabled={loading}
             >
-              Apply filters
+              Aplică filtrele
             </button>
           </div>
         </div>
       )}
+    
+      {activePills.length > 0 && (
+        <div className="active-filters-pills">
+          <div className="pills-header">
+            <span>Filtre active</span>
+            <button className="clear-all-btn" onClick={onReset}>Curăță tot</button>
+          </div>
+          <div className="pills-list">
+            {activePills.map((pill, idx) => (
+              <div key={idx} className="filter-pill">
+                <span>{pill.label}</span>
+                <button type="button" className="pill-remove-btn" onClick={pill.onRemove}>×</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
     </section>
   );
 }

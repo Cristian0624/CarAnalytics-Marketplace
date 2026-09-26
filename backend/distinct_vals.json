@@ -1,0 +1,74 @@
+{
+  "fuel_type": [
+    "Gaz / Benzină (propan)",
+    "Hybrid",
+    "Gaz / Benzină (metan)",
+    "Plug-in Hybrid (diesel)",
+    "Diesel",
+    "Benzină",
+    "Mild Hybrid (diesel)",
+    "Gaz",
+    "Electricitate",
+    "Plug-in Hybrid (benzină)",
+    "Mild Hybrid (benzină)"
+  ],
+  "gearbox": [
+    "Mecanică",
+    "Variator",
+    "Robotizată",
+    "Automată",
+    "Automat-Tiptronic"
+  ],
+  "body_type": [
+    "Hatchback",
+    "Microvan",
+    "SUV",
+    "Pickup",
+    "Cabriolet",
+    "Roadster",
+    "Coupe",
+    "Crossover",
+    "Camionetă",
+    "Sedan",
+    "Combi",
+    "Universal",
+    "Minivan",
+    "Furgon",
+    "Microautobus",
+    "Platformă deschisă"
+  ],
+  "state": [
+    "Cu rulaj",
+    "Uzat",
+    "Necesită reparații"
+  ],
+  "drivetrain": [
+    "4x2",
+    "Din față",
+    "Din spate",
+    "4x4"
+  ],
+  "seller_type": [
+    "Persoană fizică",
+    "Dealer auto"
+  ],
+  "registration_country": [
+    "Republica Moldova"
+  ],
+  "class": [
+    "C-segment (Compact)",
+    "F (Groot)",
+    "L (Lower-Suv)",
+    "K (Upper-Mpv)",
+    "J (Lower-Mpv)",
+    "I (Luxe)",
+    "E (Groot Midden)",
+    "D-segment (Mid-size)",
+    "A-segment (Mini)",
+    "G (Sportief)",
+    "N (Bestelauto)",
+    "B-segment (Supermini)",
+    "H (Sport)",
+    "M (Upper-Suv)"
+  ]
+}
