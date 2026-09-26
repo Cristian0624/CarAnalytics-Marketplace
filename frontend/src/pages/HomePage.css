@@ -62,8 +62,16 @@ h2 {
 }
 
 .hero-buttons {
-  display: flex;
+  display: grid;
+  grid-template-columns: max-content max-content;
   gap: 16px;
+  justify-content: start;
+}
+
+.hero-buttons .hero-risk-link {
+  grid-column: 1 / -1;
+  box-sizing: border-box;
+  text-align: center;
 }
 
 .btn-primary, .btn-secondary {
@@ -383,4 +391,9 @@ h2 {
   .why-grid, .reviews-container {
     grid-template-columns: 1fr;
   }
+}
+
+@media (max-width: 540px) {
+  .hero-buttons { grid-template-columns: minmax(0, 1fr); }
+  .hero-buttons .hero-risk-link { grid-column: 1; }
 }

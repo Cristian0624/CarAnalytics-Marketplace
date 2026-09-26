@@ -1,0 +1,187 @@
+import { useEffect, useRef, useState } from "react";
+import { assessAnomalyRisk } from "../api/anomaly_risk";
+import { getListingOptions } from "../api/listings";
+import { buildRiskPayload, resolveVehicleOption, riskErrorMessage } from "../utils/anomalyRisk";
+import AnomalyRiskResults from "../components/AnomalyRiskResults";
+import VehicleSelect from "../components/VehicleSelect";
+import "./AnomalyRiskPage.css";
+
+const EMPTY_FORM = {
+  brand: "", model: "", generation: "", price: "", year: "", mileage: "",
+  engine: "", fuel_type: "", gearbox: "", drivetrain: "", body_type: "",
+};
+const OPTIONS = {
+  fuel_type: ["Benzină", "Diesel", "Electricitate", "Hybrid", "Gaz", "Gaz / Benzină (propan)", "Gaz / Benzină (metan)", "Plug-in Hybrid (benzină)", "Plug-in Hybrid (diesel)", "Mild Hybrid (benzină)", "Mild Hybrid (diesel)"],
+  gearbox: ["Mecanică", "Automată", "Automat-Tiptronic", "Robotizată", "Variator"],
+  drivetrain: ["Din față", "Din spate", "4x4", "4x2"],
+  body_type: ["Sedan", "Hatchback", "Universal", "Combi", "SUV", "Crossover", "Coupe", "Cabriolet", "Roadster", "Pickup", "Minivan", "Microvan", "Furgon", "Camionetă", "Microautobus", "Platformă deschisă"],
+};
+
+export default function AnomalyRiskPage() {
+  const [form, setForm] = useState({ ...EMPTY_FORM });
+  const [brands, setBrands] = useState([]);
+  const [models, setModels] = useState([]);
+  const [generations, setGenerations] = useState([]);
+  const [optionsLoading, setOptionsLoading] = useState({ brand: true, model: false, generation: false });
+  const [optionsError, setOptionsError] = useState({ brand: false, model: false, generation: false });
+  const [result, setResult] = useState(null);
+  const [submitted, setSubmitted] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const requestRef = useRef(null);
+  const resultRef = useRef(null);
+  const selectedBrand = resolveVehicleOption(brands, form.brand);
+  const selectedModel = selectedBrand ? resolveVehicleOption(models, form.model) : null;
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+    return () => requestRef.current?.abort();
+  }, []);
+  useEffect(() => { if (result) resultRef.current?.focus(); }, [result]);
+  useEffect(() => {
+    let current = true;
+    getListingOptions().then((data) => {
+      if (current) setBrands(data.brand ?? []);
+    }).catch(() => {
+      if (current) setOptionsError((state) => ({ ...state, brand: true }));
+    }).finally(() => {
+      if (current) setOptionsLoading((state) => ({ ...state, brand: false }));
+    });
+    return () => { current = false; };
+  }, []);
+  useEffect(() => {
+    if (!selectedBrand) return;
+    let current = true;
+    getListingOptions({ brand: selectedBrand }).then((data) => {
+      if (current) setModels(data.model ?? []);
+    }).catch(() => {
+      if (current) setOptionsError((state) => ({ ...state, model: true }));
+    }).finally(() => {
+      if (current) setOptionsLoading((state) => ({ ...state, model: false }));
+    });
+    return () => { current = false; };
+  }, [selectedBrand]);
+  useEffect(() => {
+    if (!selectedModel) return;
+    let current = true;
+    getListingOptions({ brand: selectedBrand, model: selectedModel }).then((data) => {
+      if (current) setGenerations(data.generation ?? []);
+    }).catch(() => {
+      if (current) setOptionsError((state) => ({ ...state, generation: true }));
+    }).finally(() => {
+      if (current) setOptionsLoading((state) => ({ ...state, generation: false }));
+    });
+    return () => { current = false; };
+  }, [selectedBrand, selectedModel]);
+
+  function update(field, value) {
+    const brandChanged = field === "brand" && resolveVehicleOption(brands, value) !== selectedBrand;
+    const modelChanged = field === "model" && resolveVehicleOption(models, value) !== selectedModel;
+    setForm((current) => ({ ...current, [field]: value,
+      ...(brandChanged ? { model: "", generation: "" } : modelChanged ? { generation: "" } : {}),
+    }));
+    if (brandChanged) {
+      setModels([]);
+      setGenerations([]);
+      setOptionsError((state) => ({ ...state, model: false, generation: false }));
+      setOptionsLoading((state) => ({ ...state, model: Boolean(resolveVehicleOption(brands, value)), generation: false }));
+    } else if (modelChanged) {
+      setGenerations([]);
+      setOptionsError((state) => ({ ...state, generation: false }));
+      setOptionsLoading((state) => ({ ...state, generation: Boolean(resolveVehicleOption(models, value)) }));
+    }
+    setResult(null);
+    setError("");
+  }
+
+  function commit(field, value) {
+    setForm((current) => ({ ...current, [field]: value }));
+  }
+
+  async function submit(event) {
+    event.preventDefault();
+    if (requestRef.current) return;
+    if (!selectedBrand || !selectedModel) { setError("Alege marca și modelul din listele disponibile."); return; }
+    const selectedGeneration = resolveVehicleOption(generations, form.generation);
+    if (form.generation.trim() && !selectedGeneration) { setError("Alege generația din listă sau las-o necompletată."); return; }
+    const payload = buildRiskPayload({ ...form, brand: selectedBrand, model: selectedModel, generation: selectedGeneration ?? "" });
+    const controller = new AbortController();
+    requestRef.current = controller;
+    const timeout = setTimeout(() => controller.abort(new DOMException("Request timed out", "TimeoutError")), 60000);
+    setLoading(true);
+    setError("");
+    setResult(null);
+    try {
+      const response = await assessAnomalyRisk(payload, controller.signal);
+      if (!controller.signal.aborted) { setSubmitted(payload); setResult(response); }
+    } catch (err) {
+      if (err.name !== "AbortError") setError(riskErrorMessage(err));
+    } finally {
+      clearTimeout(timeout);
+      requestRef.current = null;
+      setLoading(false);
+    }
+  }
+
+  return (
+    <main className="risk-page">
+      <div className="risk-container">
+        <header className="risk-heading">
+          <h1>Vezi oferta dincolo de preț.</h1>
+          <p>Compară prețul, kilometrajul și configurația cu datele pieței. Află ce merită verificat înainte să cumperi.</p>
+        </header>
+
+        <form className="risk-form" onSubmit={submit} aria-busy={loading}>
+          <div className="risk-form-heading"><div><h2>Despre mașină</h2><p>Datele din anunț sunt suficiente pentru a începe.</p></div><span>* Obligatoriu</span></div>
+          <fieldset disabled={loading}>
+            <legend className="risk-sr-only">Datele ofertei</legend>
+            <div className="risk-fields risk-identity">
+              <VehicleSelect field="brand" label="Marcă" value={form.brand} options={brands} onChange={update} onCommit={commit} required loading={optionsLoading.brand} error={optionsError.brand} />
+              <VehicleSelect key={selectedBrand ?? ""} field="model" label="Model" value={form.model} options={models} onChange={update} onCommit={commit} required disabled={!selectedBrand} loading={optionsLoading.model} error={optionsError.model} />
+              <VehicleSelect key={`${selectedBrand}/${selectedModel}`} field="generation" label="Generație" value={form.generation} options={generations} onChange={update} onCommit={commit} disabled={!selectedModel} loading={optionsLoading.generation} error={optionsError.generation} />
+            </div>
+            <div className="risk-fields">
+              {[
+                { field: "price", label: "Preț cerut (€)", min: 0.01, step: "0.01", placeholder: "Ex. 12000", required: true },
+                { field: "year", label: "An fabricație", min: 1886, max: new Date().getFullYear() + 1, placeholder: "Ex. 2016" },
+                { field: "mileage", label: "Kilometraj (km)", min: 0, max: 10000000, placeholder: "Ex. 150000" },
+                { field: "engine", label: "Motor (litri)", min: 0, max: 20, step: "any", placeholder: "Ex. 2.0" },
+              ].map(({ field, label, ...props }) => (
+                <div className="risk-field" key={field}>
+                  <label htmlFor={`risk-${field}`}>{label}{props.required ? " *" : ""}</label>
+                  <input id={`risk-${field}`} name={field} type="number" step="1" {...props} value={form[field]} onChange={(e) => update(field, e.target.value)} />
+                </div>
+              ))}
+            </div>
+            <div className="risk-fields">
+              {[["fuel_type", "Combustibil"], ["gearbox", "Cutie de viteze"], ["drivetrain", "Tracțiune"], ["body_type", "Caroserie"]].map(([field, label]) => (
+                <div className="risk-field" key={field}>
+                  <label htmlFor={`risk-${field}`}>{label}</label>
+                  <select id={`risk-${field}`} name={field} value={form[field]} onChange={(e) => update(field, e.target.value)}>
+                    <option value="">Nespecificat</option>
+                    {OPTIONS[field].map((option) => <option key={option}>{option}</option>)}
+                  </select>
+                </div>
+              ))}
+            </div>
+            <p className="risk-form-note">Completează cât mai multe detalii pentru o analiză mai relevantă. Pentru o mașină electrică, motorul poate fi 0 sau necompletat.</p>
+            <div className="risk-actions">
+              <button className="risk-submit" type="submit">{loading ? "Se analizează oferta…" : "Analizează oferta"}<span aria-hidden="true"> →</span></button>
+              <button className="risk-reset" type="button" onClick={() => { setForm({ ...EMPTY_FORM }); setModels([]); setGenerations([]); setResult(null); setError(""); }}>Resetează</button>
+            </div>
+          </fieldset>
+          {error && <p className="risk-error" role="alert">{error}</p>}
+          {loading && <p className="risk-loading" role="status">Comparăm oferta cu datele modelului. Prima analiză poate dura câteva momente.</p>}
+        </form>
+
+        {result ? <div ref={resultRef} tabIndex={-1} className="risk-result-focus"><AnomalyRiskResults result={result} vehicle={submitted} /></div> : !loading && (
+          <div className="risk-preview" aria-label="Ce vei afla">
+            {[["💶", "Prețul în context", "O estimare de preț și poziția ofertei față de intervalul modelului."], ["📋", "Detalii de verificat", "Kilometrajul și configurațiile neobișnuite pentru mașini similare."], ["✓", "Câtă încredere să ai", "Câte exemple susțin analiza și când datele sunt insuficiente."]].map(([icon, title, description]) => (
+              <article key={title}><span className="risk-preview-icon" aria-hidden="true">{icon}</span><h3>{title}</h3><p>{description}</p></article>
+            ))}
+          </div>
+        )}
+        <p className="risk-disclaimer">Scorurile identifică oferte neobișnuite, nu probabilitatea unei fraude. Analiza nu înlocuiește verificarea istoricului și inspecția mașinii.</p>
+      </div>
+    </main>
+  );
+}

@@ -16,6 +16,7 @@ function HomePage() {
           <div className="hero-buttons">
             <Link to="/listings" className="btn-primary">Răsfoiește Piața</Link>
             <Link to="/register" className="btn-secondary">Înscrie-te Gratuit</Link>
+            <Link to="/anomaly-risk" className="btn-primary hero-risk-link">Estimeaza Riscul unei Oferte</Link>
           </div>
         </div>
         <div className="hero-image-placeholder">

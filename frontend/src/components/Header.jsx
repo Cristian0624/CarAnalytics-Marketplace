@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import HomeButton from "./HomeButton";
 import AuthButton from "./AuthButton";
 import "./Header.css";
 
@@ -21,6 +20,9 @@ function Header() {
           </Link>
           <Link to="/listings" className="header-nav-link">
             Piață
+          </Link>
+          <Link to="/anomaly-risk" className="header-nav-link">
+            Analiza Risc
           </Link>
           <AuthButton />
         </div>

@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProfilePage from "./pages/ProfilePage";
 import RecommendationsPage from "./pages/RecommendationsPage";
+import AnomalyRiskPage from "./pages/AnomalyRiskPage";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/recommendations" element={<RecommendationsPage />} />
+        <Route path="/anomaly-risk" element={<AnomalyRiskPage />} />
       </Routes>
     </div>
   );

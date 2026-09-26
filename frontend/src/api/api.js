@@ -30,6 +30,7 @@ export async function apiRequest(
     body,
     token,
     headers = {},
+    signal,
   } = {}
 ) {
   const requestHeaders = {
@@ -48,15 +49,19 @@ export async function apiRequest(
     method,
     headers: requestHeaders,
     credentials: "include",
+    signal,
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new Error(
+    const error = new Error(
       getErrorMessage(data, `Request failed (${res.status})`)
     );
+    error.status = res.status;
+    error.detail = data?.detail;
+    throw error;
   }
 
   return data;
