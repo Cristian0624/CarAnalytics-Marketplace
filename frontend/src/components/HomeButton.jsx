@@ -3,7 +3,7 @@ import "./HomeButton.css";
 
 function HomeButton() {
   return (
-    <Link to="/" className="home-button" aria-label="Home">
+    <Link to="/" className="home-button" aria-label="Acasă">
       <svg
         width="18"
         height="18"
@@ -21,7 +21,7 @@ function HomeButton() {
         <circle cx="16.5" cy="17" r="1.8" />
         <path d="M9.3 17h5.4" />
       </svg>
-      Home
+      Acasă
     </Link>
   );
 }

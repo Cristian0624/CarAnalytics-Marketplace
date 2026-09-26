@@ -102,7 +102,7 @@ function RecommendationsPage() {
     return (
       <main className="recommendations-main">
         <div className="recommendations-loading">
-          Loading cars...
+          Se încarcă mașinile...
         </div>
       </main>
     );
@@ -112,7 +112,7 @@ function RecommendationsPage() {
     return (
       <main className="recommendations-main">
         <div className="recommendations-error">
-          <h2>Something went wrong</h2>
+          <h2>Ceva nu a mers bine</h2>
           <p>{error}</p>
 
           <button onClick={loadCars}>
@@ -135,7 +135,7 @@ function RecommendationsPage() {
           ← Back to marketplace
         </button>
 
-        <h1>Recommended cars</h1>
+        <h1>Mașini recomandate</h1>
 
         <p>
           Choose a car to find similar listings.
@@ -163,7 +163,7 @@ function RecommendationsPage() {
       {cars.length === 0 ? (
 
         <div className="recommendations-empty">
-          <h2>No cars found</h2>
+          <h2>Nu au fost găsite mașini</h2>
 
           <p>
             There are currently no listings available.

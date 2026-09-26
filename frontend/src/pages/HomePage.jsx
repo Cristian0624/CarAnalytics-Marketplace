@@ -8,21 +8,21 @@ function HomePage() {
       {/* 1. Hero Section */}
       <section className="hero-section">
         <div className="hero-content">
-          <div className="hero-badge">Powered by Advanced Algorithm Pricing</div>
-          <h1 className="hero-title">Find the True Value of Any Car Instantly.</h1>
+          <div className="hero-badge">Propulsat de Algoritmi Avansați de Preț</div>
+          <h1 className="hero-title">Află Valoarea Reală a Oricărei Mașini Instant.</h1>
           <p className="hero-subtitle">
-            Stop overpaying for used cars. Our algorithm analyzes thousands of market data points to accurately grade every listing and instantly spot overpriced scams.
+            Nu mai plăti prea mult pentru mașini second-hand. Algoritmul nostru analizează mii de date din piață pentru a evalua precis fiecare anunț și a depista instant țepele supraevaluate.
           </p>
           <div className="hero-buttons">
-            <Link to="/listings" className="btn-primary">Browse Marketplace</Link>
-            <Link to="/register" className="btn-secondary">Sign Up Free</Link>
+            <Link to="/listings" className="btn-primary">Răsfoiește Piața</Link>
+            <Link to="/register" className="btn-secondary">Înscrie-te Gratuit</Link>
           </div>
         </div>
         <div className="hero-image-placeholder">
           <div className="abstract-ui">
-            <div className="ui-card top">Score: 80/80 (Perfect Deal)</div>
-            <div className="ui-card mid">Market Average: 14,000 €</div>
-            <div className="ui-card bot">Scam Alert: Odometer Rolled Back</div>
+            <div className="ui-card top">Scor: 80/80 (Ofertă Perfectă)</div>
+            <div className="ui-card mid">Medie Piață: 14,000 €</div>
+            <div className="ui-card bot">Alertă Fraudă: Kilometraj Dat Înapoi</div>
           </div>
           <div className="hero-3d-model">
             <model-viewer
@@ -40,25 +40,25 @@ function HomePage() {
         </div>
       </section>
 
-      {/* 3. Features Section */}
+      {/* 3. Funcționalități Section */}
       <section className="features-section">
-        <h2>Unmatched Market Intelligence</h2>
+        <h2>Inteligență de Piață Inegalabilă</h2>
         <div className="features-grid">
           <div className="feature-card">
-            <h3>Algorithm Deal Scoring</h3>
-            <p>Every single car is mathematically scored up to a maximum of 80 based on exact depreciation, real market medians, and hidden anomalies.</p>
+            <h3>Scor Algoritmic al Ofertei</h3>
+            <p>Fiecare mașină este evaluată matematic până la un maxim de 80 de puncte, pe baza deprecierii exacte, a medianelor reale ale pieței și a anomaliilor ascunse.</p>
           </div>
           <div className="feature-card">
-            <h3>Scam & Fraud Detection</h3>
-            <p>Our algorithm catches hidden "Ex-Taxi" vehicles, rolled-back odometers, and missing documentation instantly.</p>
+            <h3>Detectarea Fraudelor și Țepelor</h3>
+            <p>Algoritmul nostru depistează instant vehiculele ascunse „Fost Taxi”, kilometrajele modificate și actele lipsă.</p>
           </div>
           <div className="feature-card">
-            <h3>Dynamic Price Targets</h3>
-            <p>Tell us what score you want (Fair, Good, Excellent), and we will reverse-engineer the exact target price you should negotiate for.</p>
+            <h3>Ținte Dinamice de Preț</h3>
+            <p>Spune-ne ce scor dorești (Corect, Bun, Excelent), și noi vom calcula prețul exact pe care ar trebui să-l negociezi.</p>
           </div>
           <div className="feature-card">
-            <h3>Price Recommendations for Listings</h3>
-            <p>Sellers can use our algorithm to get the perfect price recommendation for adding a new listing, ensuring their car is competitive and sells fast.</p>
+            <h3>Recomandări de Preț pentru Anunțuri</h3>
+            <p>Vânzătorii pot folosi algoritmul nostru pentru a obține recomandarea perfectă de preț la adăugarea unui nou anunț, asigurându-se că mașina lor este competitivă și se vinde rapid.</p>
           </div>
         </div>
       </section>
@@ -78,55 +78,55 @@ function HomePage() {
             className="floating-model"
           ></model-viewer>
         </div>
-        <h2>Why Choose CarAnalytics?</h2>
+        <h2>De ce să alegi CarAnalytics?</h2>
         <div className="why-grid">
           <div className="why-item">
-            <div className="why-icon"><img src="/icon_chart.png" alt="Data-Driven icon" /></div>
-            <h4>Data-Driven</h4>
-            <p>We do not rely on subjective opinions. Pure math and market medians dictate the score.</p>
+            <div className="why-icon"><img src="/icon_chart.png" alt="Bazat pe Date icon" /></div>
+            <h4>Bazat pe Date</h4>
+            <p>Nu ne bazăm pe opinii subiective. Matematica pură și medianele pieței dictează scorul.</p>
           </div>
           <div className="why-item">
-            <div className="why-icon"><img src="/icon_shield.png" alt="Unbiased icon" /></div>
-            <h4>Unbiased</h4>
-            <p>Sellers cannot manipulate the algorithm. You get raw, unfiltered truth about the deal.</p>
+            <div className="why-icon"><img src="/icon_shield.png" alt="Imparțial icon" /></div>
+            <h4>Imparțial</h4>
+            <p>Vânzătorii nu pot manipula algoritmul. Primești adevărul brut, nefiltrat, despre ofertă.</p>
           </div>
           <div className="why-item">
-            <div className="why-icon"><img src="/icon_lightning.png" alt="Real-Time icon" /></div>
-            <h4>Real-Time</h4>
-            <p>As the market shifts, so do our baselines. You always get today's accurate market value.</p>
+            <div className="why-icon"><img src="/icon_lightning.png" alt="În Timp Real icon" /></div>
+            <h4>În Timp Real</h4>
+            <p>Pe măsură ce piața se schimbă, se schimbă și bazele noastre. Ai întotdeauna valoarea de piață precisă de azi.</p>
           </div>
           <div className="why-item">
-            <div className="why-icon"><img src="/icon_money.png" alt="Save Money icon" /></div>
-            <h4>Save Money</h4>
-            <p>Never overpay for a high-mileage car disguised as a good deal ever again.</p>
+            <div className="why-icon"><img src="/icon_money.png" alt="Economisește Bani icon" /></div>
+            <h4>Economisește Bani</h4>
+            <p>Nu mai plăti niciodată în plus pentru o mașină cu rulaj mare, mascată ca o ofertă bună.</p>
           </div>
         </div>
       </section>
 
       {/* 5. Review Section */}
       <section className="reviews-section">
-        <h2>Community Reviews</h2>
+        <h2>Recenzii ale Comunității</h2>
         <div className="reviews-empty">
-          <p>We're building a new community of smart car buyers. Be the first to leave a review of our platform!</p>
-          <button className="btn-secondary" onClick={() => alert("Review submission form coming soon!")}>Write a Review</button>
+          <p>Construim o nouă comunitate de cumpărători inteligenți de mașini. Fii primul care lasă o recenzie platformei noastre!</p>
+          <button className="btn-secondary" onClick={() => alert("Formularul pentru recenzii va fi disponibil în curând!")}>Scrie o Recenzie</button>
         </div>
       </section>
 
       {/* 6. FAQ Section */}
       <section className="faq-section">
-        <h2>Frequently Asked Questions</h2>
+        <h2>Întrebări Frecvente</h2>
         <div className="faq-list">
           <div className="faq-item">
-            <h4>How does the Algorithm Scoring work?</h4>
-            <p>We group cars by Brand, Model, Generation, Year, and Engine Size to calculate true median prices and baseline mileages. We then apply complex depreciation math to score each specific car.</p>
+            <h4>Cum funcționează Scorul Algoritmic?</h4>
+            <p>Grupăm mașinile după Marcă, Model, Generație, An și Capacitate Motor pentru a calcula prețurile mediane adevărate și kilometrajele de bază. Apoi aplicăm formule matematice complexe de depreciere pentru a evalua fiecare mașină în parte.</p>
           </div>
           <div className="faq-item">
-            <h4>How do you catch scams?</h4>
-            <p>Our algorithm penalizes listings with impossible mileage-to-age ratios, hidden keywords (like missing documents), or prices that are statistically "too good to be true".</p>
+            <h4>Cum depistați țepele?</h4>
+            <p>Algoritmul nostru penalizează anunțurile cu proporții imposibile între rulaj și vârstă, cuvinte-cheie ascunse (precum acte lipsă) sau prețuri statistic „prea bune ca să fie adevărate”.</p>
           </div>
           <div className="faq-item">
-            <h4>Is it free to use?</h4>
-            <p>Yes, browsing the marketplace and viewing the algorithm scores is completely free for all buyers.</p>
+            <h4>Este gratuit?</h4>
+            <p>Da, navigarea pe piață și vizualizarea scorurilor algoritmului sunt complet gratuite pentru toți cumpărătorii.</p>
           </div>
         </div>
       </section>
@@ -134,9 +134,9 @@ function HomePage() {
       {/* 7. CTA Section */}
       <section className="cta-section">
         <div className="cta-box">
-          <h2>Ready to find your perfect car?</h2>
-          <p>Join thousands of smart buyers using data to beat the market.</p>
-          <Link to="/listings" className="btn-primary large">Start Browsing Now</Link>
+          <h2>Ești pregătit să găsești mașina perfectă?</h2>
+          <p>Alătură-te miilor de cumpărători inteligenți care folosesc datele pentru a bate piața.</p>
+          <Link to="/listings" className="btn-primary large">Începe să Cauți Acum</Link>
         </div>
       </section>
 
@@ -145,11 +145,11 @@ function HomePage() {
         <div className="footer-content">
           <div className="footer-logo">CarAnalytics</div>
           <div className="footer-links">
-            <a href="#">About Us</a>
-            <a href="#">Features</a>
-            <a href="#">Pricing</a>
-            <a href="#">Terms & Conditions</a>
-            <a href="#">Privacy Policy</a>
+            <a href="#">Despre Noi</a>
+            <a href="#">Funcționalități</a>
+            <a href="#">Prețuri</a>
+            <a href="#">Termeni și Condiții</a>
+            <a href="#">Politica de Confidențialitate</a>
           </div>
         </div>
       </footer>

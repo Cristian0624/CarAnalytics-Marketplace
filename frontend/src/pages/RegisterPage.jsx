@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "../api/auth";
 
-function RegisterPage() {
+function ÎnregistrarePage() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ function RegisterPage() {
   return (
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
-        <h2>Register</h2>
+        <h2>Înregistrare</h2>
         <input
           className="auth-input"
           name="name"
@@ -52,11 +52,11 @@ function RegisterPage() {
           onChange={handleChange}
           required
         />
-        <button className="auth-submit" type="submit">Register</button>
+        <button className="auth-submit" type="submit">Înregistrare</button>
         {error && <p className="auth-error">{error}</p>}
       </form>
     </div>
   );
 }
 
-export default RegisterPage;
+export default ÎnregistrarePage;

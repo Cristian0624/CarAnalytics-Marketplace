@@ -105,7 +105,7 @@ function CarCard({
           </div>
         </>
       ) : (
-        <div className="car-expanded-content">
+                <div className="car-expanded-content">
           <button
             className="original-listing-button"
             onClick={openOriginalListing}
@@ -122,170 +122,92 @@ function CarCard({
             }}
             title="Close"
           >
-            ×
+            ✕
           </button>
 
           <div className="expanded-header">
             <div>
-              <h2>
-                {formatValue(car.brand)}{" "}
-                {formatValue(car.model)}
+              <h2 style={{ textTransform: 'uppercase', margin: '0 0 4px 0', fontSize: '24px' }}>
+                {formatValue(car.brand)} {formatValue(car.model)} {car.year ? `(${car.year})` : ''}
               </h2>
 
               {car.generation && (
-                <p>{car.generation}</p>
+                <p style={{ margin: '0 0 12px 0', color: '#555' }}>{car.generation}</p>
               )}
+
+              <div className="expanded-price">
+                <span>PREȚ</span>
+                <strong>€{formatNumber(car.price_eur)}</strong>
+              </div>
             </div>
 
-            {car.score !== null &&
-              car.score !== undefined && (
-                <div
-                  className={`expanded-score ${getScoreClass(
-                    score
-                  )}`}
-                >
-                  <span className="score-value">
-                    {score.toFixed(0)}
-                  </span>
-
-                  <span className="score-label">
-                    Score
-                  </span>
+            {car.score !== null && car.score !== undefined && (
+              <div className={`expanded-score-circular ${getScoreClass(score)}`}>
+                <span className="score-label">SCORE</span>
+                <div className="score-circle">
+                  <span className="score-main">{score.toFixed(0)}</span>
+                  <span className="score-sub">{score.toFixed(0)}/80</span>
                 </div>
-              )}
+              </div>
+            )}
           </div>
 
           <div className="expanded-main">
-    
-
-            <div className="expanded-information">
-              <div className="information-group">
-
-                <div className="information-grid">
-                  <div>
-                    <span>Brand</span>
-                    <strong>{formatValue(car.brand)}</strong>
-                  </div>
-
-                  <div>
-                    <span>Model</span>
-                    <strong>{formatValue(car.model)}</strong>
-                  </div>
-
-                  <div>
-                    <span>Generation</span>
-                    <strong>
-                      {formatValue(car.generation)}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span>Year</span>
-                    <strong>{formatValue(car.year)}</strong>
-                  </div>
-
-                  <div>
-                    <span>Mileage</span>
-                    <strong>
-                      {formatNumber(car.mileage)} km
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span>Price</span>
-                    <strong>
-                      €{formatNumber(car.price_eur)}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span>Engine</span>
-                    <strong>
-                      {formatValue(car.engine_size)}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span>Horsepower</span>
-                    <strong>
-                      {formatValue(car.horsepower)}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span>Fuel</span>
-                    <strong>
-                      {formatValue(car.fuel_type)}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span>Gearbox</span>
-                    <strong>
-                      {formatValue(car.gearbox)}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span>Body</span>
-                    <strong>
-                      {formatValue(car.body_type)}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span>Drivetrain</span>
-                    <strong>
-                      {formatValue(car.drivetrain)}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span>Doors</span>
-                    <strong>
-                      {formatValue(car.doors)}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span>Seats</span>
-                    <strong>
-                      {formatValue(car.seats)}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span>State</span>
-                    <strong>
-                      {formatValue(car.state)}
-                    </strong>
-                  </div>
-
-                  <div>
-                    <span>Registration</span>
-                    <strong>
-                      {formatValue(
-                        car.registration_country
-                      )}
-                    </strong>
-                  </div>
+            <div className="specs-container">
+              
+              <div className="spec-group">
+                <h4>DATE GENERALE</h4>
+                <div className="spec-row">
+                  <div className="spec-item"><span>Marcă</span><strong>{formatValue(car.brand)}</strong></div>
+                  <div className="spec-item"><span>Model</span><strong>{formatValue(car.model)}</strong></div>
+                  <div className="spec-item"><span>Caroserie</span><strong>{formatValue(car.body_type)}</strong></div>
+                  <div className="spec-item"><span>Înmatriculare</span><strong>{formatValue(car.registration_country)}</strong></div>
                 </div>
               </div>
 
-              {car.description && (
-                <div className="information-group">
-                  <h4>Description</h4>
-
-                  <p className="car-description">
-                    {car.description}
-                  </p>
+              <div className="spec-group">
+                <h4>PERFORMANȚĂ</h4>
+                <div className="spec-row">
+                  <div className="spec-item"><span>Cai Putere</span><strong>{formatValue(car.horsepower)} {car.horsepower ? 'CP' : ''}</strong></div>
+                  <div className="spec-item"><span>Cutie de viteze</span><strong>{formatValue(car.gearbox)}</strong></div>
+                  <div className="spec-item"><span>Tracțiune</span><strong>{formatValue(car.drivetrain)}</strong></div>
+                  <div className="spec-item"><span>Combustibil</span><strong>{formatValue(car.fuel_type)}</strong></div>
                 </div>
-              )}
+              </div>
+
+              <div className="spec-group">
+                <h4>STARE ȘI DETALII</h4>
+                <div className="spec-row">
+                  <div className="spec-item"><span>An</span><strong>{formatValue(car.year)}</strong></div>
+                  <div className="spec-item"><span>Rulaj</span><strong>{formatNumber(car.mileage)} {car.mileage ? 'km' : ''}</strong></div>
+                  <div className="spec-item"><span>Stare</span><strong>{formatValue(car.state)}</strong></div>
+                  <div className="spec-item"><span>Motor</span><strong>{formatValue(car.engine_size)}</strong></div>
+                </div>
+              </div>
+
+              <div className="spec-group">
+                <h4>CONFIGURAȚIE</h4>
+                <div className="spec-row">
+                  <div className="spec-item"><span>Uși</span><strong>{formatValue(car.doors)}</strong></div>
+                  <div className="spec-item"><span>Locuri</span><strong>{formatValue(car.seats)}</strong></div>
+                </div>
+              </div>
+
             </div>
+
+            {car.description && (
+              <div className="information-group" style={{ marginTop: '24px' }}>
+                <h4 style={{ fontSize: '11px', textTransform: 'uppercase', marginBottom: '12px', color: '#111' }}>DESCRIERE</h4>
+                <p className="car-description" style={{ margin: 0, color: '#555', lineHeight: '1.6' }}>
+                  {car.description}
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )}
     </article>
+
   );
 }
 

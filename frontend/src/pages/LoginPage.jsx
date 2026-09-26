@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-function LoginPage() {
+function AutentificarePage() {
   const { login } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
@@ -26,7 +26,7 @@ function LoginPage() {
   return (
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
-        <h2>Login</h2>
+        <h2>Autentificare</h2>
         <input
           className="auth-input"
           name="email"
@@ -45,11 +45,11 @@ function LoginPage() {
           onChange={handleChange}
           required
         />
-        <button className="auth-submit" type="submit">Login</button>
+        <button className="auth-submit" type="submit">Autentificare</button>
         {error && <p className="auth-error">{error}</p>}
       </form>
     </div>
   );
 }
 
-export default LoginPage;
+export default AutentificarePage;

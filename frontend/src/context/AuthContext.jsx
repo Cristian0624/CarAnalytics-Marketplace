@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { getCurrentUser, loginUser as apiLogin, logoutUser as apiLogout } from "../api/auth";
+import { getCurrentUser, loginUser as apiAutentificare, logoutUser as apiDeconectare } from "../api/auth";
 
 const AuthContext = createContext(null);
 
@@ -23,7 +23,7 @@ export function AuthProvider({ children }) {
   }, [refreshUser]);
 
   async function login(credentials) {
-    const result = await apiLogin(credentials);
+    const result = await apiAutentificare(credentials);
     if (result?.access_token) {
       localStorage.setItem("token", result.access_token);
     }
@@ -32,7 +32,7 @@ export function AuthProvider({ children }) {
 
   async function logout() {
     try {
-      await apiLogout();
+      await apiDeconectare();
     } catch {
       // ignore server error, still clear local state
     }
