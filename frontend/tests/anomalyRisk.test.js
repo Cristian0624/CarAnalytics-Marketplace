@@ -70,8 +70,41 @@ test("expanded explanations use structured evidence and Romanian text", () => {
     },
   };
   const lines = riskExplanationLines(result, { brand: "Toyota", model: "Auris", generation: "II", price: 9000, year: 2010, mileage: null });
-  assert.ok(lines.some((line) => line.includes("prea puține exemple")));
+  assert.ok(lines.some((line) => line.includes("prea puține anunțuri")));
   assert.ok(lines.some((line) => line.includes("An (2010)")));
   assert.ok(lines.some((line) => line.includes("Kilometrajul nu a fost introdus")));
   assert.ok(lines.every((line) => !/Asking price|Mileage is|model observations|Predicted P10/.test(line)));
+});
+
+test("unavailable database price has no fabricated interval explanation", () => {
+  const result = {
+    assessment_status: "limited_support",
+    confidence: { model_observations: 200, p10_p90_width: null, relative_interval_width: null },
+    market_support: { model_generation_observations: 100, rarity_penalty: 0 },
+    components: {
+      price_anomaly: { score: null, count: 9, direction: "unknown" },
+      mileage_anomaly: { score: null },
+      specification_anomaly: { signals: [] },
+    },
+  };
+  const lines = riskExplanationLines(result, { ...buildRiskPayload({}), price: 5000 });
+  assert.ok(lines.some((line) => line.includes("9 anunțuri comparabile") && line.includes("minimum 10")));
+  assert.ok(lines.every((line) => typeof line === "string" && !/NaN|0 €|intervalul estimat/i.test(line)));
+});
+
+test("available database price explains the exact unfiltered comparison group", () => {
+  const result = {
+    assessment_status: "full",
+    confidence: { model_observations: 200, p10_p90_width: 1600, relative_interval_width: .32 },
+    market_support: { model_generation_observations: 100, rarity_penalty: 0 },
+    components: {
+      price_anomaly: { score: 0, count: 21, direction: "normal", actual_price: 5000, p25: 4500, p75: 5500 },
+      mileage_anomaly: { score: null },
+      specification_anomaly: { signals: [] },
+    },
+  };
+  const lines = riskExplanationLines(result, { price: 5000 });
+  assert.ok(lines.some((line) => line.includes("21 anunțuri") && line.includes("nu filtrează acest grup")));
+  assert.ok(lines.some((line) => line.includes("zona centrală observată")));
+  assert.ok(lines.every((line) => !line.includes("Prețul nu a fost evaluat")));
 });

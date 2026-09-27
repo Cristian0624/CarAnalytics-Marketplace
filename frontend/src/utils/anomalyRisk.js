@@ -59,22 +59,26 @@ export function riskExplanationLines(result, vehicle) {
   const specs = result.components.specification_anomaly;
   const format = (value, digits = 0) => new Intl.NumberFormat("ro-RO", { maximumFractionDigits: digits }).format(value);
   const lines = [
-    `${format(result.confidence.model_observations)} exemple pentru model și ${format(result.market_support.model_generation_observations)} pentru această generație au susținut evaluarea.`,
-    `Intervalul estimat P10–P90 are o lățime de ${format(result.confidence.p10_p90_width)} € (${format(result.confidence.relative_interval_width * 100, 1)}% din prețul central). Un interval mai larg înseamnă mai multă incertitudine.`,
+    `${format(result.confidence.model_observations)} anunțuri pentru model și ${format(result.market_support.model_generation_observations)} pentru ${vehicle.generation ? "această generație" : "grupul de comparație al modelului"} sunt în baza de date curentă.`,
   ];
+  if (price.score != null) {
+    lines.push(`Intervalul observat P10–P90 are o lățime de ${format(result.confidence.p10_p90_width)} € (${format(result.confidence.relative_interval_width * 100, 1)}% din mediană), pe baza a ${format(price.count)} anunțuri cu aceeași marcă și același model${vehicle.generation ? " și aceeași generație" : " din toate generațiile"}. Anul, kilometrajul și configurația nu filtrează acest grup.`);
+  } else {
+    lines.push(`Prețul nu a fost evaluat: ${format(price.count ?? 0)} anunțuri comparabile, față de minimum 10 necesare. ${vehicle.generation ? "Nu se folosesc alte generații sau modele." : "Comparația include toate generațiile aceluiași model."}`);
+  }
   if (result.assessment_status === "very_rare") {
-    lines.push("Există prea puține exemple pentru un scor general. Estimarea de preț rămâne orientativă.");
+    lines.push("Există prea puține anunțuri în grupul selectat pentru un scor general.");
   } else if (result.assessment_status === "limited_support") {
     lines.push("Exemplele disponibile sunt limitate, deci încrederea în evaluare este redusă.");
   }
   const priceExplanation = {
-    unusually_cheap: "Prețul cerut este sub limita inferioară a intervalului estimat (P10).",
-    unusually_expensive: "Prețul cerut depășește limita superioară a intervalului estimat (P90).",
+    unusually_cheap: "Prețul cerut este sub percentila 10 a prețurilor observate (P10).",
+    unusually_expensive: "Prețul cerut depășește percentila 90 a prețurilor observate (P90).",
     normal: price.actual_price >= price.p25 && price.actual_price <= price.p75
-      ? "Prețul cerut este aproape de zona centrală estimată a pieței."
+      ? "Prețul cerut este aproape de zona centrală observată a pieței."
       : "Prețul cerut este în intervalul P10–P90, dar în afara zonei centrale P25–P75.",
   };
-  lines.push(priceExplanation[price.direction]);
+  if (price.score != null) lines.push(priceExplanation[price.direction]);
   if (mileage.score == null) {
     lines.push(vehicle.mileage == null ? "Kilometrajul nu a fost introdus, deci nu a fost evaluat." : "Nu sunt suficiente exemple pentru compararea kilometrajului.");
   } else {
@@ -84,8 +88,8 @@ export function riskExplanationLines(result, vehicle) {
   const missing = Object.entries(FIELD_LABELS).filter(([key]) => key !== "price" && vehicle[key] == null).map(([, label]) => label);
   if (missing.length) lines.push(`Câmpuri necompletate: ${missing.join(", ")}. Acestea pot reduce încrederea în rezultat.`);
   const severityExplanations = {
-    unobserved: "nu apare în exemplele observate pentru acest model și această generație",
-    outside_observed_range: "este în afara intervalului observat pentru această generație",
+    unobserved: `nu apare în exemplele observate pentru ${vehicle.generation ? "acest model și această generație" : "acest model"}`,
+    outside_observed_range: `este în afara intervalului observat pentru ${vehicle.generation ? "această generație" : "acest model"}`,
     uncommon: "este rar întâlnit în exemplele disponibile",
     very_rare: "este foarte rar întâlnit în exemplele disponibile",
   };

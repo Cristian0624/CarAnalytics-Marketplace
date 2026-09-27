@@ -17,6 +17,7 @@ class AnomalyRiskRequest(BaseModel):
     brand: Category
     model: Category
     generation: Category | None = None
+    listing_id: int | None = Field(default=None, gt=0, description="Exclude this listing from its own price comparison group.")
     year: int | None = Field(default=None, ge=1886)
     mileage: int | None = Field(default=None, ge=0, le=10_000_000)
     engine: float | None = Field(default=None, ge=0, le=20)
@@ -24,7 +25,7 @@ class AnomalyRiskRequest(BaseModel):
     gearbox: Category | None = None
     drivetrain: Category | None = None
     body_type: Category | None = None
-    price: float = Field(gt=0, description="Asking price in EUR; never an input to the price model.")
+    price: float = Field(gt=0, description="Asking price in EUR, compared with the exact database group.")
 
     @model_validator(mode="after")
     def validate_year(self):
@@ -39,22 +40,26 @@ class Confidence(BaseModel):
     reasons: list[str]
     model_observations: int
     generation_observations: int
-    p10_p90_width: float
-    relative_interval_width: float
+    p10_p90_width: float | None
+    relative_interval_width: float | None
     observed_relative_price_iqr: float | None
 
 
 class PriceAnomaly(BaseModel):
     actual_price: float
-    p10: float
-    p25: float
-    p50: float
-    p75: float
-    p90: float
-    deviation_from_p50_pct: float
-    direction: Literal["unusually_cheap", "unusually_expensive", "normal"]
-    price_anomaly_score: Score
-    score: Score
+    count: int = Field(ge=0)
+    support_level: Literal["insufficient", "limited", "normal"]
+    source: Literal["database"]
+    comparison_level: Literal["model_generation", "model"]
+    p10: float | None
+    p25: float | None
+    p50: float | None
+    p75: float | None
+    p90: float | None
+    deviation_from_p50_pct: float | None
+    direction: Literal["unknown", "unusually_cheap", "unusually_expensive", "normal"]
+    price_anomaly_score: Score | None
+    score: Score | None
     reason: str
 
 
