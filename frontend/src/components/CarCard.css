@@ -25,41 +25,64 @@
 
   
   .car-card-content {
-    padding: 16px;
-  }
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
   
   .car-card-title-row {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-  }
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 4px;
+}
   
   .car-card-content h3 {
-    margin: 2px;
-    font-size: 22px;
-    color: #111;
-  }
+  margin: 0 0 6px 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #111;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
   
   .car-generation {
-    margin: 4px 10px 14px;
-    color: #666;
-    font-size: 14px;
-  }
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  color: #777;
+  font-size: 13px;
+  font-weight: 500;
+}
   
   .car-details {
-    display: flex;
-    gap: 12px;
-    color: #555;
-    font-size: 16px;
-    margin-bottom: 18px;
-  }
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  margin-bottom: auto;
+}
+
+.car-details span {
+  background: #f4f5f7;
+  color: #333;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
   
   .car-card-bottom {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #eaeaea;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
   
   .car-card-bottom strong {
     font-size: 22px;
@@ -67,20 +90,16 @@
   }
 
   .score-badge {
-    min-width: 52px;
-    height: 38px;
-  
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  
-    border-radius: 10px;
-  
-    font-size: 18px;
-    font-weight: 900;
-  
-    flex-shrink: 0;
-  }
+  min-width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
   
   .score-red {
     background: #ffe0e0;
@@ -97,7 +116,20 @@
     color: #238636;
   }
 
-  .car-card-expanded {
+  
+.car-card-peeking {
+  grid-row: 1 !important; /* Keep in the same row as the expanded card */
+  z-index: 0;
+  transform: translateY(-20px) scale(0.92) !important; /* Stick out slightly from the top */
+  opacity: 0.5;
+  pointer-events: none;
+  filter: blur(1px);
+  transition: all 0.4s ease;
+}
+
+.car-card-expanded { grid-row: 1 !important;
+  z-index: 10;
+
     grid-column: 1 / -1;
   
     width: 100%;
@@ -232,11 +264,12 @@
 }
   
   .expanded-header h2 {
-    margin: 0;
-  
-    font-size: 42px;
-    color: #111;
-  }
+  margin: 0;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #111;
+}
   
   .expanded-header p {
     margin: 5px 0 0;
@@ -347,8 +380,8 @@
     top: 20px;
     right: 68px;
   
-    width: 100px;
-    height: 38px;
+    width: 120px;
+    height: 45px;
   
     border: 1px solid #ddd;
     border-radius: 9px;
@@ -356,7 +389,9 @@
     background: #fff;
     color: #111;
   
-    font-size: 12px;
+    font-size: 14px;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-weight: bold;
   
     cursor: pointer;
   
@@ -367,6 +402,10 @@
     transition:
       background 0.15s ease,
       transform 0.15s ease;
+  }
+  .button-logo-999 {
+    width: 50px;
+    height:50px;
   }
   
   .original-listing-button:hover {
@@ -458,67 +497,116 @@
 }
 
 .spec-group h4 {
-  font-size: 11px;
+  font-family:sans-serif;
+  font-size: 18px;
   text-transform: uppercase;
-  color: #111;
-  font-weight: 700;
-  margin: 0 0 8px 0;
-  padding-left: 4px;
+  color: #292929;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin: 0 0 12px 0;
+  padding-left: 2px;
+  border-bottom: 2px solid #e1e4e8;
+  padding-bottom: 8px;
 }
 
 .spec-row {
   display: flex;
-  background: #f0f2f5;
+  background: #ffffff;
+  border: 2px solid #e1e4e8;
   border-radius: 12px;
-  padding: 12px 16px;
-  gap: 16px;
+  padding: 16px 8px;
+  gap: 0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  transition: box-shadow 0.2s ease;
 }
+.spec-row:hover {
+  box-shadow: 0 6px 16px rgba(60, 60, 60, 0.06);
+}
+
 
 .spec-item {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  padding: 0 8px;
 }
 
+.spec-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 15%;
+  height: 70%;
+  width: 2px;
+  background-color: #e1e4e8;
+}
+
+
+
+
 .spec-item span {
+  font-family:sans-serif;
   font-size: 11px;
-  color: #555;
+  color: #485c5c;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
 }
 
 .spec-item strong {
-  font-size: 13px;
-  color: #111;
+  font-family:sans-serif;
+  font-size: 15px;
+  color: #2b2a2a;
+  font-weight: 800;
   word-wrap: break-word;
 }
 
 .expanded-price {
-  margin-top: 12px;
+  margin-top: 16px;
   font-size: 16px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .expanded-price span {
-  font-size: 12px;
-  color: #555;
+  font-size: 13px;
+  color: #fff;
+  background: #111;
+  padding: 4px 8px;
+  border-radius: 6px;
   text-transform: uppercase;
+  font-weight: 700;
 }
 
 .expanded-price strong {
-  font-size: 22px;
+  font-size: 28px;
   color: #111;
+  font-weight: 800;
 }
 
 .expanded-score-circular {
   position: absolute;
   top: 76px;
-  right: 20px;
+  right: 30px;
   display: flex;
   align-items: center;
   gap: 12px;
   background: transparent !important;
+}
+
+.expanded-car-logo {
+  position: absolute;
+  top: 50px;
+  left: 52%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
 }
 
 .score-label {
@@ -569,6 +657,21 @@
 }
 }
 
+
+
+.collapsed-car-logo {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}
+
+.car-card-bottom strong {
+  font-size: 26px;
+  font-weight: 800;
+  color: #111;
+  letter-spacing: -0.5px;
+}
+
 .car-card-collapsing {
   pointer-events: none;
   grid-column: 1 / -1;
@@ -589,4 +692,5 @@
   transform-origin: right center;
   animation: collapseToRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
+
 
