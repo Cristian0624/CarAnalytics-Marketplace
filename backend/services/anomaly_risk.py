@@ -13,7 +13,7 @@ SPEC_FIELDS = ["year", "engine", "fuel_type", "gearbox", "drivetrain", "body_typ
 FEATURES = ["brand", "model", "generation", "year", "mileage", "engine",
             "fuel_type", "gearbox", "drivetrain", "body_type"]
 DEFAULT_ARTIFACT_DIR = Path(__file__).resolve().parents[1] / "ML_models/anomaly_risk/artifacts"
-SCORING_POLICY_VERSION = "anomaly-risk-v2.5-db-comparisons"
+SCORING_POLICY_VERSION = "anomaly-risk-v2.6-selected-group"
 SCORING_POLICY = {
     "weights": {"price": 0.75, "mileage": 0.10, "specification": 0.15},
     "mileage_min_samples": 20,
@@ -38,7 +38,7 @@ class AnomalyRiskService:
                     or metadata["feature_names"] != FEATURES
                     or metadata["derived_features"]
                     or metadata.get("scoring_policy_version") != "anomaly-risk-v2.3"):
-                raise ValueError("Unsupported reference statistics contract")
+                raise ValueError("Unsupported scoring configuration contract")
             self.metadata = {"model_version": metadata["model_version"]}
             self.SCORING = {**metadata["anomaly_scoring_constants"], **SCORING_POLICY}
             self.FEATURES = FEATURES
@@ -46,7 +46,7 @@ class AnomalyRiskService:
             self.NUMERIC = metadata["numeric_feature_names"]
             self.MISSING = metadata["missing_category"]
         except Exception as exc:
-            raise ModelUnavailableError("Anomaly reference statistics could not be loaded") from exc
+            raise ModelUnavailableError("Anomaly scoring configuration could not be loaded") from exc
 
     def prepare_features(self, frame):
         result = frame.reindex(columns=self.FEATURES).copy()
@@ -155,17 +155,10 @@ class AnomalyRiskService:
         if pd.isna(v["mileage"]):
             return {**unknown, "reason": "Mileage is missing or invalid; no mileage score is available."}
         reference = self.prepare_features(pd.DataFrame(comparison_rows))
-        candidates = []
-        if v["generation"] != self.MISSING:
-            if pd.notna(v["year"]):
-                year = int(v["year"])
-                radius = self.SCORING["nearby_year_radius"]
-                candidates.append(("exact_year", reference.loc[reference["year"] == year, "mileage"]))
-                candidates.append(("nearby_years", reference.loc[reference["year"].between(
-                    year - radius, year + radius), "mileage"]))
-            candidates.append(("model_generation", reference["mileage"]))
-        else:
-            candidates.append(("model", reference["mileage"]))
+        # The repository already selects the complete model/generation group.
+        # Do not shrink that group again based on the supplied production year.
+        comparison_level = "model_generation" if v["generation"] != self.MISSING else "model"
+        candidates = [(comparison_level, reference["mileage"])]
 
         available_count = int(reference["mileage"].notna().sum())
         unknown["sample_size"] = available_count
@@ -267,17 +260,12 @@ class AnomalyRiskService:
         return {"model_generation_observations": observations, "support_level": "normal",
                 "rarity_penalty": 0.0}
 
-    def assess_market_confidence(self, vehicle, price_anomaly, model_observations, mileage_anomaly=None,
-                                 specification=None, market_support=None):
+    def assess_market_confidence(self, vehicle, price_anomaly, model_observations, mileage_anomaly,
+                                 specification, market_support):
         v = self.normalized_vehicle(vehicle)
-        if mileage_anomaly is None:
-            mileage_anomaly = self.analyze_mileage_anomaly(v)
-        if specification is None:
-            specification = self.analyze_specification(v)
-        if market_support is None:
-            market_support = self.assess_market_support(price_anomaly["count"])
-        model_support = model_observations
         gen_support = market_support["model_generation_observations"]
+        # Both evidence terms refer to the selected group, never other generations.
+        model_support = gen_support
         price_available = price_anomaly["price_anomaly_score"] is not None
         width = None
         relative_width = None
@@ -293,7 +281,7 @@ class AnomalyRiskService:
         evidence[3] *= specification["supported_fields"] / len(SPEC_FIELDS)
         score = 100 * (0.15 * evidence[0] + 0.25 * evidence[1] + 0.15 * evidence[2] + 0.15 * evidence[3] + 0.30 * precision)
         group_name = "model and generation" if v["generation"] != self.MISSING else "model"
-        reasons = [f"{model_support} model observations; {gen_support} {group_name} observations in the selected comparison group."]
+        reasons = [f"{gen_support} current database listings in the selected {group_name} comparison group."]
         if price_available:
             reasons.append(f"Observed database P10-P90 width is {width:.0f} EUR ({relative_width:.0%} of P50).")
         if price_anomaly["support_level"] == "insufficient":
@@ -318,8 +306,8 @@ class AnomalyRiskService:
         if any(s["severity"] in {"unobserved", "outside_observed_range"} for s in specification["signals"]):
             score = min(score, self.SCORING["confidence_high"] - 1)
             reasons.append("Some specifications fall outside observed support.")
-        if mileage_anomaly["comparison_level"] in {"model_generation", "model", "unsupported"}:
-            reasons.append("Mileage comparisons are broad or unavailable.")
+        if mileage_anomaly["mileage_anomaly_score"] is None:
+            reasons.append("Mileage scoring is unavailable for the supplied input and selected group.")
         level = "high" if score >= self.SCORING["confidence_high"] else "medium" if score >= self.SCORING["confidence_medium"] else "low"
         return {"market_confidence": level, "confidence_score": float(score), "reasons": reasons,
                 "model_observations": int(model_support), "generation_observations": int(gen_support),

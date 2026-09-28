@@ -179,7 +179,7 @@ class ModelTests(unittest.TestCase):
         mileage = self.service.analyze_mileage_anomaly(VEHICLE, CHARACTERISTICS)
         specification = self.service.analyze_specification(VEHICLE, CHARACTERISTICS)
         self.assertEqual(mileage["sample_size"], len(CHARACTERISTICS))
-        self.assertEqual(mileage["comparison_level"], "exact_year")
+        self.assertEqual(mileage["comparison_level"], "model_generation")
         self.assertEqual(specification["supported_fields"], 6)
         self.assertEqual(specification["sample_size"], len(CHARACTERISTICS))
 
@@ -363,8 +363,8 @@ class ModelTests(unittest.TestCase):
     def test_rare_and_limited_support_have_bounded_penalties(self):
         cases = {
             14: ("rare", "limited_support", 4.0, "low"),
-            15: ("limited", "limited_support", 4.0, "medium"),
-            29: ("limited", "limited_support", 0.27, "medium"),
+            15: ("limited", "limited_support", 4.0, "low"),
+            29: ("limited", "limited_support", 0.27, "low"),
         }
         for observations, (support_level, status, penalty, confidence) in cases.items():
             with self.subTest(observations=observations):
@@ -376,6 +376,13 @@ class ModelTests(unittest.TestCase):
                 weighted = sum(result["effective_weights"][name] * result["components"][name + "_anomaly"]["score"]
                                for name in result["effective_weights"])
                 self.assertAlmostEqual(result["anomaly_score"], weighted + penalty)
+
+    def test_other_generation_counts_do_not_increase_confidence(self):
+        selected_prices = sample_prices(29)
+        baseline = self.service.assess_listing_risk(VEHICLE, selected_prices, 29, CHARACTERISTICS)
+        unrelated = self.service.assess_listing_risk(VEHICLE, selected_prices, 10000, CHARACTERISTICS)
+        self.assertEqual(baseline["confidence"], unrelated["confidence"])
+        self.assertEqual(unrelated["confidence"]["model_observations"], 29)
 
     def test_common_vehicle_has_full_assessment_without_rarity_penalty(self):
         result = self.service.assess_listing_risk(VEHICLE, PRICES, 200, CHARACTERISTICS)
@@ -410,11 +417,11 @@ class ModelTests(unittest.TestCase):
         self.assertIsNone(result["components"]["mileage_anomaly"]["score"])
         json.dumps(result, allow_nan=False)
 
-    def test_mileage_fallbacks_and_insufficient_support(self):
+    def test_mileage_group_and_insufficient_support(self):
         rows = CHARACTERISTICS
-        self.assertEqual(self.service.analyze_mileage_anomaly(VEHICLE, rows)["comparison_level"], "exact_year")
+        self.assertEqual(self.service.analyze_mileage_anomaly(VEHICLE, rows)["comparison_level"], "model_generation")
         nearby = [*rows[:19], *[dict(row, year=2014) for row in rows[19:25]]]
-        self.assertEqual(self.service.analyze_mileage_anomaly(VEHICLE, nearby)["comparison_level"], "nearby_years")
+        self.assertEqual(self.service.analyze_mileage_anomaly(VEHICLE, nearby)["comparison_level"], "model_generation")
         generation = [*rows[:19], *[dict(row, year=2020) for row in rows[19:25]]]
         self.assertEqual(self.service.analyze_mileage_anomaly(VEHICLE, generation)["comparison_level"], "model_generation")
         median_only = self.service.analyze_mileage_anomaly(VEHICLE, rows[:19])

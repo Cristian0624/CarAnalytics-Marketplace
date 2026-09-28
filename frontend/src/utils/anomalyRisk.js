@@ -53,13 +53,18 @@ export function hasOverallScore(result) {
   return result.assessment_status !== "very_rare" && result.anomaly_score != null;
 }
 
+export function usesCurrentRiskPolicy(result) {
+  return result.scoring_policy_version === "anomaly-risk-v2.6-selected-group"
+    && result.components.price_anomaly.source === "database";
+}
+
 export function riskExplanationLines(result, vehicle) {
   const price = result.components.price_anomaly;
   const mileage = result.components.mileage_anomaly;
   const specs = result.components.specification_anomaly;
   const format = (value, digits = 0) => new Intl.NumberFormat("ro-RO", { maximumFractionDigits: digits }).format(value);
   const lines = [
-    `${format(result.confidence.model_observations)} anunțuri pentru model și ${format(result.market_support.model_generation_observations)} pentru ${vehicle.generation ? "această generație" : "grupul de comparație al modelului"} sunt în baza de date curentă.`,
+    `Grupul analizat: ${format(result.market_support.model_generation_observations)} anunțuri cu aceeași marcă și același model${vehicle.generation ? " și aceeași generație. Nu sunt incluse alte generații." : ", din toate generațiile, deoarece generația nu a fost specificată."}`,
   ];
   if (price.score != null) {
     lines.push(`Intervalul observat P10–P90 are o lățime de ${format(result.confidence.p10_p90_width)} € (${format(result.confidence.relative_interval_width * 100, 1)}% din mediană), pe baza a ${format(price.count)} anunțuri cu aceeași marcă și același model${vehicle.generation ? " și aceeași generație" : " din toate generațiile"}. Anul, kilometrajul și configurația nu filtrează acest grup.`);
@@ -80,11 +85,16 @@ export function riskExplanationLines(result, vehicle) {
   };
   if (price.score != null) lines.push(priceExplanation[price.direction]);
   if (mileage.score == null) {
-    lines.push(vehicle.mileage == null ? "Kilometrajul nu a fost introdus, deci nu a fost evaluat." : "Nu sunt suficiente exemple pentru compararea kilometrajului.");
+    if (vehicle.mileage == null) {
+      lines.push("Kilometrajul nu a fost introdus, deci nu a fost evaluat.");
+    } else {
+      lines.push(`Kilometraj: ${format(mileage.sample_size ?? 0)} anunțuri cu kilometraj disponibil în grupul selectat. Mediana necesită minimum 10, iar scorul minimum 20.${mileage.expected_median_mileage != null ? " Mediana este disponibilă, dar scorul nu." : ""}`);
+    }
   } else {
     const mileageText = { unusually_low: "Kilometrajul este neobișnuit de mic", unusually_high: "Kilometrajul este neobișnuit de mare", normal: "Kilometrajul se află în intervalul observat" };
-    lines.push(`${mileageText[mileage.direction]} față de ${format(mileage.sample_size)} anunțuri comparabile.${["model", "model_generation"].includes(mileage.comparison_level) ? " Grupul comparat include ani de fabricație diferiți." : ""}`);
+    lines.push(`${mileageText[mileage.direction]} față de ${format(mileage.sample_size)} anunțuri cu kilometraj disponibil în grupul selectat.${["model", "model_generation"].includes(mileage.comparison_level) ? " Anul de fabricație nu restrânge grupul." : ""}`);
   }
+  lines.push("Configurație: fiecare câmp introdus necesită minimum 25 de valori disponibile în același grup. Valorile lipsă nu participă la calculul acelui câmp.");
   const missing = Object.entries(FIELD_LABELS).filter(([key]) => key !== "price" && vehicle[key] == null).map(([, label]) => label);
   if (missing.length) lines.push(`Câmpuri necompletate: ${missing.join(", ")}. Acestea pot reduce încrederea în rezultat.`);
   const severityExplanations = {
@@ -98,8 +108,8 @@ export function riskExplanationLines(result, vehicle) {
       lines.push(`${FIELD_LABELS[signal.field] ?? signal.field} (${signal.value}) ${severityExplanations[signal.severity]}.`);
     }
   }
-  if (result.market_support.rarity_penalty) {
-    lines.push(`Scorul general include o ajustare de ${format(result.market_support.rarity_penalty, 1)} puncte pentru raritatea modelului.`);
+  if (hasOverallScore(result) && result.market_support.rarity_penalty) {
+    lines.push(`Scorul general include o ajustare de ${format(result.market_support.rarity_penalty, 1)} puncte pentru numărul redus de anunțuri din grupul selectat.`);
   }
   return lines;
 }

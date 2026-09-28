@@ -203,6 +203,85 @@ class DatabasePriceTests(unittest.TestCase):
         self.assertEqual(excluded.json()["market_support"]["model_generation_observations"], 16)
         self.assertEqual(excluded.json()["confidence"]["model_observations"], 16)
 
+    def test_yaris_uses_all_29_live_listings_and_refreshes_on_next_request(self):
+        vehicle = {
+            "brand": "Toyota", "model": "Yaris", "generation": "I (1999 - 2005)",
+            "price": 3000, "mileage": 200000, "engine": 1.3,
+        }
+        rows = [
+            dict(id=index + 1, brand="Toyota", model="Yaris", generation=vehicle["generation"],
+                 price_eur=2000 + index * 100, mileage=150000 + index * 5000,
+                 year=1999 + index % 7, engine="1.3")
+            for index in range(29)
+        ]
+        self.session.execute(insert(Listing.__table__), rows[:20])
+        self.session.commit()
+        with TestClient(self.app) as client:
+            before = client.post("/anomaly-risk", json=vehicle)
+            self.assertEqual(before.status_code, 200, before.text)
+            self.assertEqual(before.json()["components"]["price_anomaly"]["count"], 20)
+
+            self.session.execute(insert(Listing.__table__), rows[20:])
+            self.session.commit()
+            after = client.post("/anomaly-risk", json=vehicle)
+
+        self.assertEqual(after.status_code, 200, after.text)
+        result = after.json()
+        price = result["components"]["price_anomaly"]
+        self.assertEqual(price["count"], 29)
+        self.assertEqual(result["market_support"]["model_generation_observations"], 29)
+        self.assertEqual(result["confidence"]["generation_observations"], 29)
+        self.assertEqual(result["components"]["mileage_anomaly"]["sample_size"], 29)
+        engine_signal = next(signal for signal in result["components"]["specification_anomaly"]["signals"]
+                             if signal["field"] == "engine")
+        self.assertEqual(engine_signal["sample_size"], 29)
+        np.testing.assert_allclose([price[name] for name in Q_NAMES],
+                                   np.percentile([row["price_eur"] for row in rows], [10, 25, 50, 75, 90]))
+
+    def test_all_vehicle_groups_use_complete_model_or_selected_generation(self):
+        identities = [("Toyota", "Yaris"), ("Peugeot", "308"), ("BMW", "3 Series"),
+                      ("Test brand", "Unseen model")]
+        for brand, model in identities:
+            with self.subTest(brand=brand, model=model):
+                self.session.execute(delete(Listing))
+                rows = []
+                for generation, count, first_price in [("Gen A", 31, 3000), ("Gen B", 27, 10000)]:
+                    for index in range(count):
+                        rows.append(dict(
+                            id=len(rows) + 1, brand=brand, model=model, generation=generation,
+                            price_eur=first_price + index * 100,
+                            year=2001 if index < 20 else 2005, mileage=100000 + index * 5000,
+                            engine="1.6", fuel_type="Diesel", gearbox="Mecanică",
+                            drivetrain="Din față", body_type="Hatchback",
+                        ))
+                # Neither a different model nor the same model name under another brand belongs.
+                rows += [dict(rows[0], id=1000, model="Other model"),
+                         dict(rows[0], id=1001, brand="Other brand")]
+                self.session.execute(insert(Listing.__table__), rows)
+                self.session.commit()
+                payload = dict(brand=brand, model=model, price=4500, year=2001,
+                               mileage=180000, engine=1.6, fuel_type="Diesel",
+                               gearbox="Mecanică", drivetrain="Din față", body_type="Hatchback")
+                with TestClient(self.app) as client:
+                    for generation, count in [("Gen A", 31), ("Gen B", 27), (None, 58)]:
+                        response = client.post("/anomaly-risk", json=payload | {"generation": generation})
+                        self.assertEqual(response.status_code, 200, response.text)
+                        result = response.json()
+                        self.assertEqual(result["market_support"]["model_generation_observations"], count)
+                        self.assertEqual(result["confidence"]["model_observations"], count)
+                        self.assertEqual(result["confidence"]["generation_observations"], count)
+                        components = result["components"]
+                        self.assertEqual(components["price_anomaly"]["count"], count)
+                        self.assertEqual(components["mileage_anomaly"]["sample_size"], count)
+                        self.assertEqual(components["specification_anomaly"]["sample_size"], count)
+                        self.assertEqual(components["specification_anomaly"]["supported_fields"], 6)
+                        selected = [row for row in rows if row["brand"] == brand and row["model"] == model
+                                    and (generation is None or row["generation"] == generation)]
+                        self.assertAlmostEqual(components["price_anomaly"]["p50"],
+                                               float(np.median([row["price_eur"] for row in selected])))
+                        self.assertAlmostEqual(components["mileage_anomaly"]["p50"],
+                                               float(np.median([row["mileage"] for row in selected])))
+
     def test_generation_selects_one_group_and_blank_generation_selects_model(self):
         self.seed([5000] * 10, year=2011, mileage=210000, engine=1.6,
                   fuel_type="Benzină", gearbox="Mecanică", drivetrain="Din față", body_type="Hatchback")
