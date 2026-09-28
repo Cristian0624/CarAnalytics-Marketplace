@@ -617,7 +617,7 @@ function ListingFilters({
             {/* PRICE */}
             <div className="filter-group">
               <label>
-                Price (€)
+                Preț (€)
               </label>
 
               <RangeInput

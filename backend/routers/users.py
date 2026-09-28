@@ -261,7 +261,7 @@ def update_current_user_profile(
     if user_data.email is not None:
         existing_user = db.query(User).filter(
             User.email == user_data.email,
-            User.id == current_user.id 
+            User.id != current_user.id 
         ).first()
 
         if existing_user:

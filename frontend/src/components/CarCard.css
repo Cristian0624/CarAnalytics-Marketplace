@@ -185,6 +185,39 @@
     }
   }
 
+  @keyframes collapseToLeft {
+    0% {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scaleX(0.33);
+    }
+  }
+  
+  @keyframes collapseToMiddle {
+    0% {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scaleX(0.33);
+    }
+  }
+  
+  @keyframes collapseToRight {
+    0% {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scaleX(0.33);
+    }
+  }
+
   .car-expanded-content {
     position: relative;
     padding: 28px;
@@ -535,3 +568,25 @@
   margin-top: 16px;
 }
 }
+
+.car-card-collapsing {
+  pointer-events: none;
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.car-card-collapsing.car-card-left {
+  transform-origin: left center;
+  animation: collapseToLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.car-card-collapsing.car-card-middle {
+  transform-origin: center center;
+  animation: collapseToMiddle 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.car-card-collapsing.car-card-right {
+  transform-origin: right center;
+  animation: collapseToRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+

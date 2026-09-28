@@ -11,31 +11,75 @@ import ListingFilters from "../components/ListingFilters";
 import "./AnomalyRiskPage.css";
 import "./SavedItemsPage.css";
 
-const titles = { favourites: "Anunturi Favorite", risks: "Analize Risc Salvate", searches: "Filtre Salvate" };
+const titles = {
+  favourites: "Anunțuri Favorite",
+  risks: "Analize Risc Salvate",
+  searches: "Filtre Salvate",
+  profile: "Profilul Meu",
+};
+
 const descriptions = {
   favourites: "Ofertele pe care vrei să le păstrezi la îndemână.",
   risks: "Revino la analizele tale și la rezultatele din momentul salvării.",
   searches: "Criteriile tale de căutare, gata de folosit pe piața actuală.",
+  profile: "Informațiile contului tău și opțiunile de securitate.",
 };
 
 export default function SavedItemsPage({ kind }) {
   const { user, loading } = useAuth();
   const { id } = useParams();
-  return <main className="saved-page"><div className="saved-container">
-    <header className="saved-heading"><span className="saved-eyebrow">CONTUL MEU</span><h1>{titles[kind]}</h1><p>{descriptions[kind]}</p></header>
-    <nav className="saved-tabs" aria-label="Elemente salvate">{Object.entries(titles).map(([key, label]) =>
-      <Link key={key} to={savedPaths[key]} aria-current={key === kind ? "page" : undefined}>{label}</Link>)}</nav>
-    {loading ? <p role="status">Se încarcă...</p> : !user
-      ? <div className="saved-empty"><h2>Salvările tale, într-un singur loc</h2><p>Autentifică-te pentru a le accesa.</p><Link className="saved-primary" to="/login">Autentificare</Link></div>
-      : id ? <SavedDetail key={`${kind}/${id}/${user.id}`} kind={kind} id={id} />
-        : <SavedCollection key={`${kind}/${user.id}`} kind={kind} />}
-  </div></main>;
+
+  const allPaths = {
+    ...savedPaths,
+    profile: "/profile",
+  };
+
+  return (
+    <main className="saved-page">
+      <div className="saved-container">
+        <header className="saved-heading">
+          <span className="saved-eyebrow">CONTUL MEU</span>
+          <h1>{titles[kind]}</h1>
+          <p>{descriptions[kind]}</p>
+        </header>
+
+        <nav className="saved-tabs" aria-label="Elemente salvate">
+          {Object.entries(titles).map(([key, label]) => (
+            <Link
+              key={key}
+              to={allPaths[key]}
+              aria-current={key === kind ? "page" : undefined}
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
+
+        {loading ? (
+          <p role="status">Se încarcă...</p>
+        ) : !user ? (
+          <div className="saved-empty">
+            <h2>Salvările tale, într-un singur loc</h2>
+            <p>Autentifică-te pentru a le accesa.</p>
+            <Link className="saved-primary" to="/login">
+              Autentificare
+            </Link>
+          </div>
+        ) : id ? (
+          <SavedDetail key={`${kind}/${id}/${user.id}`} kind={kind} id={id} />
+        ) : (
+          <SavedCollection key={`${kind}/${user.id}`} kind={kind} />
+        )}
+      </div>
+    </main>
+  );
 }
 
 function ItemSummary({ kind, item }) {
   if (kind === "searches") return <ul className="saved-filter-tags">{describeFilters(item.filters).map((text) => <li key={text}>{text}</li>)}</ul>;
   const car = kind === "risks" ? item.input : item.snapshot;
-  return <><p>{[car.brand, car.model, car.generation, car.year].filter(Boolean).join(" · ")}</p>
+  return <>
+    <p>{[car.brand, car.model, car.generation, car.year].filter(Boolean).join(" · ")}</p>
     {kind === "favourites" && <strong className="saved-price">{car.price_eur == null ? "Preț nespecificat" : `${Number(car.price_eur).toLocaleString("ro-RO")} €`}</strong>}
     {kind === "risks" && <span className="saved-score">{item.result.anomaly_score == null ? "Date insuficiente pentru scor" : `Scor anomalie: ${Number(item.result.anomaly_score).toLocaleString("ro-RO", { maximumFractionDigits: 1 })} / 100`}</span>}
   </>;

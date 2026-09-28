@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import "./CarCard.css";
 import FavouriteButton from "./FavouriteButton";
 
@@ -44,7 +45,47 @@ function CarCard({
   onClick,
   showFavourite = true,
 }) {
+  const [isClosing, setIsClosing] = useState(false);
+  const cardRef = useRef(null);
   const score = Number(car.score);
+
+  // Handle outside click when expanded
+  useEffect(() => {
+    if (!expanded || isClosing) return;
+
+    function handleClickOutside(event) {
+      if (cardRef.current && !cardRef.current.contains(event.target)) {
+        handleClose(event);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [expanded, isClosing]);
+
+  function handleClose(event) {
+    if (event) {
+      event.stopPropagation();
+    }
+
+    if (!expanded || isClosing) return;
+
+    setIsClosing(true);
+
+    // Match the 0.3s CSS collapse animation duration
+    setTimeout(() => {
+      setIsClosing(false);
+      onClick();
+    }, 300);
+  }
+
+  function handleCardClick(event) {
+    if (!expanded) {
+      onClick();
+    }
+  }
 
   function openOriginalListing(event) {
     event.stopPropagation();
@@ -56,65 +97,57 @@ function CarCard({
 
   return (
     <article
-      className={`car-card ${
-        expanded ? "car-card-expanded" : ""
+      ref={cardRef}
+      className={`car-card ${expanded ? "car-card-expanded" : ""} ${
+        isClosing ? "car-card-collapsing" : ""
       } car-card-${position}`}
-      onClick={onClick}
+      onClick={handleCardClick}
       tabIndex={0}
       onKeyDown={(event) => {
-        if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) {
+        if (
+          event.target === event.currentTarget &&
+          (event.key === "Enter" || event.key === " ")
+        ) {
           event.preventDefault();
-          onClick();
+          if (expanded) {
+            handleClose(event);
+          } else {
+            onClick();
+          }
         }
       }}
     >
       {!expanded ? (
-        <>
+        <div className="car-card-content">
+          <div className="car-card-title-row">
+            <div>
+              <h3>
+                {formatValue(car.brand)} {formatValue(car.model)}
+              </h3>
 
-          <div className="car-card-content">
-            <div className="car-card-title-row">
-              <div>
-                <h3>
-                  {formatValue(car.brand)}{" "}
-                  {formatValue(car.model)}
-                </h3>
-
-                {car.generation && (
-                  <p className="car-generation">
-                    {car.generation}
-                  </p>
-                )}
-              </div>
-
-              {car.score !== null &&
-                car.score !== undefined && (
-                  <span
-                    className={`score-badge ${getScoreClass(
-                      score
-                    )}`}
-                  >
-                    {score.toFixed(0)}
-                  </span>
-                )}
+              {car.generation && (
+                <p className="car-generation">{car.generation}</p>
+              )}
             </div>
 
-            <div className="car-details">
-              <span>{formatValue(car.year)}</span>
-
-              <span>
-                {formatNumber(car.mileage)} km
+            {car.score !== null && car.score !== undefined && (
+              <span className={`score-badge ${getScoreClass(score)}`}>
+                {score.toFixed(0)}
               </span>
-            </div>
-
-            <div className="car-card-bottom">
-              <strong>
-                €{formatNumber(car.price_eur)}
-              </strong>
-            </div>
+            )}
           </div>
-        </>
+
+          <div className="car-details">
+            <span>{formatValue(car.year)}</span>
+            <span>{formatNumber(car.mileage)} km</span>
+          </div>
+
+          <div className="car-card-bottom">
+            <strong>€{formatNumber(car.price_eur)}</strong>
+          </div>
+        </div>
       ) : (
-                <div className="car-expanded-content">
+        <div className="car-expanded-content">
           {showFavourite && <FavouriteButton car={car} />}
           <button
             className="original-listing-button"
@@ -126,10 +159,7 @@ function CarCard({
 
           <button
             className="close-card-button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onClick();
-            }}
+            onClick={handleClose}
             title="Close"
           >
             ✕
@@ -137,12 +167,21 @@ function CarCard({
 
           <div className="expanded-header">
             <div>
-              <h2 style={{ textTransform: 'uppercase', margin: '0 0 4px 0', fontSize: '24px' }}>
-                {formatValue(car.brand)} {formatValue(car.model)} {car.year ? `(${car.year})` : ''}
+              <h2
+                style={{
+                  textTransform: "uppercase",
+                  margin: "0 0 4px 0",
+                  fontSize: "24px",
+                }}
+              >
+                {formatValue(car.brand)} {formatValue(car.model)}{" "}
+                {car.year ? `(${car.year})` : ""}
               </h2>
 
               {car.generation && (
-                <p style={{ margin: '0 0 12px 0', color: '#555' }}>{car.generation}</p>
+                <p style={{ margin: "0 0 12px 0", color: "#555" }}>
+                  {car.generation}
+                </p>
               )}
 
               <div className="expanded-price">
@@ -152,7 +191,9 @@ function CarCard({
             </div>
 
             {car.score !== null && car.score !== undefined && (
-              <div className={`expanded-score-circular ${getScoreClass(score)}`}>
+              <div
+                className={`expanded-score-circular ${getScoreClass(score)}`}
+              >
                 <span className="score-label">SCORE</span>
                 <div className="score-circle">
                   <span className="score-main">{score.toFixed(0)}</span>
@@ -164,51 +205,109 @@ function CarCard({
 
           <div className="expanded-main">
             <div className="specs-container">
-              
               <div className="spec-group">
                 <h4>DATE GENERALE</h4>
                 <div className="spec-row">
-                  <div className="spec-item"><span>Marcă</span><strong>{formatValue(car.brand)}</strong></div>
-                  <div className="spec-item"><span>Model</span><strong>{formatValue(car.model)}</strong></div>
-                  <div className="spec-item"><span>Caroserie</span><strong>{formatValue(car.body_type)}</strong></div>
-                  <div className="spec-item"><span>Înmatriculare</span><strong>{formatValue(car.registration_country)}</strong></div>
+                  <div className="spec-item">
+                    <span>Marcă</span>
+                    <strong>{formatValue(car.brand)}</strong>
+                  </div>
+                  <div className="spec-item">
+                    <span>Model</span>
+                    <strong>{formatValue(car.model)}</strong>
+                  </div>
+                  <div className="spec-item">
+                    <span>Caroserie</span>
+                    <strong>{formatValue(car.body_type)}</strong>
+                  </div>
+                  <div className="spec-item">
+                    <span>Înmatriculare</span>
+                    <strong>{formatValue(car.registration_country)}</strong>
+                  </div>
                 </div>
               </div>
 
               <div className="spec-group">
                 <h4>PERFORMANȚĂ</h4>
                 <div className="spec-row">
-                  <div className="spec-item"><span>Cai Putere</span><strong>{formatValue(car.horsepower)} {car.horsepower ? 'CP' : ''}</strong></div>
-                  <div className="spec-item"><span>Cutie de viteze</span><strong>{formatValue(car.gearbox)}</strong></div>
-                  <div className="spec-item"><span>Tracțiune</span><strong>{formatValue(car.drivetrain)}</strong></div>
-                  <div className="spec-item"><span>Combustibil</span><strong>{formatValue(car.fuel_type)}</strong></div>
+                  <div className="spec-item">
+                    <span>Cai Putere</span>
+                    <strong>
+                      {formatValue(car.horsepower)}{" "}
+                      {car.horsepower ? "CP" : ""}
+                    </strong>
+                  </div>
+                  <div className="spec-item">
+                    <span>Cutie de viteze</span>
+                    <strong>{formatValue(car.gearbox)}</strong>
+                  </div>
+                  <div className="spec-item">
+                    <span>Tracțiune</span>
+                    <strong>{formatValue(car.drivetrain)}</strong>
+                  </div>
+                  <div className="spec-item">
+                    <span>Combustibil</span>
+                    <strong>{formatValue(car.fuel_type)}</strong>
+                  </div>
                 </div>
               </div>
 
               <div className="spec-group">
                 <h4>STARE ȘI DETALII</h4>
                 <div className="spec-row">
-                  <div className="spec-item"><span>An</span><strong>{formatValue(car.year)}</strong></div>
-                  <div className="spec-item"><span>Rulaj</span><strong>{formatNumber(car.mileage)} {car.mileage ? 'km' : ''}</strong></div>
-                  <div className="spec-item"><span>Stare</span><strong>{formatValue(car.state)}</strong></div>
-                  <div className="spec-item"><span>Motor</span><strong>{formatValue(car.engine_size)}</strong></div>
+                  <div className="spec-item">
+                    <span>An</span>
+                    <strong>{formatValue(car.year)}</strong>
+                  </div>
+                  <div className="spec-item">
+                    <span>Rulaj</span>
+                    <strong>
+                      {formatNumber(car.mileage)}{" "}
+                      {car.mileage ? "km" : ""}
+                    </strong>
+                  </div>
+                  <div className="spec-item">
+                    <span>Stare</span>
+                    <strong>{formatValue(car.state)}</strong>
+                  </div>
+                  <div className="spec-item">
+                    <span>Motor</span>
+                    <strong>{formatValue(car.engine_size)}</strong>
+                  </div>
                 </div>
               </div>
 
               <div className="spec-group">
                 <h4>CONFIGURAȚIE</h4>
                 <div className="spec-row">
-                  <div className="spec-item"><span>Uși</span><strong>{formatValue(car.doors)}</strong></div>
-                  <div className="spec-item"><span>Locuri</span><strong>{formatValue(car.seats)}</strong></div>
+                  <div className="spec-item">
+                    <span>Uși</span>
+                    <strong>{formatValue(car.doors)}</strong>
+                  </div>
+                  <div className="spec-item">
+                    <span>Locuri</span>
+                    <strong>{formatValue(car.seats)}</strong>
+                  </div>
                 </div>
               </div>
-
             </div>
 
             {car.description && (
-              <div className="information-group" style={{ marginTop: '24px' }}>
-                <h4 style={{ fontSize: '11px', textTransform: 'uppercase', marginBottom: '12px', color: '#111' }}>DESCRIERE</h4>
-                <p className="car-description" style={{ margin: 0, color: '#555', lineHeight: '1.6' }}>
+              <div className="information-group" style={{ marginTop: "24px" }}>
+                <h4
+                  style={{
+                    fontSize: "11px",
+                    textTransform: "uppercase",
+                    marginBottom: "12px",
+                    color: "#111",
+                  }}
+                >
+                  DESCRIERE
+                </h4>
+                <p
+                  className="car-description"
+                  style={{ margin: 0, color: "#555", lineHeight: "1.6" }}
+                >
                   {car.description}
                 </p>
               </div>
@@ -217,7 +316,6 @@ function CarCard({
         </div>
       )}
     </article>
-
   );
 }
 
