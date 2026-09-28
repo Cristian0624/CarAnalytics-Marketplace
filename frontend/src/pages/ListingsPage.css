@@ -1,4 +1,6 @@
 .home-main {
+  position: relative;
+  z-index: 1;
   width: 1126px;
   max-width: 100%;
   margin: 0 auto;
@@ -115,6 +117,8 @@
 
 @media (max-width: 600px) {
   .home-main {
+  position: relative;
+  z-index: 1;
     padding: 24px 16px 40px;
   }
 
@@ -168,4 +172,29 @@
 }
 body {
   background-color: #ffffff;
+}
+
+.background-shapes {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+
+
+.floating-shape {
+  position: absolute;
+  opacity: 0.12; /* Semitransparent */
+  animation: float-shapes 8s ease-in-out infinite;
+}
+
+@keyframes float-shapes {
+  0% { transform: translateY(0px) rotate(var(--rot, 0deg)); }
+  50% { transform: translateY(-25px) rotate(calc(var(--rot, 0deg) + 12deg)); }
+  100% { transform: translateY(0px) rotate(var(--rot, 0deg)); }
 }

@@ -2,6 +2,15 @@ import { useState, useEffect, useRef } from "react";
 import "./CarCard.css";
 import FavouriteButton from "./FavouriteButton";
 
+function getLogoFileName(brand) {
+  if (!brand) return "unknown";
+  let name = brand.toLowerCase().trim().replace(/ /g, '-');
+  if (name === "mercedes") name = "mercedes-benz";
+  if (name === "vw") name = "volkswagen";
+  return `${name}.png`;
+}
+
+
 function getScoreClass(score) {
   const value = Number(score);
 
@@ -44,6 +53,7 @@ function CarCard({
   position,
   onClick,
   showFavourite = true,
+  peeking = false,
 }) {
   const [isClosing, setIsClosing] = useState(false);
   const cardRef = useRef(null);
@@ -124,17 +134,22 @@ function CarCard({
               <h3>
                 {formatValue(car.brand)} {formatValue(car.model)}
               </h3>
-
               {car.generation && (
-                <p className="car-generation">{car.generation}</p>
+                <p className="car-generation">
+                  {typeof car.generation === 'string' ? car.generation.trim() : car.generation}
+                </p>
               )}
             </div>
 
-            {car.score !== null && car.score !== undefined && (
-              <span className={`score-badge ${getScoreClass(score)}`}>
-                {score.toFixed(0)}
-              </span>
-            )}
+            <img 
+              src={`/logos/${getLogoFileName(car.brand)}`} 
+              alt={car.brand} 
+              className="collapsed-car-logo" 
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.style.display = 'none';
+              }}
+            />
           </div>
 
           <div className="car-details">
@@ -144,6 +159,11 @@ function CarCard({
 
           <div className="car-card-bottom">
             <strong>€{formatNumber(car.price_eur)}</strong>
+            {car.score !== null && car.score !== undefined && (
+              <span className={`score-badge ${getScoreClass(score)}`}>
+                {score.toFixed(0)}
+              </span>
+            )}
           </div>
         </div>
       ) : (
@@ -152,9 +172,10 @@ function CarCard({
           <button
             className="original-listing-button"
             onClick={openOriginalListing}
-            title="Open original listing"
+            title="Deschide anunțul original pe 999.md"
           >
-            Open Listing
+            <img src="/999-logo.png" alt="999.md" className="button-logo-999" />
+            <span>Deschide anunțul</span>
           </button>
 
           <button
@@ -179,8 +200,8 @@ function CarCard({
               </h2>
 
               {car.generation && (
-                <p style={{ margin: "0 0 12px 0", color: "#555" }}>
-                  {car.generation}
+                <p style={{ margin: '0 0 12px 0', color: '#555', textAlign: 'left' }}>
+                  {typeof car.generation === 'string' ? car.generation.trim() : car.generation}
                 </p>
               )}
 
@@ -189,6 +210,16 @@ function CarCard({
                 <strong>€{formatNumber(car.price_eur)}</strong>
               </div>
             </div>
+
+            <img 
+              src={`/logos/${getLogoFileName(car.brand)}`} 
+              alt={car.brand} 
+              className="expanded-car-logo" 
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.style.display = 'none';
+              }}
+            />
 
             {car.score !== null && car.score !== undefined && (
               <div

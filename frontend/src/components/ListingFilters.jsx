@@ -216,10 +216,16 @@ function ListingFilters({
     useRef(null);
 
   function update(field, value) {
-    setFilters((current) => ({
-      ...current,
-      [field]: value,
-    }));
+    setFilters((current) => {
+      const newFilters = { ...current, [field]: value };
+      if (field === "brandText" && value !== current.brandText) {
+        newFilters.modelText = "";
+        newFilters.generationText = "";
+      } else if (field === "modelText" && value !== current.modelText) {
+        newFilters.generationText = "";
+      }
+      return newFilters;
+    });
   }
 
   /*
@@ -339,7 +345,13 @@ function ListingFilters({
 
   function removeStringFilter(field) {
     const newFilters = { ...filters, [field]: "" };
-    setFilters(current => ({ ...current, [field]: "" }));
+    if (field === 'brandText') {
+      newFilters.modelText = "";
+      newFilters.generationText = "";
+    } else if (field === 'modelText') {
+      newFilters.generationText = "";
+    }
+    setFilters(newFilters);
     if (onSearch) onSearch(newFilters);
   }
 
@@ -387,6 +399,7 @@ function ListingFilters({
 
   if (filters.brandText) activePills.push({ label: `Marcă: ${filters.brandText}`, onRemove: () => removeStringFilter('brandText') });
   if (filters.modelText) activePills.push({ label: `Model: ${filters.modelText}`, onRemove: () => removeStringFilter('modelText') });
+  if (filters.generationText) activePills.push({ label: `Generație: ${filters.generationText}`, onRemove: () => removeStringFilter('generationText') });
 
 
   return (
