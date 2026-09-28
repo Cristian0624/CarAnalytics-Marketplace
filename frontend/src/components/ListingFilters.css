@@ -136,7 +136,7 @@
     border: none;
     background: transparent;
 
-    color: #bbb7b7;
+    color: #717171;
     font-size: 14px;
     font-weight: 600;
 
@@ -144,11 +144,11 @@
 }
 
 .advanced-search-toggle:hover {
-    color: #ffffff;
+    color: #0e0e0e;
 }
 
 .advanced-search-toggle.open {
-    color: #ffffff;
+    color: #0e0e0e;
 }
 
 .advanced-search-arrow {
