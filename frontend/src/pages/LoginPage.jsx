@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import "./AuthenticationPages.css";
+import PasswordInput from "../components/PasswordInput";
 
 function AutentificarePage() {
   const { login } = useAuth();
@@ -26,28 +28,38 @@ function AutentificarePage() {
   return (
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
-        <h2>Autentificare</h2>
-        <input
-          className="auth-input"
-          name="email"
-          type="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          required
-        />
-        <input
-          className="auth-input"
-          name="password"
-          type="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          required
-        />
-        <button className="auth-submit" type="submit">Autentificare</button>
-        {error && <p className="auth-error">{error}</p>}
-      </form>
+  <h2>Autentificare</h2>
+
+  <input
+    className="auth-input"
+    name="email"
+    type="email"
+    placeholder="Adresă de email"
+    value={form.email}
+    onChange={handleChange}
+    required
+  />
+
+  <PasswordInput
+    name="password"
+    placeholder="Parolă"
+    value={form.password}
+    onChange={handleChange}
+  />
+
+  <button className="auth-submit" type="submit">
+    Autentificare
+  </button>
+
+  {error && <p className="auth-error">{error}</p>}
+
+  <p className="auth-switch">
+    Nu ai cont?{" "}
+    <button type="button" onClick={() => navigate("/register")}>
+      Creează un cont
+    </button>
+  </p>
+</form>
     </div>
   );
 }

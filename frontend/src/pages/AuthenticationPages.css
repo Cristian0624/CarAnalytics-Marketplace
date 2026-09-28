@@ -1,0 +1,291 @@
+/* =========================================================
+   AUTHENTICATION PAGES
+   Login / Register / Profile
+   ========================================================= */
+
+   .auth-page {
+    min-height: 80vh;
+    box-sizing: border-box;
+    padding: 64px 24px 90px;
+  
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  
+    background: #fafafa;
+    color: #0f172a;
+    color-scheme: light;
+  
+    font-family: "Inter", system-ui, sans-serif;
+  }
+  
+  
+  /* =========================================================
+     MAIN CARD
+     ========================================================= */
+  
+  .auth-form {
+    width: min(460px, 100%);
+    box-sizing: border-box;
+  
+    background: #ffffff;
+    border: 1px solid #dce3ec;
+    border-radius: 22px;
+  
+    padding: 38px;
+  
+    box-shadow:
+      0 10px 30px #0f172a0a,
+      0 2px 8px #0f172a05;
+  
+    text-align: left;
+  }
+  
+  
+  /* =========================================================
+     HEADINGS
+     ========================================================= */
+  
+  .auth-form h2 {
+    margin: 0 0 30px;
+  
+    color: #0f172a;
+    font-size: 30px;
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: -0.8px;
+  }
+  
+  
+  /* =========================================================
+     PROFILE TEXT
+     ========================================================= */
+  
+  .auth-form p {
+    color: #475569;
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  
+  .auth-form p strong {
+    color: #0f172a;
+    font-weight: 700;
+  }
+  
+  
+  /* =========================================================
+     INPUTS
+     ========================================================= */
+  
+  .auth-input {
+    width: 100%;
+    box-sizing: border-box;
+  
+    display: block;
+  
+    margin-bottom: 15px;
+  
+    padding: 13px 14px;
+  
+    background: #ffffff;
+    color: #0f172a;
+  
+    border: 1px solid #d5dde7;
+    border-radius: 10px;
+  
+    font: inherit;
+    font-size: 14px;
+  
+    outline: none;
+  
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.15s ease,
+      background 0.15s ease;
+  }
+  
+  .auth-input::placeholder {
+    color: #94a3b8;
+  }
+  
+  .auth-input:hover {
+    border-color: #c4cfdd;
+  }
+  
+  .auth-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px #2563eb18;
+  }
+  
+  
+  /* =========================================================
+     SUBMIT / LOGOUT BUTTON
+     ========================================================= */
+  
+  .auth-submit {
+    width: 100%;
+    box-sizing: border-box;
+  
+    margin-top: 8px;
+  
+    padding: 13px 18px;
+  
+    background: #0f172a;
+    color: #ffffff;
+  
+    border: 1px solid #0f172a;
+    border-radius: 10px;
+  
+    font: inherit;
+    font-size: 14px;
+    font-weight: 650;
+  
+    cursor: pointer;
+  
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease,
+      transform 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+  
+  .auth-submit:hover {
+    background: #263449;
+    border-color: #263449;
+    box-shadow: 0 5px 14px #0f172a18;
+  }
+  
+  .auth-submit:active {
+    transform: translateY(1px);
+  }
+  
+  .auth-submit:focus-visible {
+    outline: 3px solid #2563eb;
+    outline-offset: 3px;
+  }
+  
+  
+  /* =========================================================
+     ERROR
+     ========================================================= */
+  
+  .auth-error {
+    margin: 18px 0 0;
+  
+    padding: 13px 15px;
+  
+    color: #991b1b !important;
+    background: #fef2f2;
+  
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+  
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+  }
+  
+  
+  /* =========================================================
+     LOADING STATE
+     ========================================================= */
+  
+  .auth-form p:not(.auth-error) {
+    margin-top: 0;
+  }
+  
+  
+  /* =========================================================
+     PROFILE PAGE
+     ========================================================= */
+  
+  .auth-form > p {
+    margin: 0;
+  
+    padding: 15px 0;
+  
+    border-bottom: 1px solid #eef2f6;
+  }
+  
+  .auth-form > p:last-of-type {
+    margin-bottom: 22px;
+  }
+  
+  .auth-form > p:first-of-type {
+    padding-top: 0;
+  }
+  
+  
+  /* =========================================================
+     FORM SPACING
+     ========================================================= */
+  
+  .auth-form form,
+  .auth-form .auth-input + .auth-input {
+    margin-top: 0;
+  }
+  
+  
+  /* =========================================================
+     MOBILE
+     ========================================================= */
+  
+  @media (max-width: 600px) {
+    .auth-page {
+      min-height: 80vh;
+      padding: 32px 16px 60px;
+    }
+  
+    .auth-form {
+      padding: 28px 22px;
+      border-radius: 18px;
+    }
+  
+    .auth-form h2 {
+      font-size: 27px;
+      margin-bottom: 25px;
+    }
+  
+    .auth-input {
+      padding: 12px 13px;
+    }
+  
+    .auth-submit {
+      padding: 12px 16px;
+    }
+  }
+
+  .auth-switch {
+    margin: 22px 0 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+  
+    text-align: center;
+  
+    color: #64748b !important;
+    font-size: 13px !important;
+  }
+  
+  .auth-switch button {
+    padding: 0;
+  
+    background: transparent;
+    border: 0;
+  
+    color: #2563eb;
+    font: inherit;
+    font-weight: 650;
+  
+    cursor: pointer;
+  }
+  
+  .auth-switch button:hover {
+    text-decoration: underline;
+  }
+  
+  .auth-switch button:focus-visible {
+    outline: 3px solid #2563eb;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  

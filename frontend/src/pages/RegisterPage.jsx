@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "../api/auth";
+import "./AuthenticationPages.css";
+import PasswordInput from "../components/PasswordInput";
 
 function ÎnregistrarePage() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
@@ -43,17 +45,17 @@ function ÎnregistrarePage() {
           onChange={handleChange}
           required
         />
-        <input
-          className="auth-input"
+        <PasswordInput
           name="password"
-          type="password"
-          placeholder="Password (min 8 chars)"
+          placeholder="Parolă"
           value={form.password}
           onChange={handleChange}
-          required
         />
         <button className="auth-submit" type="submit">Înregistrare</button>
         {error && <p className="auth-error">{error}</p>}
+        <p className="auth-switch">
+  Ai deja un cont? <button type="button" onClick={() => navigate("/login")}>Autentifică-te</button>
+</p>
       </form>
     </div>
   );

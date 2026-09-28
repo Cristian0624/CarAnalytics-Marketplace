@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import "./AuthenticationPages.css";
 
 function ProfilePage() {
   const { user, loading, logout } = useAuth();

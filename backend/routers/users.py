@@ -76,7 +76,7 @@ def login_user(
         httponly=True,
         secure=COOKIE_SECURE,
         samesite=COOKIE_SAMESITE,
-        max_age=15 * 26,
+        max_age=7 * 24 * 60 * 60,
         path="/"
     )
 
