@@ -7,10 +7,12 @@ import RegisterPage from "./pages/RegisterPage";
 import ProfilePage from "./pages/ProfilePage";
 import RecommendationsPage from "./pages/RecommendationsPage";
 import AnomalyRiskPage from "./pages/AnomalyRiskPage";
+import SavedItemsPage from "./pages/SavedItemsPage";
+import { FavouritesProvider } from "./context/FavouritesContext";
 
 function App() {
   return (
-    <div>
+    <FavouritesProvider><div>
       <Header />
 
       <Routes>
@@ -21,8 +23,11 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/recommendations" element={<RecommendationsPage />} />
         <Route path="/anomaly-risk" element={<AnomalyRiskPage />} />
+        <Route path="/favourites/:id?" element={<SavedItemsPage kind="favourites" />} />
+        <Route path="/saved-risk-assessments/:id?" element={<SavedItemsPage kind="risks" />} />
+        <Route path="/saved-searches/:id?" element={<SavedItemsPage kind="searches" />} />
       </Routes>
-    </div>
+    </div></FavouritesProvider>
   );
 }
 

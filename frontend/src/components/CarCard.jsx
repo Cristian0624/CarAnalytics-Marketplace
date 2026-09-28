@@ -1,4 +1,5 @@
 import "./CarCard.css";
+import FavouriteButton from "./FavouriteButton";
 
 function getScoreClass(score) {
   const value = Number(score);
@@ -41,6 +42,7 @@ function CarCard({
   expanded,
   position,
   onClick,
+  showFavourite = true,
 }) {
   const score = Number(car.score);
 
@@ -58,6 +60,13 @@ function CarCard({
         expanded ? "car-card-expanded" : ""
       } car-card-${position}`}
       onClick={onClick}
+      tabIndex={0}
+      onKeyDown={(event) => {
+        if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          onClick();
+        }
+      }}
     >
       {!expanded ? (
         <>
@@ -106,6 +115,7 @@ function CarCard({
         </>
       ) : (
                 <div className="car-expanded-content">
+          {showFavourite && <FavouriteButton car={car} />}
           <button
             className="original-listing-button"
             onClick={openOriginalListing}

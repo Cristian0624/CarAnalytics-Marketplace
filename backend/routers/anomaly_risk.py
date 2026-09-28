@@ -1,4 +1,4 @@
-"""Stateless assessments using live database prices and cached reference statistics."""
+"""Stateless assessments using live database comparisons and cached scoring constants."""
 import logging
 from threading import Lock
 
@@ -24,7 +24,7 @@ def get_anomaly_risk_service():
                 _service = AnomalyRiskService()
             except Exception:
                 logger.exception("Failed to initialize anomaly-risk inference")
-                raise HTTPException(503, "Anomaly reference statistics unavailable. Check the deployed statistics bundle.") from None
+                raise HTTPException(503, "Anomaly scoring configuration unavailable. Check model_metadata.json.") from None
     return _service
 
 
@@ -39,10 +39,9 @@ def assess_anomaly_risk(payload: AnomalyRiskRequest, service=Depends(get_anomaly
         characteristics = repository.get_characteristics(
             payload.brand, payload.model, payload.generation, payload.listing_id,
         )
-        model_count = repository.get_model_count(payload.brand, payload.model, payload.listing_id)
-        result = service.assess_listing_risk(payload.model_dump(), prices, model_count,
+        result = service.assess_listing_risk(payload.model_dump(), prices, len(prices),
                                              characteristics)
         return AnomalyRiskResponse(model_version=service.metadata["model_version"], **result)
     except Exception:
         logger.exception("Anomaly-risk inference failed")
-        raise HTTPException(503, "Anomaly assessment unavailable. Check the database and reference statistics.") from None
+        raise HTTPException(503, "Anomaly assessment unavailable. Check the database and scoring configuration.") from None

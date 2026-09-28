@@ -34,6 +34,9 @@ def _get_database_url() -> str:
 DATABASE_URL = _get_database_url()
 
 def _create_engine():
+    # Isolated SQLite tests do not need a PostgreSQL driver or its fallback.
+    if DATABASE_URL.startswith("sqlite:"):
+        return create_engine(DATABASE_URL)
     try:
         import psycopg2  # noqa: F401
         return create_engine(DATABASE_URL)

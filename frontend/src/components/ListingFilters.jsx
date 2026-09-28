@@ -199,9 +199,12 @@ function ListingFilters({
   onSearch,
   onReset,
   loading,
+  actions,
+  searchLabel = "Aplică filtrele",
+  initiallyOpen = false,
 }) {
   const [advancedOpen, setAdvancedOpen] =
-    useState(false);
+    useState(initiallyOpen);
 
   const [suggestions, setSuggestions] =
     useState([]);
@@ -1061,18 +1064,20 @@ function ListingFilters({
           </div>
 
           <div className="filters-footer">
+            {actions}
             <button
               type="button"
               className="apply-filters-button"
               onClick={onSearch}
               disabled={loading}
             >
-              Aplică filtrele
+              {searchLabel}
             </button>
           </div>
         </div>
       )}
     
+      {!advancedOpen && actions && <div className="saved-actions">{actions}</div>}
       {activePills.length > 0 && (
         <div className="active-filters-pills">
           <div className="pills-header">
