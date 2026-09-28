@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildRiskPayload, filterVehicleOptions, hasOverallScore, resolveVehicleOption, riskErrorMessage, riskExplanationLines } from "../src/utils/anomalyRisk.js";
+import { usesCurrentRiskPolicy, buildRiskPayload, filterVehicleOptions, hasOverallScore, resolveVehicleOption, riskErrorMessage, riskExplanationLines } from "../src/utils/anomalyRisk.js";
 
 test("request preserves exact database names, sends numbers, and excludes search-only fields", () => {
   const result = buildRiskPayload({ brand: " BMW ", model: "3 Series", generation: "F30 (2011 - 2019)", price: "12000.50", year: "2016", mileage: "150000", engine: "2.0", fuel_type: "Benzină", year_min: "2010" });
@@ -70,8 +70,78 @@ test("expanded explanations use structured evidence and Romanian text", () => {
     },
   };
   const lines = riskExplanationLines(result, { brand: "Toyota", model: "Auris", generation: "II", price: 9000, year: 2010, mileage: null });
-  assert.ok(lines.some((line) => line.includes("prea puține exemple")));
+  assert.ok(lines.some((line) => line.includes("prea puține anunțuri")));
   assert.ok(lines.some((line) => line.includes("An (2010)")));
   assert.ok(lines.some((line) => line.includes("Kilometrajul nu a fost introdus")));
   assert.ok(lines.every((line) => !/Asking price|Mileage is|model observations|Predicted P10/.test(line)));
+});
+
+test("unavailable database price has no fabricated interval explanation", () => {
+  const result = {
+    assessment_status: "limited_support",
+    confidence: { model_observations: 200, p10_p90_width: null, relative_interval_width: null },
+    market_support: { model_generation_observations: 100, rarity_penalty: 0 },
+    components: {
+      price_anomaly: { score: null, count: 9, direction: "unknown" },
+      mileage_anomaly: { score: null },
+      specification_anomaly: { signals: [] },
+    },
+  };
+  const lines = riskExplanationLines(result, { ...buildRiskPayload({}), price: 5000 });
+  assert.ok(lines.some((line) => line.includes("9 anunțuri comparabile") && line.includes("minimum 10")));
+  assert.ok(lines.every((line) => typeof line === "string" && !/NaN|0 €|intervalul estimat/i.test(line)));
+});
+
+test("available database price explains the exact unfiltered comparison group", () => {
+  const result = {
+    assessment_status: "full",
+    confidence: { model_observations: 200, p10_p90_width: 1600, relative_interval_width: .32 },
+    market_support: { model_generation_observations: 100, rarity_penalty: 0 },
+    components: {
+      price_anomaly: { score: 0, count: 21, direction: "normal", actual_price: 5000, p25: 4500, p75: 5500 },
+      mileage_anomaly: { score: null },
+      specification_anomaly: { signals: [] },
+    },
+  };
+  const lines = riskExplanationLines(result, { price: 5000 });
+  assert.ok(lines.some((line) => line.includes("21 anunțuri") && line.includes("nu filtrează acest grup")));
+  assert.ok(lines.some((line) => line.includes("zona centrală observată")));
+  assert.ok(lines.every((line) => !line.includes("Prețul nu a fost evaluat")));
+});
+
+test("explanations show selected group instead of totals across other generations", () => {
+  const result = {
+    assessment_status: "full",
+    confidence: { model_observations: 471, p10_p90_width: 1625, relative_interval_width: .551 },
+    market_support: { model_generation_observations: 116, rarity_penalty: 0 },
+    components: {
+      price_anomaly: { score: 0, count: 116, direction: "normal", actual_price: 2950, p25: 2500, p75: 3325 },
+      mileage_anomaly: { score: 10, sample_size: 110, direction: "normal", comparison_level: "model_generation" },
+      specification_anomaly: { signals: [] },
+    },
+  };
+  const vehicle = { brand: "Toyota", model: "Yaris", generation: "I", mileage: 200000 };
+  const lines = riskExplanationLines(result, vehicle);
+  assert.match(lines[0], /Grupul analizat: 116/);
+  assert.match(lines[0], /Nu sunt incluse alte generații/);
+  assert.ok(lines.every((line) => !line.includes("471")));
+  assert.ok(lines.some((line) => line.includes("110 anunțuri cu kilometraj disponibil")));
+  assert.ok(lines.some((line) => line.includes("minimum 25")));
+
+  const withoutGeneration = riskExplanationLines(result, { ...vehicle, generation: null });
+  assert.match(withoutGeneration[0], /din toate generațiile/);
+  result.components.mileage_anomaly = { score: null, sample_size: 17, expected_median_mileage: 180000 };
+  const medianOnly = riskExplanationLines(result, vehicle).join(" ");
+  assert.match(medianOnly, /minimum 10, iar scorul minimum 20/);
+  assert.match(medianOnly, /Mediana este disponibilă, dar scorul nu/);
+});
+
+
+test("historical results cannot receive current database explanations", () => {
+  const result = { scoring_policy_version: "anomaly-risk-v2.6-selected-group",
+    components: { price_anomaly: { source: "database" } } };
+  assert.equal(usesCurrentRiskPolicy(result), true);
+  assert.equal(usesCurrentRiskPolicy({ ...result, scoring_policy_version: "anomaly-risk-v2.3" }), false);
+  assert.equal(usesCurrentRiskPolicy({ ...result, scoring_policy_version: "anomaly-risk-v2.5-db-comparisons" }), false);
+  assert.equal(usesCurrentRiskPolicy({ ...result, components: { price_anomaly: {} } }), false);
 });

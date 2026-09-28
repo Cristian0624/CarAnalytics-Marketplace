@@ -15,6 +15,9 @@ from routers.listings import router as listings_router
 from routers.price_estimate import router as price_estimate_router
 from routers.anomaly_risk import router as anomaly_risk_router
 from routers.trends import router as trends_router
+from routers.saved_searches import router as saved_searches_router
+from routers.saved_risk_assessments import router as saved_risk_assessments_router
+from routers.favourites import router as favourites_router
 from database import Base, engine
 import models
 import threading
@@ -68,6 +71,9 @@ app.include_router(listings_router)
 app.include_router(price_estimate_router)
 app.include_router(anomaly_risk_router)
 app.include_router(trends_router)
+app.include_router(saved_searches_router)
+app.include_router(saved_risk_assessments_router)
+app.include_router(favourites_router)
 
 @app.get("/")
 def root():

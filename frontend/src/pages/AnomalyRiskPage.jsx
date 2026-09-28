@@ -4,6 +4,8 @@ import { getListingOptions } from "../api/listings";
 import { buildRiskPayload, resolveVehicleOption, riskErrorMessage } from "../utils/anomalyRisk";
 import AnomalyRiskResults from "../components/AnomalyRiskResults";
 import VehicleSelect from "../components/VehicleSelect";
+import SaveItemButton from "../components/SaveItemButton";
+import { createSaved } from "../api/saved_items";
 import "./AnomalyRiskPage.css";
 
 const EMPTY_FORM = {
@@ -167,15 +169,19 @@ export default function AnomalyRiskPage() {
             <div className="risk-actions">
               <button className="risk-submit" type="submit">{loading ? "Se analizează oferta…" : "Analizează oferta"}<span aria-hidden="true"> →</span></button>
               <button className="risk-reset" type="button" onClick={() => { setForm({ ...EMPTY_FORM }); setModels([]); setGenerations([]); setResult(null); setError(""); }}>Resetează</button>
+              {result && submitted && <SaveItemButton key={JSON.stringify(submitted)} label="Salveaza Analiza"
+                defaultName={`${submitted.brand} ${submitted.model}${submitted.year ? ` ${submitted.year}` : ""}`}
+                path="/saved-risk-assessments" onSave={(name) => createSaved("risks", { name, input: submitted })}
+                onSaved={(item) => setResult(item.result)} />}
             </div>
           </fieldset>
           {error && <p className="risk-error" role="alert">{error}</p>}
-          {loading && <p className="risk-loading" role="status">Comparăm oferta cu datele modelului. Prima analiză poate dura câteva momente.</p>}
+          {loading && <p className="risk-loading" role="status">Comparăm oferta cu anunțurile din baza de date.</p>}
         </form>
 
         {result ? <div ref={resultRef} tabIndex={-1} className="risk-result-focus"><AnomalyRiskResults result={result} vehicle={submitted} /></div> : !loading && (
           <div className="risk-preview" aria-label="Ce vei afla">
-            {[["💶", "Prețul în context", "O estimare de preț și poziția ofertei față de intervalul modelului."], ["📋", "Detalii de verificat", "Kilometrajul și configurațiile neobișnuite pentru mașini similare."], ["✓", "Câtă încredere să ai", "Câte exemple susțin analiza și când datele sunt insuficiente."]].map(([icon, title, description]) => (
+            {[["💶", "Prețul în context", "Prețurile observate în baza de date și poziția ofertei în grupul selectat."], ["📋", "Detalii de verificat", "Kilometrajul și configurațiile neobișnuite pentru mașini similare."], ["✓", "Câtă încredere să ai", "Câte exemple susțin analiza și când datele sunt insuficiente."]].map(([icon, title, description]) => (
               <article key={title}><span className="risk-preview-icon" aria-hidden="true">{icon}</span><h3>{title}</h3><p>{description}</p></article>
             ))}
           </div>

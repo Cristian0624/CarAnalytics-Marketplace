@@ -61,6 +61,9 @@ function AuthButton() {
             <Link to="/profile" className="auth-dropdown-item" onClick={() => setIsOpen(false)}>
               Profilul Meu
             </Link>
+            <Link to="/favourites" className="auth-dropdown-item" onClick={() => setIsOpen(false)}>Anunturi Favorite</Link>
+            <Link to="/saved-risk-assessments" className="auth-dropdown-item" onClick={() => setIsOpen(false)}>Analize Risc Salvate</Link>
+            <Link to="/saved-searches" className="auth-dropdown-item" onClick={() => setIsOpen(false)}>Filtre Salvate</Link>
             <button className="auth-dropdown-item auth-logout" onClick={handleDeconectare}>
               Deconectare
             </button>
