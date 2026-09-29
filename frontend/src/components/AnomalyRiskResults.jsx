@@ -87,7 +87,17 @@ export default function AnomalyRiskResults({ result, vehicle }) {
           <ComponentScore value={specs.score} weight={weights.specification} />
         </article>
       </div>
-      <details className="risk-explanation"><summary>Explicații și detalii suplimentare</summary><ul>{riskExplanationLines(result, vehicle).map((reason) => <li key={reason}>{reason}</li>)}</ul>{priceAvailable && <p>Interval central P25–P75: {money(price.p25)} – {money(price.p75)}.</p>}<p>Sursa comparațiilor: {price.source === "database" ? "listings_cleaned, la momentul analizei" : result.model_version} · Reguli de evaluare: {result.scoring_policy_version}</p></details>
+      <details className="risk-explanation">
+        <summary>
+          <span>Explicații și detalii suplimentare</span>
+          <svg className="risk-explanation-chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6" /></svg>
+        </summary>
+        <div className="risk-explanation-content">
+          <ul role="list">{riskExplanationLines(result, vehicle).map((reason) => <li key={reason}>{reason}</li>)}</ul>
+          {priceAvailable && <p className="risk-explanation-interval">Interval central P25–P75: <strong>{money(price.p25)} – {money(price.p75)}</strong>.</p>}
+          <p className="risk-explanation-source">Sursa comparațiilor: {price.source === "database" ? "listings_cleaned, la momentul analizei" : result.model_version} · Reguli de evaluare: {result.scoring_policy_version}</p>
+        </div>
+      </details>
     </div>
   );
 }
