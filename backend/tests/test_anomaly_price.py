@@ -231,6 +231,7 @@ class DatabasePriceTests(unittest.TestCase):
         self.assertEqual(price["count"], 29)
         self.assertEqual(result["market_support"]["model_generation_observations"], 29)
         self.assertEqual(result["confidence"]["generation_observations"], 29)
+        self.assertEqual(result["market_confidence"], "medium")
         self.assertEqual(result["components"]["mileage_anomaly"]["sample_size"], 29)
         engine_signal = next(signal for signal in result["components"]["specification_anomaly"]["signals"]
                              if signal["field"] == "engine")

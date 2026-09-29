@@ -311,7 +311,7 @@ class ModelTests(unittest.TestCase):
         self.assertTrue(all(signal["score"] is None for signal in unsupported_specs["signals"]))
 
     def test_confidence_and_penalty_track_support_without_boundary_reversal(self):
-        counts = (0, 1, 4, 5, 14, 15, 29, 30, 262)
+        counts = (0, 1, 4, 5, 14, 15, 16, 29, 30, 35, 40, 41, 262)
         results = [self.service.assess_listing_risk(VEHICLE, sample_prices(n), 200, CHARACTERISTICS)
                    for n in counts]
         confidence = [result["confidence_score"] for result in results]
@@ -324,6 +324,28 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(penalties, sorted(penalties, reverse=True))
         self.assertEqual(penalties[1], penalties[2])  # 14 to 15 must not rise.
         self.assertEqual(penalties[-1], 0)
+
+    def test_database_group_confidence_reaches_medium_and_high_at_requested_sizes(self):
+        expected = {15: "low", 16: "medium", 29: "medium", 35: "medium",
+                    40: "medium", 41: "high"}
+        for count, level in expected.items():
+            with self.subTest(count=count):
+                result = self.service.assess_listing_risk(
+                    VEHICLE, sample_prices(count), count, CHARACTERISTICS[:count]
+                )
+                self.assertEqual(result["market_confidence"], level)
+                self.assertEqual(result["confidence"]["generation_observations"], count)
+                if count == 29:
+                    self.assertGreaterEqual(result["confidence_score"], 55)
+                if count == 35:
+                    self.assertGreaterEqual(result["confidence_score"], 65)
+
+    def test_missing_optional_details_do_not_make_29_price_comparisons_low_confidence(self):
+        vehicle = {"brand": "Toyota", "model": "Auris", "generation": VEHICLE["generation"], "price": 7600}
+        result = self.service.assess_listing_risk(vehicle, sample_prices(29), 29, CHARACTERISTICS[:29])
+        self.assertEqual(result["market_confidence"], "medium")
+        self.assertIsNone(result["components"]["mileage_anomaly"]["score"])
+        self.assertIsNone(result["components"]["specification_anomaly"]["score"])
 
     def test_rare_support_is_warning_not_automatic_high_risk(self):
         normal = self.typical_vehicle()
@@ -364,7 +386,7 @@ class ModelTests(unittest.TestCase):
         cases = {
             14: ("rare", "limited_support", 4.0, "low"),
             15: ("limited", "limited_support", 4.0, "low"),
-            29: ("limited", "limited_support", 0.27, "low"),
+            29: ("limited", "limited_support", 0.27, "medium"),
         }
         for observations, (support_level, status, penalty, confidence) in cases.items():
             with self.subTest(observations=observations):
