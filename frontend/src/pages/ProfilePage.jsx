@@ -260,24 +260,41 @@ export default function ProfilePage() {
                 disabled={busy}
               />
 
-              <label htmlFor="profile-seller-type">
-                Tip utilizator
-              </label>
+              <div className="seller-type-options">
+                <button
+                  type="button"
+                  className={`seller-type-option ${
+                    sellerType === "private" ? "selected" : ""
+                  }`}
+                  onClick={() => setSellerType("private")}
+                  disabled={busy}
+                >
+                  <span className="seller-type-title">
+                    Persoană fizică
+                  </span>
 
-              <select
-                id="profile-seller-type"
-                value={sellerType}
-                onChange={(e) => setSellerType(e.target.value)}
-                disabled={busy}
-              >
-                <option value="">Selectează</option>
-                <option value="private">
-                  Persoană fizică
-                </option>
-                <option value="dealer">
-                  Dealer
-                </option>
-              </select>
+                  <span className="seller-type-description">
+                    Vând ca persoană fizică
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`seller-type-option ${
+                    sellerType === "dealer" ? "selected" : ""
+                  }`}
+                  onClick={() => setSellerType("dealer")}
+                  disabled={busy}
+                >
+                  <span className="seller-type-title">
+                    Dealer
+                  </span>
+
+                  <span className="seller-type-description">
+                    Reprezint un dealer auto
+                  </span>
+                </button>
+              </div>
 
               <div className="saved-actions">
                 <button

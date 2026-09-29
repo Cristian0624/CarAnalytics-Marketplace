@@ -226,7 +226,7 @@ function CarCard({
                 className={`expanded-score-circular ${getScoreClass(score)}`}
               >
                 <span className="score-label">SCORE</span>
-                <div className="score-circle">
+                <div className="score-circle" style={{"--progress": `${Math.max(0, Math.min(score, 80)) / 80 * 100}%`,}}>
                   <span className="score-main">{score.toFixed(0)}</span>
                   <span className="score-sub">{score.toFixed(0)}/80</span>
                 </div>

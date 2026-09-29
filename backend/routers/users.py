@@ -92,7 +92,6 @@ def login_user(
 
     return {
         "message" : "Login successful",
-         "access_token": access_token, # remove when it is resolved
         "token_type": "bearer"
     }
 
@@ -193,7 +192,7 @@ def refresh_access_token(
         httponly=True,
         secure=COOKIE_SECURE,
         samesite=COOKIE_SAMESITE,
-        max_age=15 * 26,
+        max_age=7 * 24 * 60 * 60,
         path="/"
     )
 
