@@ -17,6 +17,7 @@ const titles = {
   risks: "Analize Risc Salvate",
   searches: "Filtre Salvate",
   profile: "Profilul Meu",
+  myListings: "Anunțurile Mele",
 };
 
 const descriptions = {
@@ -24,6 +25,7 @@ const descriptions = {
   risks: "Revino la analizele tale și la rezultatele din momentul salvării.",
   searches: "Criteriile tale de căutare, gata de folosit pe piața actuală.",
   profile: "Informațiile contului tău și opțiunile de securitate.",
+  myListings: "Gestionează anunțurile create și publicate de tine.",
 };
 
 export default function SavedItemsPage({ kind }) {
@@ -33,6 +35,7 @@ export default function SavedItemsPage({ kind }) {
   const allPaths = {
     ...savedPaths,
     profile: "/profile",
+    myListings: "/my-listings",
   };
 
   return (

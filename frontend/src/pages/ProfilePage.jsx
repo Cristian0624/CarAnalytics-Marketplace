@@ -9,6 +9,7 @@ const savedPaths = {
   favourites: "/favourites",
   risks: "/saved-risk-assessments",
   searches: "/saved-searches",
+  myListings: "/my-listings",
 };
 
 export default function ProfilePage() {
@@ -134,6 +135,10 @@ export default function ProfilePage() {
 
           <Link to="/profile" aria-current="page">
             Profilul Meu
+          </Link>
+
+          <Link to={savedPaths.myListings}>
+            Anunțurile Mele
           </Link>
         </nav>
 

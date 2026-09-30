@@ -1,0 +1,509 @@
+.create-listing-page {
+    min-height: calc(100vh - 70px);
+    background: #f8fafc;
+    padding: 40px 24px 70px;
+}
+
+.create-listing-container {
+    width: min(1100px, 100%);
+    margin: 0 auto;
+}
+
+.create-listing-header {
+    margin-bottom: 28px;
+}
+
+.create-listing-back {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    margin-bottom: 18px;
+
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
+
+    cursor: pointer;
+}
+
+.create-listing-back:hover {
+    color: #2563eb;
+}
+
+.create-listing-header h1 {
+    margin: 0 0 8px;
+
+    color: #0f172a;
+    font-size: 32px;
+    line-height: 1.2;
+    font-weight: 700;
+}
+
+.create-listing-header p {
+    margin: 0;
+
+    color: #64748b;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+
+/* ALERTS */
+
+.create-listing-alert {
+    border-radius: 10px;
+    padding: 13px 16px;
+    margin-bottom: 20px;
+
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.create-listing-alert-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+}
+
+.create-listing-alert-success {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #15803d;
+}
+
+
+/* FORM */
+
+.create-listing-form {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.create-listing-section {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 26px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+}
+
+.create-listing-section-header {
+    margin-bottom: 22px;
+}
+
+.create-listing-section-header h2 {
+    margin: 0 0 5px;
+
+    color: #0f172a;
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.create-listing-section-header p {
+    margin: 0;
+
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+
+/* GRID */
+
+.create-listing-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.create-listing-field {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.create-listing-field-full {
+    grid-column: 1 / -1;
+}
+
+.create-listing-field label {
+    margin-bottom: 7px;
+
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.create-listing-field label span,
+.create-listing-price-input-area label span {
+    color: #dc2626;
+}
+
+.create-listing-field input,
+.create-listing-field select {
+    width: 100%;
+    box-sizing: border-box;
+
+    height: 44px;
+    padding: 0 12px;
+
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+
+    background: #ffffff;
+    color: #0f172a;
+
+    font-family: inherit;
+    font-size: 14px;
+
+    outline: none;
+
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease,
+        background 0.15s ease;
+}
+
+.create-listing-field input:focus,
+.create-listing-field select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+}
+
+.create-listing-field input::placeholder {
+    color: #94a3b8;
+}
+
+.create-listing-field select:disabled,
+.create-listing-field input:disabled {
+    background: #f8fafc;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+
+/* PRICE */
+
+.create-listing-price-section {
+    border-color: #dbeafe;
+    grid-column: 1 / -1;
+}
+
+.create-listing-price-layout {
+    display: grid;
+    grid-template-columns: minmax(250px, 0.9fr) minmax(350px, 1.1fr);
+    gap: 24px;
+    align-items: start;
+}
+
+.create-listing-price-input-area {
+    display: flex;
+    flex-direction: column;
+}
+
+.create-listing-price-input-area label {
+    margin-bottom: 8px;
+
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.create-listing-price-input-wrapper {
+    display: flex;
+    align-items: center;
+
+    height: 52px;
+
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+
+    background: #ffffff;
+
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.create-listing-price-input-wrapper:focus-within {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+}
+
+.create-listing-price-input-wrapper > span {
+    padding-left: 15px;
+
+    color: #64748b;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.create-listing-price-input-wrapper input {
+    width: 100%;
+    height: 100%;
+
+    border: 0;
+    outline: 0;
+
+    padding: 0 14px 0 9px;
+
+    background: transparent;
+    color: #0f172a;
+
+    font-family: inherit;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+
+/* ESTIMATE */
+
+.create-listing-estimate-card {
+    min-height: 145px;
+
+    padding: 20px;
+
+    border: 1px solid #bfdbfe;
+    border-radius: 12px;
+
+    background: #eff6ff;
+}
+
+.create-listing-estimate-title {
+    margin-bottom: 8px;
+
+    color: #1e40af;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.create-listing-market-price {
+    color: #1e3a8a;
+    font-size: 30px;
+    line-height: 1.2;
+    font-weight: 750;
+}
+
+.create-listing-normal-range {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-top: 12px;
+    padding-top: 12px;
+
+    border-top: 1px solid #bfdbfe;
+
+    color: #475569;
+    font-size: 13px;
+}
+
+.create-listing-normal-range strong {
+    color: #1e40af;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.create-listing-estimate-message {
+    margin: 13px 0 0;
+
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.create-listing-estimate-placeholder {
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.create-listing-estimate-error {
+    color: #b91c1c;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.create-listing-estimate-loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    min-height: 80px;
+
+    color: #64748b;
+    font-size: 13px;
+}
+
+
+/* SUBMIT */
+
+.create-listing-submit-area {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+
+    padding-top: 4px;
+}
+
+.create-listing-cancel-button,
+.create-listing-submit-button {
+    min-height: 44px;
+    padding: 0 20px;
+
+    border-radius: 9px;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease,
+        transform 0.15s ease;
+}
+
+.create-listing-cancel-button {
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #475569;
+}
+
+.create-listing-cancel-button:hover {
+    background: #f8fafc;
+}
+
+.create-listing-submit-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+
+    border: 1px solid #2563eb;
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.create-listing-submit-button:hover:not(:disabled) {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+}
+
+.create-listing-submit-button:disabled,
+.create-listing-cancel-button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+
+/* LOADING */
+
+.create-listing-loading-page {
+    min-height: calc(100vh - 70px);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 12px;
+
+    color: #64748b;
+}
+
+.create-listing-loading-page p {
+    margin: 0;
+    font-size: 14px;
+}
+
+.create-listing-spinner,
+.create-listing-small-spinner,
+.create-listing-button-spinner {
+    border-radius: 50%;
+    border-style: solid;
+    border-color: #dbeafe;
+    border-top-color: #2563eb;
+
+    animation: create-listing-spin 0.8s linear infinite;
+}
+
+.create-listing-spinner {
+    width: 30px;
+    height: 30px;
+    border-width: 3px;
+}
+
+.create-listing-small-spinner {
+    width: 20px;
+    height: 20px;
+    border-width: 2px;
+    flex-shrink: 0;
+}
+
+.create-listing-button-spinner {
+    width: 15px;
+    height: 15px;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.35);
+    border-top-color: #ffffff;
+}
+
+@keyframes create-listing-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 800px) {
+    .create-listing-page {
+        padding: 28px 16px 50px;
+    }
+
+    .create-listing-header h1 {
+        font-size: 27px;
+    }
+
+    .create-listing-section {
+        padding: 20px;
+    }
+
+    .create-listing-price-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+@media (max-width: 600px) {
+    .create-listing-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .create-listing-field-full {
+        grid-column: auto;
+    }
+
+    .create-listing-submit-area {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .create-listing-cancel-button,
+    .create-listing-submit-button {
+        width: 100%;
+    }
+
+    .create-listing-normal-range {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

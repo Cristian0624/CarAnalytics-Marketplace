@@ -24,6 +24,11 @@ function Header() {
           <Link to="/anomaly-risk" className="header-nav-link">
             Analiza Risc
           </Link>
+          {user && (
+            <Link to="/my-listings" className="header-nav-link">
+              Anunțurile Mele
+            </Link>
+          )}
           
           <AuthButton />
         </div>

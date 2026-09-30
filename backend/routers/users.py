@@ -87,7 +87,7 @@ def login_user(
         secure=COOKIE_SECURE,
         samesite=COOKIE_SAMESITE,
         max_age=7 * 24 * 60 * 60,
-        path="/auth"
+        path="/"
     )
 
     return {
@@ -174,7 +174,7 @@ def refresh_access_token(
         )
     
     session.revoked_at = now
-    new_refresh_token = create_access_token()
+    new_refresh_token = create_refresh_token()
 
     new_session = UserSession(
         user_id=user.id,
@@ -203,7 +203,7 @@ def refresh_access_token(
         secure=COOKIE_SECURE,
         samesite=COOKIE_SAMESITE,
         max_age=7 * 24 * 60 * 60,
-        path="/auth"
+        path="/"
     )
 
     return {
@@ -237,7 +237,7 @@ def logout_user(
 
     response.delete_cookie(
         key=REFRESH_COOKIE_NAME,
-        path="/auth"
+        path="/"
     )
 
     return {

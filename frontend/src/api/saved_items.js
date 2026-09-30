@@ -1,9 +1,10 @@
 import { apiRequest } from "./api";
 
 export const savedPaths = {
-  searches: "/saved-searches",
-  risks: "/saved-risk-assessments",
   favourites: "/favourites",
+  risks: "/saved-risk-assessments",
+  searches: "/saved-searches",
+  myListings: "/my-listings",
 };
 
 export const listSaved = (kind, page = 1, signal, limit = 12) =>
