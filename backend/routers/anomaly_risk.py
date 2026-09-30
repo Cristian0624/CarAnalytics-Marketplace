@@ -24,7 +24,7 @@ def get_anomaly_risk_service():
                 _service = AnomalyRiskService()
             except Exception:
                 logger.exception("Failed to initialize anomaly-risk inference")
-                raise HTTPException(503, "Anomaly scoring configuration unavailable. Check model_metadata.json.") from None
+                raise HTTPException(503, "Anomaly assessment unavailable. Check the database and scoring configuration.") from None
     return _service
 
 

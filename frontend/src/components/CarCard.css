@@ -694,3 +694,85 @@
 }
 
 
+
+
+/* --- MODAL UPDATES --- */
+
+.car-card-modal-overlay {
+  z-index: 9999;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.car-modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 95vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  cursor: default;
+  /* Reset grid specific properties that might break modal layout */
+  grid-column: auto !important;
+  grid-row: auto !important;
+  animation: modalPopIn 0.3s ease-out forwards;
+}
+
+@keyframes modalPopIn {
+  0% { opacity: 0; transform: scale(0.95) translateY(10px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.car-card-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #eee;
+}
+
+.car-card-actions .action-btn {
+  flex: 1;
+  padding: 14px 20px;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.car-card-actions .action-btn:hover {
+  background: #e5e7eb;
+}
+
+.car-card-actions .action-btn.active {
+  background: #111;
+  color: white;
+  border-color: #111;
+}
+
+.car-card-extra-view {
+  margin-top: 24px;
+  animation: fadeIn 0.3s ease;
+}
+
+.recommendations-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.loading-state, .error-state {
+  text-align: center;
+  padding: 32px;
+  color: #6b7280;
+}
+.error-state {
+  color: #dc2626;
+}
+

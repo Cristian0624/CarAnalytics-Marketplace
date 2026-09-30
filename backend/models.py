@@ -127,6 +127,7 @@ class CarListing(Base):
     price_eur = Column(Float, nullable=True, index=True)
     mileage_was_corrected = Column(Boolean, nullable=True)
     class_ = Column("class", Text, nullable=True, index=True)
+    score = Column("Score", Numeric, nullable=True)
 
 
 class ModelClass(Base):

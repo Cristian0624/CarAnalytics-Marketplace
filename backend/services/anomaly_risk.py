@@ -24,29 +24,40 @@ SCORING_POLICY = {
 }
 
 
-class ModelUnavailableError(RuntimeError):
-    """Missing, incompatible or unreadable deployment artifacts."""
-
+STATISTICAL_CONSTANTS = {
+    "risk_medium": 25.0,
+    "risk_high": 50.0,
+    "inner_score": 20.0,
+    "outer_score": 60.0,
+    "spread_floor": 1.0,
+    "tail_width_fraction": 0.1,
+    "nearby_year_radius": 2,
+    "engine_tolerance": 0.051,
+    "spec_rare_frequency": 0.05,
+    "spec_very_rare_frequency": 0.01,
+    "spec_max_rarity_score": 60.0,
+    "spec_outside_year_score": 80.0,
+    "confidence_medium": 45.0,
+    "confidence_high": 75.0,
+    "confidence_model_support": 200,
+    "confidence_generation_support": 100,
+    "confidence_mileage_support": 100,
+    "confidence_spec_support": 100,
+    "confidence_relative_width_scale": 1.0,
+}
 
 class AnomalyRiskService:
-    def __init__(self, artifact_dir=None):
-        directory = Path(artifact_dir or os.getenv("ANOMALY_RISK_ARTIFACT_DIR") or DEFAULT_ARTIFACT_DIR)
-        try:
-            metadata = json.loads((directory / "model_metadata.json").read_text(encoding="utf-8"))
-            if (metadata["model_version"] != "anomaly-risk-v2"
-                    or metadata["input_feature_names"] != FEATURES
-                    or metadata["feature_names"] != FEATURES
-                    or metadata["derived_features"]
-                    or metadata.get("scoring_policy_version") != "anomaly-risk-v2.3"):
-                raise ValueError("Unsupported scoring configuration contract")
-            self.metadata = {"model_version": metadata["model_version"]}
-            self.SCORING = {**metadata["anomaly_scoring_constants"], **SCORING_POLICY}
-            self.FEATURES = FEATURES
-            self.CATEGORICAL = metadata["categorical_feature_names"]
-            self.NUMERIC = metadata["numeric_feature_names"]
-            self.MISSING = metadata["missing_category"]
-        except Exception as exc:
-            raise ModelUnavailableError("Anomaly scoring configuration could not be loaded") from exc
+    def __init__(self):
+        self.metadata = {"model_version": "anomaly-risk-statistical"}
+        self.SCORING = {**STATISTICAL_CONSTANTS, **SCORING_POLICY}
+        self.FEATURES = FEATURES
+        self.CATEGORICAL = [
+            "brand", "model", "generation",
+            "fuel_type", "gearbox", "drivetrain", "body_type"
+        ]
+        self.NUMERIC = ["year", "mileage", "engine"]
+        self.MISSING = "__MISSING__"
+
 
     def prepare_features(self, frame):
         result = frame.reindex(columns=self.FEATURES).copy()

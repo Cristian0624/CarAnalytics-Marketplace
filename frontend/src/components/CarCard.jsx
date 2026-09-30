@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import "./CarCard.css";
 import FavouriteButton from "./FavouriteButton";
+import { assessAnomalyRisk } from "../api/anomaly_risk";
+import { getRecommendationsForCar } from "../api/recommendations";
+import AnomalyRiskResults from "./AnomalyRiskResults";
+import { buildRiskPayload } from "../utils/anomalyRisk";
+import { createPortal } from "react-dom";
 
 function getLogoFileName(brand) {
   if (!brand) return "unknown";
@@ -10,61 +15,56 @@ function getLogoFileName(brand) {
   return `${name}.png`;
 }
 
-
 function getScoreClass(score) {
   const value = Number(score);
-
-  if (value < 30) {
-    return "score-red";
-  }
-
-  if (value < 60) {
-    return "score-orange";
-  }
-
+  if (value < 30) return "score-red";
+  if (value < 60) return "score-orange";
   return "score-green";
 }
 
 function formatValue(value) {
-  if (value === null || value === undefined || value === "") {
-    return "—";
-  }
-
+  if (value === null || value === undefined || value === "") return "—";
   return value;
 }
 
 function formatNumber(value) {
-  if (value === null || value === undefined || value === "") {
-    return "—";
-  }
-
+  if (value === null || value === undefined || value === "") return "—";
   const number = Number(value);
-
-  if (Number.isNaN(number)) {
-    return value;
-  }
-
+  if (Number.isNaN(number)) return value;
   return number.toLocaleString();
 }
 
-function CarCard({
-  car,
-  expanded,
-  position,
-  onClick,
-  showFavourite = true,
-  peeking = false,
-}) {
+function CarCard({ car, expanded, position, onClick, showFavourite = true, peeking = false }) {
+  const [currentCar, setCurrentCar] = useState(car);
+
+  useEffect(() => {
+    setCurrentCar(car);
+  }, [car]);
+
   const [isClosing, setIsClosing] = useState(false);
   const cardRef = useRef(null);
-  const score = Number(car.score);
+  const modalRef = useRef(null);
+  const score = Number(currentCar.score);
+
+  const [viewMode, setViewMode] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
+  const [riskResult, setRiskResult] = useState(null);
+  const [loadingView, setLoadingView] = useState(false);
+  const [viewError, setViewError] = useState("");
+
+  useEffect(() => {
+    if (!expanded) {
+      setViewMode(null);
+      setCurrentCar(car);
+    }
+  }, [expanded, car]);
 
   // Handle outside click when expanded
   useEffect(() => {
     if (!expanded || isClosing) return;
 
     function handleClickOutside(event) {
-      if (cardRef.current && !cardRef.current.contains(event.target)) {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
         handleClose(event);
       }
     }
@@ -79,16 +79,12 @@ function CarCard({
     if (event) {
       event.stopPropagation();
     }
-
     if (!expanded || isClosing) return;
-
     setIsClosing(true);
-
-    // Match the 0.3s CSS collapse animation duration
     setTimeout(() => {
       setIsClosing(false);
       onClick();
-    }, 300);
+    }, 200);
   }
 
   function handleCardClick(event) {
@@ -99,254 +95,266 @@ function CarCard({
 
   function openOriginalListing(event) {
     event.stopPropagation();
+    if (currentCar.url) {
+      window.open(currentCar.url, "_blank", "noopener,noreferrer");
+    }
+  }
 
-    if (car.url) {
-      window.open(car.url, "_blank", "noopener,noreferrer");
+  async function handleViewRecommendations(event) {
+    event.stopPropagation();
+    if (viewMode === 'recommendations') {
+      setViewMode(null);
+      return;
+    }
+    setViewMode('recommendations');
+    setLoadingView(true);
+    setViewError("");
+    try {
+      const data = await getRecommendationsForCar(currentCar.id);
+      setRecommendations(data.recommendations || []);
+    } catch (err) {
+      setViewError("Nu am putut încărca recomandările.");
+    } finally {
+      setLoadingView(false);
+    }
+  }
+
+  async function handleViewRisk(event) {
+    event.stopPropagation();
+    if (viewMode === 'risk') {
+      setViewMode(null);
+      return;
+    }
+    setViewMode('risk');
+    setLoadingView(true);
+    setViewError("");
+    try {
+      const payloadForm = {
+        brand: currentCar.brand, model: currentCar.model, generation: currentCar.generation,
+        price: currentCar.price_eur, year: currentCar.year, mileage: currentCar.mileage, engine: currentCar.engine_size,
+        fuel_type: currentCar.fuel_type, gearbox: currentCar.gearbox, drivetrain: currentCar.drivetrain, body_type: currentCar.body_type
+      };
+      const payload = buildRiskPayload(payloadForm);
+      payload.listing_id = currentCar.id;
+      const res = await assessAnomalyRisk(payload);
+      setRiskResult(res);
+    } catch (err) {
+      setViewError("Nu am putut încărca analiza riscului.");
+    } finally {
+      setLoadingView(false);
     }
   }
 
   return (
-    <article
-      ref={cardRef}
-      className={`car-card ${expanded ? "car-card-expanded" : ""} ${
-        isClosing ? "car-card-collapsing" : ""
-      } car-card-${position}`}
-      onClick={handleCardClick}
-      tabIndex={0}
-      onKeyDown={(event) => {
-        if (
-          event.target === event.currentTarget &&
-          (event.key === "Enter" || event.key === " ")
-        ) {
-          event.preventDefault();
-          if (expanded) {
-            handleClose(event);
-          } else {
-            onClick();
+    <>
+      <article
+        ref={cardRef}
+        className={`car-card`}
+        onClick={handleCardClick}
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) {
+            event.preventDefault();
+            if (!expanded) onClick();
           }
-        }
-      }}
-    >
-      {!expanded ? (
+        }}
+      >
         <div className="car-card-content">
           <div className="car-card-title-row">
             <div>
-              <h3>
-                {formatValue(car.brand)} {formatValue(car.model)}
-              </h3>
-              {car.generation && (
+              <h3>{formatValue(currentCar.brand)} {formatValue(currentCar.model)}</h3>
+              {currentCar.generation && (
                 <p className="car-generation">
-                  {typeof car.generation === 'string' ? car.generation.trim() : car.generation}
+                  {typeof currentCar.generation === 'string' ? currentCar.generation.trim() : currentCar.generation}
                 </p>
               )}
             </div>
-
             <img 
-              src={`/logos/${getLogoFileName(car.brand)}`} 
-              alt={car.brand} 
+              src={`/logos/${getLogoFileName(currentCar.brand)}`} 
+              alt={currentCar.brand} 
               className="collapsed-car-logo" 
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.style.display = 'none';
-              }}
+              onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
             />
           </div>
-
           <div className="car-details">
-            <span>{formatValue(car.year)}</span>
-            <span>{formatNumber(car.mileage)} km</span>
+            <span>{formatValue(currentCar.year)}</span>
+            <span>{formatNumber(currentCar.mileage)} km</span>
           </div>
-
           <div className="car-card-bottom">
-            <strong>€{formatNumber(car.price_eur)}</strong>
-            {car.score !== null && car.score !== undefined && (
-              <span className={`score-badge ${getScoreClass(score)}`}>
-                {score.toFixed(0)}
-              </span>
+            <strong>€{formatNumber(currentCar.price_eur)}</strong>
+            {currentCar.score !== null && currentCar.score !== undefined && (
+              <span className={`score-badge ${getScoreClass(score)}`}>{score.toFixed(0)}</span>
             )}
           </div>
         </div>
-      ) : (
-        <div className="car-expanded-content">
-          {showFavourite && <FavouriteButton car={car} />}
-          <button
-            className="original-listing-button"
-            onClick={openOriginalListing}
-            title="Deschide anunțul original pe 999.md"
+      </article>
+
+      {expanded && createPortal(
+        <div className="filter-modal-overlay car-card-modal-overlay" onClick={handleClose}>
+          <article
+            ref={modalRef}
+            className={`car-modal-content ${isClosing ? "car-card-collapsing" : ""}`}
+            onClick={(e) => e.stopPropagation()}
           >
-            <img src="/999-logo.png" alt="999.md" className="button-logo-999" />
-            <span>Deschide anunțul</span>
-          </button>
+            <div className="car-expanded-content">
+              {showFavourite && <FavouriteButton car={currentCar} />}
+              <button className="original-listing-button" onClick={openOriginalListing} title="Deschide anunțul original pe 999.md">
+                <img src="/999-logo.png" alt="999.md" className="button-logo-999" />
+                <span>Deschide anunțul</span>
+              </button>
+              <button className="close-card-button" onClick={handleClose} title="Close">✕</button>
 
-          <button
-            className="close-card-button"
-            onClick={handleClose}
-            title="Close"
-          >
-            ✕
-          </button>
+              <div className="expanded-header">
+                <div>
+                  <h2 style={{ textTransform: "uppercase", margin: "0 0 4px 0", fontSize: "24px", color: '#111', fontWeight: 800 }}>
+                    {formatValue(currentCar.brand)} {formatValue(currentCar.model)} {currentCar.year ? `(${currentCar.year})` : ""}
+                  </h2>
+                  {currentCar.generation && (
+                    <p style={{ margin: '0 0 12px 0', color: '#555', textAlign: 'left' }}>
+                      {typeof currentCar.generation === 'string' ? currentCar.generation.trim() : currentCar.generation}
+                    </p>
+                  )}
+                  <div className="expanded-price">
+                    <span>PREȚ</span>
+                    <strong>€{formatNumber(currentCar.price_eur)}</strong>
+                  </div>
+                </div>
+                <img src={`/logos/${getLogoFileName(currentCar.brand)}`} alt={currentCar.brand} className="expanded-car-logo" onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }} />
+                {currentCar.score !== null && currentCar.score !== undefined && (
+                  <div className={`expanded-score-circular ${getScoreClass(score)}`}>
+                    <span className="score-label">SCORE</span>
+                    <div className="score-circle">
+                      <span className="score-main">{score.toFixed(0)}</span>
+                      <span className="score-sub">{score.toFixed(0)}/80</span>
+                    </div>
+                  </div>
+                )}
+              </div>
 
-          <div className="expanded-header">
-            <div>
-              <h2
-                style={{
-                  textTransform: "uppercase",
-                  margin: "0 0 4px 0",
-                  fontSize: "24px",
-                }}
-              >
-                {formatValue(car.brand)} {formatValue(car.model)}{" "}
-                {car.year ? `(${car.year})` : ""}
-              </h2>
+              <div className="expanded-main">
+                <div className="specs-container">
+                  <div className="spec-group">
+                    <h4>DATE GENERALE</h4>
+                    <div className="spec-row">
+                      <div className="spec-item"><span>Marcă</span><strong>{formatValue(currentCar.brand)}</strong></div>
+                      <div className="spec-item"><span>Model</span><strong>{formatValue(currentCar.model)}</strong></div>
+                      <div className="spec-item"><span>Caroserie</span><strong>{formatValue(currentCar.body_type)}</strong></div>
+                      <div className="spec-item"><span>Înmatriculare</span><strong>{formatValue(currentCar.registration_country)}</strong></div>
+                    </div>
+                  </div>
+                  <div className="spec-group">
+                    <h4>PERFORMANȚĂ</h4>
+                    <div className="spec-row">
+                      <div className="spec-item"><span>Cai Putere</span><strong>{formatValue(currentCar.horsepower)} {currentCar.horsepower ? "CP" : ""}</strong></div>
+                      <div className="spec-item"><span>Cutie de viteze</span><strong>{formatValue(currentCar.gearbox)}</strong></div>
+                      <div className="spec-item"><span>Tracțiune</span><strong>{formatValue(currentCar.drivetrain)}</strong></div>
+                      <div className="spec-item"><span>Combustibil</span><strong>{formatValue(currentCar.fuel_type)}</strong></div>
+                    </div>
+                  </div>
+                  <div className="spec-group">
+                    <h4>STARE ȘI DETALII</h4>
+                    <div className="spec-row">
+                      <div className="spec-item"><span>An</span><strong>{formatValue(currentCar.year)}</strong></div>
+                      <div className="spec-item"><span>Rulaj</span><strong>{formatNumber(currentCar.mileage)} {currentCar.mileage ? "km" : ""}</strong></div>
+                      <div className="spec-item"><span>Stare</span><strong>{formatValue(currentCar.state)}</strong></div>
+                      <div className="spec-item"><span>Motor</span><strong>{formatValue(currentCar.engine_size)}</strong></div>
+                    </div>
+                  </div>
+                  <div className="spec-group">
+                    <h4>CONFIGURAȚIE</h4>
+                    <div className="spec-row">
+                      <div className="spec-item"><span>Uși</span><strong>{formatValue(currentCar.doors)}</strong></div>
+                      <div className="spec-item"><span>Locuri</span><strong>{formatValue(currentCar.seats)}</strong></div>
+                    </div>
+                  </div>
+                </div>
 
-              {car.generation && (
-                <p style={{ margin: '0 0 12px 0', color: '#555', textAlign: 'left' }}>
-                  {typeof car.generation === 'string' ? car.generation.trim() : car.generation}
-                </p>
+                {currentCar.description && (
+                  <div className="information-group" style={{ marginTop: "24px" }}>
+                    <h4 style={{ fontSize: "11px", textTransform: "uppercase", marginBottom: "12px", color: "#111", fontWeight: 700 }}>DESCRIERE</h4>
+                    <p className="car-description" style={{ margin: 0, color: "#555", lineHeight: "1.6" }}>{currentCar.description}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Action buttons */}
+              <div className="car-card-actions">
+                <button className={`action-btn ${viewMode === 'recommendations' ? 'active' : ''}`} onClick={handleViewRecommendations}>
+                  Recomandări
+                </button>
+                <button className={`action-btn ${viewMode === 'risk' ? 'active' : ''}`} onClick={handleViewRisk}>
+                  Analiza Riscului
+                </button>
+              </div>
+
+              {/* Extra view sections */}
+              {viewMode && (
+                <div className="car-card-extra-view">
+                  {loadingView && <div className="loading-state">Se încarcă...</div>}
+                  {viewError && <div className="error-state">{viewError}</div>}
+                  
+                  {!loadingView && !viewError && viewMode === 'recommendations' && (
+                    <div className="recommendations-container">
+                      <h3 style={{marginTop: 0, marginBottom: "16px", fontSize: "18px", color: "#111"}}>Mașini Recomandate</h3>
+                      {recommendations.length > 0 ? (
+                        <div className="recommendations-mini-grid">
+                          {recommendations.slice(0, 10).map(c => (
+                            
+                            <article key={c.id} className="car-card" onClick={(e) => {
+                                e.stopPropagation();
+                                setCurrentCar(c);
+                                setViewMode(null);
+                            }} style={{ cursor: 'pointer', margin: 0 }}>
+                              <div className="car-card-content">
+                                <div className="car-card-title-row">
+                                  <div>
+                                    <h3>{formatValue(c.brand)} {formatValue(c.model)}</h3>
+                                    {c.generation && (
+                                      <p className="car-generation">
+                                        {typeof c.generation === 'string' ? c.generation.trim() : c.generation}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <img 
+                                    src={`/logos/${getLogoFileName(c.brand)}`} 
+                                    alt={c.brand} 
+                                    className="collapsed-car-logo" 
+                                    onError={(ev) => { ev.target.onerror = null; ev.target.style.display = 'none'; }}
+                                  />
+                                </div>
+                                <div className="car-details">
+                                  <span>{formatValue(c.year)}</span>
+                                  <span>{formatNumber(c.mileage)} km</span>
+                                </div>
+                                <div className="car-card-bottom">
+                                  <strong>€{formatNumber(c.price_eur)}</strong>
+                                  {c.score !== null && c.score !== undefined && (
+                                    <span className={`score-badge ${getScoreClass(c.score)}`}>{Number(c.score).toFixed(0)}</span>
+                                  )}
+                                </div>
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      ) : (
+                        <p>Nu s-au găsit recomandări pentru această mașină.</p>
+                      )}
+                    </div>
+                  )}
+
+                  {!loadingView && !viewError && viewMode === 'risk' && riskResult && (
+                    <div className="risk-container" style={{background: "#f9fafb", padding: "16px", borderRadius: "12px", marginTop: "16px", border: "1px solid #eee"}}>
+                      <AnomalyRiskResults result={riskResult} vehicle={{...car, price: currentCar.price_eur, engine: currentCar.engine_size}} />
+                    </div>
+                  )}
+                </div>
               )}
 
-              <div className="expanded-price">
-                <span>PREȚ</span>
-                <strong>€{formatNumber(car.price_eur)}</strong>
-              </div>
             </div>
-
-            <img 
-              src={`/logos/${getLogoFileName(car.brand)}`} 
-              alt={car.brand} 
-              className="expanded-car-logo" 
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.style.display = 'none';
-              }}
-            />
-
-            {car.score !== null && car.score !== undefined && (
-              <div
-                className={`expanded-score-circular ${getScoreClass(score)}`}
-              >
-                <span className="score-label">SCORE</span>
-                <div className="score-circle">
-                  <span className="score-main">{score.toFixed(0)}</span>
-                  <span className="score-sub">{score.toFixed(0)}/80</span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="expanded-main">
-            <div className="specs-container">
-              <div className="spec-group">
-                <h4>DATE GENERALE</h4>
-                <div className="spec-row">
-                  <div className="spec-item">
-                    <span>Marcă</span>
-                    <strong>{formatValue(car.brand)}</strong>
-                  </div>
-                  <div className="spec-item">
-                    <span>Model</span>
-                    <strong>{formatValue(car.model)}</strong>
-                  </div>
-                  <div className="spec-item">
-                    <span>Caroserie</span>
-                    <strong>{formatValue(car.body_type)}</strong>
-                  </div>
-                  <div className="spec-item">
-                    <span>Înmatriculare</span>
-                    <strong>{formatValue(car.registration_country)}</strong>
-                  </div>
-                </div>
-              </div>
-
-              <div className="spec-group">
-                <h4>PERFORMANȚĂ</h4>
-                <div className="spec-row">
-                  <div className="spec-item">
-                    <span>Cai Putere</span>
-                    <strong>
-                      {formatValue(car.horsepower)}{" "}
-                      {car.horsepower ? "CP" : ""}
-                    </strong>
-                  </div>
-                  <div className="spec-item">
-                    <span>Cutie de viteze</span>
-                    <strong>{formatValue(car.gearbox)}</strong>
-                  </div>
-                  <div className="spec-item">
-                    <span>Tracțiune</span>
-                    <strong>{formatValue(car.drivetrain)}</strong>
-                  </div>
-                  <div className="spec-item">
-                    <span>Combustibil</span>
-                    <strong>{formatValue(car.fuel_type)}</strong>
-                  </div>
-                </div>
-              </div>
-
-              <div className="spec-group">
-                <h4>STARE ȘI DETALII</h4>
-                <div className="spec-row">
-                  <div className="spec-item">
-                    <span>An</span>
-                    <strong>{formatValue(car.year)}</strong>
-                  </div>
-                  <div className="spec-item">
-                    <span>Rulaj</span>
-                    <strong>
-                      {formatNumber(car.mileage)}{" "}
-                      {car.mileage ? "km" : ""}
-                    </strong>
-                  </div>
-                  <div className="spec-item">
-                    <span>Stare</span>
-                    <strong>{formatValue(car.state)}</strong>
-                  </div>
-                  <div className="spec-item">
-                    <span>Motor</span>
-                    <strong>{formatValue(car.engine_size)}</strong>
-                  </div>
-                </div>
-              </div>
-
-              <div className="spec-group">
-                <h4>CONFIGURAȚIE</h4>
-                <div className="spec-row">
-                  <div className="spec-item">
-                    <span>Uși</span>
-                    <strong>{formatValue(car.doors)}</strong>
-                  </div>
-                  <div className="spec-item">
-                    <span>Locuri</span>
-                    <strong>{formatValue(car.seats)}</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {car.description && (
-              <div className="information-group" style={{ marginTop: "24px" }}>
-                <h4
-                  style={{
-                    fontSize: "11px",
-                    textTransform: "uppercase",
-                    marginBottom: "12px",
-                    color: "#111",
-                  }}
-                >
-                  DESCRIERE
-                </h4>
-                <p
-                  className="car-description"
-                  style={{ margin: 0, color: "#555", lineHeight: "1.6" }}
-                >
-                  {car.description}
-                </p>
-              </div>
-            )}
-          </div>
+          </article>
         </div>
-      )}
-    </article>
+      , document.body)}
+    </>
   );
 }
 

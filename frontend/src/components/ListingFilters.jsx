@@ -405,143 +405,8 @@ function ListingFilters({
   return (
     <section className="listing-filters">
 
-        <button
-            type="button"
-            className="recommendations-button"
-            onClick={() => {
-                window.location.href =
-                    "/recommendations";
-            }}
-        >
-            <span className="recommendations-button-icon">
-                ✨
-            </span>
-
-            <span>
-                Find recommended cars
-            </span>
-
-            <span className="recommendations-button-new">
-                New
-            </span>
-        </button>
-
-        {/* MAIN SEARCH */}
-      <div
-        className="listing-search-container"
-        ref={searchContainerRef}
-      >
-        <div className="listing-search-wrapper">
-          <span className="search-icon">
-            🔍
-          </span>
-
-          <input
-            type="text"
-            value={filters.search ?? ""}
-            onChange={(e) =>
-              update(
-                "search",
-                e.target.value
-              )
-            }
-            onFocus={() => {
-              if (
-                suggestions.length > 0
-              ) {
-                setShowSuggestions(true);
-              }
-            }}
-            onKeyDown={
-              handleCautăKeyDown
-            }
-            placeholder="Caută by brand, model, generation..."
-            autoComplete="off"
-          />
-
-          {filters.search && (
-            <button
-              type="button"
-              className="clear-search"
-              onClick={() => {
-                update("search", "");
-                setSuggestions([]);
-                setShowSuggestions(false);
-              }}
-            >
-              ×
-            </button>
-          )}
-
-          <button
-            type="button"
-            className="search-button"
-            onClick={() => {
-              setShowSuggestions(false);
-              onSearch();
-            }}
-            disabled={loading}
-          >
-            Caută
-          </button>
-        </div>
-
-        {/* AUTOCOMPLETE */}
-        {showSuggestions &&
-          suggestions.length > 0 && (
-            <div className="search-suggestions">
-              {suggestions.map(
-                (suggestion, index) => (
-                  <button
-                    type="button"
-                    key={`${suggestion}-${index}`}
-                    className="search-suggestion"
-                    onClick={() =>
-                      selectSuggestion(
-                        suggestion
-                      )
-                    }
-                  >
-                    <span className="suggestion-icon">
-                      🔍
-                    </span>
-
-                    <span>
-                      {suggestion}
-                    </span>
-                  </button>
-                )
-              )}
-            </div>
-          )}
-      </div>
-
-      {/* ADVANCED SEARCH BUTTON */}
-      <button
-        type="button"
-        className={`advanced-search-toggle ${
-          advancedOpen
-            ? "open"
-            : ""
-        }`}
-        onClick={() =>
-          setAdvancedOpen(
-            (current) => !current
-          )
-        }
-      >
-        <span>
-          Advanced search
-        </span>
-
-        <span className="advanced-search-arrow">
-          {advancedOpen ? "▲" : "▼"}
-        </span>
-      </button>
-
       {/* ADVANCED FILTERS */}
-      {advancedOpen && (
-        <div className="advanced-filters">
+      <div className="advanced-filters">
 
           <div className="filters-header">
             <div>
@@ -1088,9 +953,7 @@ function ListingFilters({
             </button>
           </div>
         </div>
-      )}
-    
-      {!advancedOpen && actions && <div className="saved-actions">{actions}</div>}
+{actions && <div className="saved-actions">{actions}</div>}
       {activePills.length > 0 && (
         <div className="active-filters-pills">
           <div className="pills-header">

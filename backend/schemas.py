@@ -174,7 +174,12 @@ class CarListingBase(BaseModel):
     url: str | None = None
     link_999: str | None = Field(default=None, description="Direct link to listing on 999.md")
     seller_type: str | None = None
+    state: str | None = None
+    doors: int | None = None
+    seats: int | None = None
+    registration_country: str | None = None
     car_class: str | None = Field(default=None, alias="class", validation_alias=None)
+    score: float | None = None
 
     @field_validator("engine", mode="before")
     @classmethod
@@ -212,7 +217,12 @@ class CarListingBase(BaseModel):
             url=resolved_url,
             link_999=resolved_url,
             seller_type=listing.seller_type,
+            state=getattr(listing, "state", None),
+            doors=getattr(listing, "doors", None),
+            seats=getattr(listing, "seats", None),
+            registration_country=getattr(listing, "registration_country", None),
             car_class=getattr(listing, "class_", None),
+            score=float(listing.score) if getattr(listing, 'score', None) is not None else None,
         )
 
     model_config = {
@@ -250,6 +260,10 @@ class RecommendationTarget(BaseModel):
     mileage: int
     price_eur: float
     body_type: str | None = None
+    state: str | None = None
+    doors: int | None = None
+    seats: int | None = None
+    registration_country: str | None = None
     car_class: str | None = Field(default=None, alias="class")
     categories: CarCategories | None = None
 

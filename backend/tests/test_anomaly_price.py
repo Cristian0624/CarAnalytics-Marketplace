@@ -68,7 +68,7 @@ class DatabasePriceTests(unittest.TestCase):
         self.addCleanup(self.directory.cleanup)
         self.artifacts = Path(self.directory.name)
         write_scoring_metadata(self.artifacts)
-        self.service = AnomalyRiskService(self.artifacts)
+        self.service = AnomalyRiskService()
         self.engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
         self.addCleanup(self.engine.dispose)
         # The app has two mappings of this table with duplicate index names.
