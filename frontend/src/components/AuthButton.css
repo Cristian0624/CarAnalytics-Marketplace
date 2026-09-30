@@ -1,60 +1,162 @@
+:root {
+  --cyan: #111827;
+  --dark: #ffffff;
+  --border-w: 2px;
+}
+
 .auth-button-wrapper {
   position: relative;
   z-index: 100;
 }
 
+/* Base Blob Button Styles */
 .auth-button {
+  z-index: 1;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--cyan);
+  background-color: transparent;
+  outline: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 30px;
+  transition: color 0.8s ease;
+}
+
+/* Keeps label and icons above liquid blobs */
+.auth-button__content {
+  z-index: 2;
   display: flex;
   align-items: center;
-  gap: 6px;
-  background-color: #2563eb;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
+  gap: 8px;
+  pointer-events: none;
+}
+
+/* Border Layer */
+.auth-button::before {
+  content: "";
+  z-index: 1;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  border: var(--border-w) solid var(--cyan);
+  border-radius: 30px;
+  box-sizing: border-box;
+}
+
+/* Offset Shadow Layer */
+.auth-button::after {
+  content: "";
+  z-index: -2;
+  position: absolute;
+  left: calc(var(--border-w) * 1.5);
+  top: calc(var(--border-w) * 1.5);
+  width: 100%;
+  height: 100%;
+  transition: all 0.3s 0.2s;
+  border-radius: 30px;
 }
 
 .auth-button:hover {
-  background-color: #1d4ed8;
+  color: var(--dark);
 }
 
+.auth-button:hover::after {
+  transition: all 1s;
+  left: 0;
+  top: 0;
+}
+
+/* Liquid Container */
+.auth-button__inner {
+  z-index: -1;
+  overflow: hidden;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 30px;
+  background: #ffffff;
+}
+
+.auth-button__blobs {
+  position: relative;
+  display: block;
+  height: 100%;
+  filter: url("#goo");
+}
+
+/* Individual Liquid Blobs */
+.auth-button__blob {
+  position: absolute;
+  top: var(--border-w);
+  width: 25%;
+  height: 100%;
+  background: var(--cyan);
+  border-radius: 100%;
+  transform: translate3d(0, 150%, 0) scale(1.7);
+  transition: transform 0.45s ease;
+}
+
+/* Positional delays for liquid animation */
+.auth-button__blob:nth-child(1) {
+  left: 0%;
+  transition-delay: 0s;
+}
+
+.auth-button__blob:nth-child(2) {
+  left: 30%;
+  transition-delay: 0.08s;
+}
+
+.auth-button__blob:nth-child(3) {
+  left: 60%;
+  transition-delay: 0.16s;
+}
+
+.auth-button__blob:nth-child(4) {
+  left: 90%;
+  transition-delay: 0.24s;
+}
+
+/* Trigger blob animation on hover */
+.auth-button:hover .auth-button__blob {
+  transform: translateZ(0) scale(1.7);
+}
+
+@supports (filter: url("#goo")) {
+  .auth-button__blob {
+    transform: translate3d(0, 150%, 0) scale(1.4);
+  }
+  .auth-button:hover .auth-button__blob {
+    transform: translateZ(0) scale(1.4);
+  }
+}
+
+/* Dropdown Menu */
 .auth-dropdown {
   position: absolute;
-  top: 44px;
+  top: calc(100% + 8px);
   right: 0;
-  min-width: 160px;
+  min-width: 220px;
   display: flex;
   flex-direction: column;
-  padding: 4px;
+  padding: 6px;
   background-color: #111827;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
   text-align: left;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-}
-
-.auth-dropdown-item {
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 10px 12px;
-  font-size: 14px;
-  color: white;
-  background: transparent;
-  border: none;
-  text-align: left;
-  text-decoration: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.auth-dropdown-item:hover {
-  background-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
 }
 
 .auth-dropdown-header {
@@ -69,12 +171,43 @@
   max-width: 220px;
 }
 
+.auth-dropdown-item {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: #ffffff;
+  background: transparent;
+  border: none;
+  text-align: left;
+  text-decoration: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.15s ease;
+}
+
+.auth-dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.auth-logout {
+  color: #f87171;
+}
+
+.auth-logout:hover {
+  background-color: rgba(248, 113, 113, 0.15);
+}
+
+/* Chevron */
 .chevron {
-    display: inline-block;
-    font-size: 10px;
-    transition: transform 0.2s ease;
+  display: inline-block;
+  font-size: 10px;
+  transition: transform 0.2s ease;
+  margin-left: 2px;
 }
 
 .chevron-open {
-    transform: rotate(180deg);
+  transform: rotate(180deg);
 }

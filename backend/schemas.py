@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from pydantic import AliasChoices, BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
@@ -174,7 +174,12 @@ class CarListingBase(BaseModel):
     url: str | None = None
     link_999: str | None = Field(default=None, description="Direct link to listing on 999.md")
     seller_type: str | None = None
+    state: str | None = None
+    doors: int | None = None
+    seats: int | None = None
+    registration_country: str | None = None
     car_class: str | None = Field(default=None, alias="class", validation_alias=None)
+    score: float | None = None
 
     @field_validator("engine", mode="before")
     @classmethod
@@ -212,7 +217,12 @@ class CarListingBase(BaseModel):
             url=resolved_url,
             link_999=resolved_url,
             seller_type=listing.seller_type,
+            state=getattr(listing, "state", None),
+            doors=getattr(listing, "doors", None),
+            seats=getattr(listing, "seats", None),
+            registration_country=getattr(listing, "registration_country", None),
             car_class=getattr(listing, "class_", None),
+            score=float(listing.score) if getattr(listing, 'score', None) is not None else None,
         )
 
     model_config = {
@@ -250,6 +260,10 @@ class RecommendationTarget(BaseModel):
     mileage: int
     price_eur: float
     body_type: str | None = None
+    state: str | None = None
+    doors: int | None = None
+    seats: int | None = None
+    registration_country: str | None = None
     car_class: str | None = Field(default=None, alias="class")
     categories: CarCategories | None = None
 
@@ -276,4 +290,73 @@ class PaginatedCarsResponse(BaseModel):
     page: int
     page_size: int
     items: list[CarListingBase]
+
+
+# Market Trends Schemas
+class TrendPoint(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    snapshot_date: date
+    median_price: float
+    avg_price: float
+    min_price: float | None = None
+    max_price: float | None = None
+    listing_count: int
+
+
+class MarketTrendResponse(BaseModel):
+    brand: str
+    model: str
+    year: int
+    total_snapshots: int
+    earliest_date: date | None = None
+    latest_date: date | None = None
+    latest_median_price: float | None = None
+    overall_change_eur: float | None = None
+    overall_change_pct: float | None = None
+    trend_direction: str = "stable"  # "up", "down", or "stable"
+    data_points: list[TrendPoint]
+
+
+class YearPriceSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    year: int
+    median_price: float
+    avg_price: float
+    listing_count: int
+
+
+class TrendFilterOptionsResponse(BaseModel):
+    brands: list[str] = Field(default_factory=list)
+    models: list[str] = Field(default_factory=list)
+    years: list[YearPriceSummary] = Field(default_factory=list)
+
+
+class ListingPricePoint(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    price_eur: float
+    scraped_at: datetime
+
+
+class ListingPriceHistoryResponse(BaseModel):
+    listing_id: int
+    brand: str | None = None
+    model: str | None = None
+    year: int | None = None
+    first_observed_price: float | None = None
+    latest_price: float | None = None
+    price_change_eur: float | None = None
+    price_change_pct: float | None = None
+    is_price_drop: bool = False
+    history: list[ListingPricePoint]
+
+
+class TrendsSyncResponse(BaseModel):
+    message: str
+    snapshot_date: date
+    trends_records_processed: int
+    observations_recorded: int
+
 

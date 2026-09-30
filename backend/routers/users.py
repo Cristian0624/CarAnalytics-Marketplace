@@ -92,7 +92,6 @@ def login_user(
 
     return {
         "message" : "Login successful",
-         "access_token": access_token, # remove when it is resolved
         "token_type": "bearer"
     }
 
@@ -261,7 +260,7 @@ def update_current_user_profile(
     if user_data.email is not None:
         existing_user = db.query(User).filter(
             User.email == user_data.email,
-            User.id == current_user.id 
+            User.id != current_user.id 
         ).first()
 
         if existing_user:

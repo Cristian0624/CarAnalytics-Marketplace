@@ -23,6 +23,27 @@ function getErrorMessage(data, fallback) {
   return fallback;
 }
 
+let refreshPromise = null;
+
+async function attemptRefresh() {
+  if (!refreshPromise) {
+    refreshPromise = fetch(`${API_URL}/users/refresh`, {
+      method: "POST",
+      credentials: "include",
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Refresh failed");
+        }
+        return res.json().catch(() => null);
+      })
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+  return refreshPromise;
+}
+
 export async function apiRequest(
   endpoint,
   {
@@ -30,6 +51,7 @@ export async function apiRequest(
     body,
     token,
     headers = {},
+    signal,
   } = {}
 ) {
   const requestHeaders = {
@@ -44,19 +66,43 @@ export async function apiRequest(
     requestHeaders["Authorization"] = `Bearer ${token}`;
   }
 
-  const res = await fetch(`${API_URL}${endpoint}`, {
+  let res = await fetch(`${API_URL}${endpoint}`, {
     method,
     headers: requestHeaders,
     credentials: "include",
+    signal,
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
+
+  if (
+    res.status === 401 &&
+    !endpoint.startsWith("/users/login") &&
+    !endpoint.startsWith("/users/register") &&
+    !endpoint.startsWith("/users/refresh")
+  ) {
+    try {
+      await attemptRefresh();
+      res = await fetch(`${API_URL}${endpoint}`, {
+        method,
+        headers: requestHeaders,
+        credentials: "include",
+        signal,
+        body: body !== undefined ? JSON.stringify(body) : undefined,
+      });
+    } catch {
+      // Refresh failed, proceed to error handling below
+    }
+  }
 
   const data = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new Error(
+    const error = new Error(
       getErrorMessage(data, `Request failed (${res.status})`)
     );
+    error.status = res.status;
+    error.detail = data?.detail;
+    throw error;
   }
 
   return data;

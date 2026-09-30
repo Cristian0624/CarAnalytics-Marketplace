@@ -10,6 +10,7 @@ SCRIPTS = (
     "listing_data_cleaner_v2.py",
     "model_class_scraper2_v2.py",
     "add_class_to_listings_v2.py",
+    "update_market_trends_v2.py",
 )
 
 
