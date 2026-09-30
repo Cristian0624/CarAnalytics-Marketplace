@@ -5,7 +5,7 @@ import jwt
 from database import get_db
 from models import User, UserSession
 from schemas import (UserCreate, UserResponse, UserLogin, UserUpdate, PasswordChange)
-from security import (hash_password, verify_password, create_access_token, decode_access_token, create_refresh_token, hash_refresh_token, get_refresh_token_expiration)
+from security import (hash_password, verify_password, create_access_token, decode_access_token, create_refresh_token, hash_refresh_token, get_refresh_token_expiration, ACCESS_TOKEN_EXPIRE_MINUTES)
 from datetime import datetime, timezone
 
 router = APIRouter(
@@ -17,7 +17,7 @@ Security = HTTPBearer()
 
 ACCESS_COOKIE_NAME = "access_token"
 REFRESH_COOKIE_NAME = "refresh_token"
-COOKIE_SECURE = False # change this latter when deploing to online server and https
+COOKIE_SECURE = False
 COOKIE_SAMESITE = "lax"
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
@@ -76,7 +76,7 @@ def login_user(
         httponly=True,
         secure=COOKIE_SECURE,
         samesite=COOKIE_SAMESITE,
-        max_age=15 * 26,
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         path="/"
     )
 
@@ -87,7 +87,7 @@ def login_user(
         secure=COOKIE_SECURE,
         samesite=COOKIE_SAMESITE,
         max_age=7 * 24 * 60 * 60,
-        path="/auth"
+        path="/"
     )
 
     return {
@@ -175,7 +175,7 @@ def refresh_access_token(
         )
     
     session.revoked_at = now
-    new_refresh_token = create_access_token()
+    new_refresh_token = create_refresh_token()
 
     new_session = UserSession(
         user_id=user.id,
@@ -193,7 +193,7 @@ def refresh_access_token(
         httponly=True,
         secure=COOKIE_SECURE,
         samesite=COOKIE_SAMESITE,
-        max_age=15 * 26,
+        max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         path="/"
     )
 
@@ -204,7 +204,7 @@ def refresh_access_token(
         secure=COOKIE_SECURE,
         samesite=COOKIE_SAMESITE,
         max_age=7 * 24 * 60 * 60,
-        path="/auth"
+        path="/"
     )
 
     return {
@@ -238,7 +238,7 @@ def logout_user(
 
     response.delete_cookie(
         key=REFRESH_COOKIE_NAME,
-        path="/auth"
+        path="/"
     )
 
     return {
@@ -321,7 +321,7 @@ def change_current_user_password(
 
     response.delete_cookie(
         key=REFRESH_COOKIE_NAME,
-        path="/auth"
+        path="/"
     )
 
     return None
