@@ -1,47 +1,67 @@
-import { apiRequest } from "./api";
+const API_URL =
+  import.meta.env.VITE_API_URL ?? `http://${window.location.hostname}:8000`;
 
-export async function registerUser({
-  name,
-  email,
-  password,
-  phone,
-  seller_type,
-}) {
-  return apiRequest("/users/register", {
-    method: "POST",
-    body: {
-      name, 
-      email,
-      password,
-      phone,
-      seller_type,
-    },
-  });
+function getErrorMessage(data, fallback) {
+  const detail = data?.detail;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    const first = detail[0];
+    if (typeof first === "string") return first;
+    if (first?.msg) return first.msg;
+  }
+  return fallback;
 }
 
-export async function loginUser({
-  email,
-  password,
-}) {
-  return apiRequest("/users/login", {
+async function handleResponse(res, fallback) {
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(getErrorMessage(data, fallback));
+  }
+  return data;
+}
+
+export async function registerUser(data) {
+  const res = await fetch(`${API_URL}/users/register`, {
     method: "POST",
-    body: {
-      email,
-      password,
-    },
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
   });
+  return handleResponse(res, "Registration failed");
+}
+
+export async function loginUser(data) {
+  const res = await fetch(`${API_URL}/users/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+  const result = await handleResponse(res, "Login failed");
+  if (result?.access_token) {
+    localStorage.setItem("token", result.access_token);
+  }
+  return result;
 }
 
 export async function getCurrentUser(token) {
-  return apiRequest("/users/me", {
-    token,
+  const headers = {};
+  const stored = token ?? localStorage.getItem("token");
+  if (stored) {
+    headers["Authorization"] = `Bearer ${stored}`;
+  }
+  const res = await fetch(`${API_URL}/users/me`, {
+    headers,
+    credentials: "include",
   });
+  return handleResponse(res, "Failed to load user");
 }
 
 export async function logoutUser() {
-  const data = await apiRequest("/users/logout", {
+  const res = await fetch(`${API_URL}/users/logout`, {
     method: "POST",
+    credentials: "include",
   });
   localStorage.removeItem("token");
-  return data;
+  return handleResponse(res, "Logout failed");
 }
