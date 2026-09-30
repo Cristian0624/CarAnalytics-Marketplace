@@ -74,7 +74,7 @@ export function riskExplanationLines(result, vehicle) {
   if (result.assessment_status === "very_rare") {
     lines.push("Există prea puține anunțuri în grupul selectat pentru un scor general.");
   } else if (result.assessment_status === "limited_support") {
-    lines.push("Exemplele disponibile sunt limitate, deci încrederea în evaluare este redusă.");
+    lines.push("Exemplele disponibile sunt limitate. Interpretează scorul în contextul încrederii afișate.");
   }
   const priceExplanation = {
     unusually_cheap: "Prețul cerut este sub percentila 10 a prețurilor observate (P10).",

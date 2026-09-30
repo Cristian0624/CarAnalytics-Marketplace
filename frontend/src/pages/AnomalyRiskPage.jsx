@@ -167,7 +167,7 @@ export default function AnomalyRiskPage() {
             </div>
             <p className="risk-form-note">Completează cât mai multe detalii pentru o analiză mai relevantă. Pentru o mașină electrică, motorul poate fi 0 sau necompletat.</p>
             <div className="risk-actions">
-              <button className="risk-submit" type="submit">{loading ? "Se analizează oferta…" : "Analizează oferta"}<span aria-hidden="true"> →</span></button>
+              <button className="risk-submit" type="submit">{loading ? "Se analizează oferta…" : "Analizează oferta"}</button>
               <button className="risk-reset" type="button" onClick={() => { setForm({ ...EMPTY_FORM }); setModels([]); setGenerations([]); setResult(null); setError(""); }}>Resetează</button>
               {result && submitted && <SaveItemButton key={JSON.stringify(submitted)} label="Salveaza Analiza"
                 defaultName={`${submitted.brand} ${submitted.model}${submitted.year ? ` ${submitted.year}` : ""}`}
@@ -181,8 +181,8 @@ export default function AnomalyRiskPage() {
 
         {result ? <div ref={resultRef} tabIndex={-1} className="risk-result-focus"><AnomalyRiskResults result={result} vehicle={submitted} /></div> : !loading && (
           <div className="risk-preview" aria-label="Ce vei afla">
-            {[["💶", "Prețul în context", "Prețurile observate în baza de date și poziția ofertei în grupul selectat."], ["📋", "Detalii de verificat", "Kilometrajul și configurațiile neobișnuite pentru mașini similare."], ["✓", "Câtă încredere să ai", "Câte exemple susțin analiza și când datele sunt insuficiente."]].map(([icon, title, description]) => (
-              <article key={title}><span className="risk-preview-icon" aria-hidden="true">{icon}</span><h3>{title}</h3><p>{description}</p></article>
+            {[["/risk-price-context.png", "Prețul în context", "Prețurile observate în baza de date și poziția ofertei în grupul selectat."], ["/risk-odometer.png", "Detalii de verificat", "Kilometrajul și configurațiile neobișnuite pentru mașini similare."], ["/risk-market-evidence.png", "Câtă încredere să ai", "Câte exemple susțin analiza și când datele sunt insuficiente."]].map(([icon, title, description]) => (
+              <article key={title}><img className="risk-preview-icon" src={icon} alt="" width="112" height="112" /><h3>{title}</h3><p>{description}</p></article>
             ))}
           </div>
         )}

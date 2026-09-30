@@ -378,9 +378,9 @@
     position: absolute;
   
     top: 20px;
-    right: 68px;
+    right: 76px;
   
-    width: 120px;
+    width: 140px;
     height: 45px;
   
     border: 1px solid #ddd;
@@ -418,14 +418,14 @@
     top: 20px;
     right: 20px;
   
-    width: 38px;
-    height: 38px;
+    width: 46px;
+    height: 46px;
   
     border: none;
     border-radius: 9px;
   
-    background: #f3f3f3;
-    color: #333;
+    background: #e7e7e7;
+    color: #111;
   
     font-size: 24px;
     line-height: 1;
@@ -438,7 +438,7 @@
   }
   
   .close-card-button:hover {
-    background: #e8e8e8;
+    background: #d3d3d3;
   }
 
   @media (max-width: 900px) {
@@ -595,42 +595,104 @@
   right: 30px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   background: transparent !important;
 }
 
 .expanded-car-logo {
   position: absolute;
-  top: 50px;
-  left: 52%;
+  top: 20px;
+  left: 51%;
   transform: translateX(-50%);
-  width: 120px;
-  height: 120px;
+  width: 200px;
+  height: 200px;
   object-fit: contain;
 }
 
 .score-label {
-  font-size: 12px;
+  margin-top: 8px;
+  font-size: 14px;
   text-transform: uppercase;
   color: #555;
   font-weight: 600;
 }
 
 .score-circle {
-  width: 76px;
-  height: 76px;
+  --progress: 0%;
+  --progress-color: #34a853;
+  --progress-bg: rgba(52, 168, 83, 0.18);
+
+  margin-top: 8px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 4px solid #ddd;
-  background: #fff;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+
+  background:
+    conic-gradient(
+      from 0deg,
+      var(--progress-color) 0 var(--progress),
+      var(--progress-bg) var(--progress) 100%
+    );
+
+  position: relative;
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* White center of the progress ring */
+.score-circle::before {
+  content: "";
+  position: absolute;
+
+  width: 100px;
+  height: 100px;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+}
+
+.score-circle .score-main,
+.score-circle .score-sub {
+  position: relative;
+  z-index: 1;
 }
 
 .score-circle .score-main {
-  font-size: 24px;
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.score-circle .score-sub {
+  font-size: 12px;
+  color: #777;
+  margin-top: 2px;
+}
+
+
+.score-green .score-circle {
+  --progress-color: #34a853;
+  --progress-bg: rgba(52, 168, 83, 0.18);
+}
+
+.score-orange .score-circle {
+  --progress-color: #fbbc05;
+  --progress-bg: rgba(251, 189, 5, 0.18);
+}
+
+.score-red .score-circle {
+  --progress-color: #ea4335;
+  --progress-bg: rgba(234, 67, 53, 0.18);
+}
+
+.score-circle .score-main {
+  font-size: 40px;
   font-weight: 800;
   line-height: 1;
 }
@@ -638,12 +700,8 @@
 .score-circle .score-sub {
   font-size: 10px;
   color: #777;
-  margin-top: 2px;
+  margin-top: -2px;
 }
-
-.score-green .score-circle { border-color: #34a853; color: #34a853; }
-.score-orange .score-circle { border-color: #fbbc05; color: #fbbc05; }
-.score-red .score-circle { border-color: #ea4335; color: #ea4335; }
 
 @media (max-width: 600px) {
   .spec-row {

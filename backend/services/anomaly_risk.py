@@ -285,34 +285,42 @@ class AnomalyRiskService:
             width = float(price_anomaly["p90"] - price_anomaly["p10"])
             relative_width = width / max(price_anomaly["p50"], self.SCORING["spread_floor"])
             precision = 1 / (1 + relative_width / self.SCORING["confidence_relative_width_scale"])
-        mileage_support = mileage_anomaly["sample_size"] if mileage_anomaly["mileage_anomaly_score"] is not None else 0
-        supports = [model_support, gen_support, mileage_support, specification["sample_size"]]
-        limits = [self.SCORING[f"confidence_{name}_support"] for name in ["model", "generation", "mileage", "spec"]]
-        evidence = [min(n / limit, 1.0) for n, limit in zip(supports, limits)]
-        evidence[3] *= specification["supported_fields"] / len(SPEC_FIELDS)
-        score = 100 * (0.15 * evidence[0] + 0.25 * evidence[1] + 0.15 * evidence[2] + 0.15 * evidence[3] + 0.30 * precision)
+        # Price percentiles now come directly from the selected database group.
+        # Scale confidence to that group's size instead of the old 100-200 row
+        # support targets, which made a useful 29-listing group appear weak.
+        if gen_support <= 15:
+            support_score = 2.8 * gen_support
+            ceiling = self.SCORING["confidence_medium"] - 1
+        elif gen_support <= 40:
+            support_score = self.SCORING["confidence_medium"] + 27 * (gen_support - 16) / 24
+            ceiling = self.SCORING["confidence_high"] - 1
+        else:
+            support_score = self.SCORING["confidence_high"] + 20 * (1 - np.exp(-(gen_support - 40) / 40))
+            ceiling = 100
+
+        # Spread and available component evidence refine the score, but cannot
+        # promote a small group into a higher confidence band on their own.
+        quality_bonus = 4 * precision
+        if mileage_anomaly["mileage_anomaly_score"] is not None:
+            quality_bonus += 1.5
+        quality_bonus += 1.5 * specification["supported_fields"] / len(SPEC_FIELDS)
+        score = round(min(support_score + quality_bonus, ceiling), 1)
         group_name = "model and generation" if v["generation"] != self.MISSING else "model"
         reasons = [f"{gen_support} current database listings in the selected {group_name} comparison group."]
         if price_available:
             reasons.append(f"Observed database P10-P90 width is {width:.0f} EUR ({relative_width:.0%} of P50).")
         if price_anomaly["support_level"] == "insufficient":
-            score = min(score, self.SCORING["confidence_medium"] - 1)
             reasons.append("Fewer than 10 exact database comparisons; price assessment is unavailable.")
         elif price_anomaly["support_level"] == "limited":
-            score = min(score, self.SCORING["confidence_high"] - 1)
             reasons.append("Price confidence is limited by fewer than 20 exact database comparisons.")
         missing = [col for col in self.FEATURES if pd.isna(v[col]) or v[col] == self.MISSING]
         if market_support["support_level"] == "very_rare":
-            score = min(score, self.SCORING["confidence_medium"] - 1)
             reasons.append(f"Very limited market data is available for this {group_name} group.")
         elif market_support["support_level"] == "rare":
-            score = min(score, self.SCORING["confidence_medium"] - 1)
             reasons.append(f"Market confidence is low because this {group_name} group has few current listings.")
         elif market_support["support_level"] == "limited":
-            score = min(score, self.SCORING["confidence_high"] - 1)
-            reasons.append(f"Market confidence is capped at medium because this {group_name} group has limited current listings.")
+            reasons.append(f"The selected {group_name} group has limited current listings.")
         if missing:
-            score = min(score, self.SCORING["confidence_high"] - 1)
             reasons.append("Missing or invalid vehicle fields: " + ", ".join(missing) + ".")
         if any(s["severity"] in {"unobserved", "outside_observed_range"} for s in specification["signals"]):
             score = min(score, self.SCORING["confidence_high"] - 1)
