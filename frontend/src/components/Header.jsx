@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import AuthButton from "./AuthButton";
 import "./Header.css";
 
 function Header() {
+  const { user } = useAuth();
+
   return (
     <div className="header-wrapper">
       <header className="site-header">

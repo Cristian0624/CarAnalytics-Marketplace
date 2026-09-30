@@ -839,7 +839,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                     <section className="create-listing-section">
 
                         <div className="create-listing-section-header">
-                            <h2>nformații tehnice</h2>
+                            <h2>Informații tehnice</h2>
                             <p>
                             Adaugă principalele caracteristici tehnice ale vehiculului.
                             </p>
