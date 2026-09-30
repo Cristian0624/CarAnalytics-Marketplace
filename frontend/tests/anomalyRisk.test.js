@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { usesCurrentRiskPolicy, buildRiskPayload, filterVehicleOptions, hasOverallScore, resolveVehicleOption, riskErrorMessage, riskExplanationLines } from "../src/utils/anomalyRisk.js";
+import { extremeAnomalyMessage, usesCurrentRiskPolicy, buildRiskPayload, filterVehicleOptions, hasOverallScore, resolveVehicleOption, riskErrorMessage, riskExplanationLines } from "../src/utils/anomalyRisk.js";
 
 test("request preserves exact database names, sends numbers, and excludes search-only fields", () => {
   const result = buildRiskPayload({ brand: " BMW ", model: "3 Series", generation: "F30 (2011 - 2019)", price: "12000.50", year: "2016", mileage: "150000", engine: "2.0", fuel_type: "Benzină", year_min: "2010" });
@@ -141,7 +141,18 @@ test("historical results cannot receive current database explanations", () => {
   const result = { scoring_policy_version: "anomaly-risk-v2.6-selected-group",
     components: { price_anomaly: { source: "database" } } };
   assert.equal(usesCurrentRiskPolicy(result), true);
+  assert.equal(usesCurrentRiskPolicy({ ...result, scoring_policy_version: "anomaly-risk-v2.7-extreme-signals" }), true);
   assert.equal(usesCurrentRiskPolicy({ ...result, scoring_policy_version: "anomaly-risk-v2.3" }), false);
   assert.equal(usesCurrentRiskPolicy({ ...result, scoring_policy_version: "anomaly-risk-v2.5-db-comparisons" }), false);
   assert.equal(usesCurrentRiskPolicy({ ...result, components: { price_anomaly: {} } }), false);
+});
+
+test("extreme flags identify the component and direction without inventing alerts for saved results", () => {
+  assert.match(extremeAnomalyMessage("extreme_price_low"), /preț mult sub mediana/);
+  assert.match(extremeAnomalyMessage("extreme_price_high"), /preț mult peste mediana/);
+  assert.match(extremeAnomalyMessage("extreme_mileage_low"), /kilometraj mult sub mediana/);
+  assert.match(extremeAnomalyMessage("extreme_mileage_high"), /kilometraj mult peste mediana/);
+  assert.equal(extremeAnomalyMessage(undefined), null);
+  assert.equal(extremeAnomalyMessage(null), null);
+  assert.equal(extremeAnomalyMessage("unknown"), null);
 });

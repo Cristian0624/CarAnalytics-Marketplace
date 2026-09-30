@@ -1,4 +1,4 @@
-import { FIELD_LABELS, hasOverallScore, riskExplanationLines, usesCurrentRiskPolicy } from "../utils/anomalyRisk";
+import { FIELD_LABELS, extremeAnomalyMessage, hasOverallScore, riskExplanationLines, usesCurrentRiskPolicy } from "../utils/anomalyRisk";
 
 const number = (value, digits = 0) => value == null ? "Indisponibil" : new Intl.NumberFormat("ro-RO", { maximumFractionDigits: digits }).format(value);
 const money = (value) => value == null ? "Indisponibil" : `${number(value)} €`;
@@ -10,8 +10,18 @@ const mileageLabels = { normal: "În intervalul observat", unusually_low: "Neobi
 const comparisonLabels = { exact_year: "același an", nearby_years: "ani apropiați", model_generation: "același model și generație, ani diferiți", model: "același model, generații și ani diferiți", unsupported: "fără grup de comparație" };
 const severityLabels = { normal: "Obișnuit", uncommon: "Rar întâlnit", very_rare: "Foarte rar", unsupported: "Date insuficiente", unobserved: "Neobservat", outside_observed_range: "În afara intervalului" };
 
-function ComponentScore({ value, weight }) {
-  return <div className="risk-component-score"><span>Scor anomalie</span><strong>{value == null ? "Indisponibil" : `${number(value, 1)} / 100`}</strong>{weight != null && <small>Pondere în scor: {number(weight * 100, 1)}%</small>}</div>;
+function ComponentScore({ value, weight, flag }) {
+  const message = extremeAnomalyMessage(flag);
+  return (
+    <>
+      {message && <p className="risk-description" role="note"><strong>{message}</strong></p>}
+      <div className="risk-component-score">
+        <span>Scor anomalie</span>
+        <strong>{value == null ? "Indisponibil" : `${number(value, 1)} / 100`}</strong>
+        {weight != null && <small>Pondere în scor: {number(weight * 100, 1)}%</small>}
+      </div>
+    </>
+  );
 }
 
 export default function AnomalyRiskResults({ result, vehicle }) {
@@ -75,14 +85,14 @@ export default function AnomalyRiskResults({ result, vehicle }) {
             </div>
           </div>
           <p className="risk-description">Prețul cerut este {number(Math.abs(price.deviation_from_p50_pct), 1)}% {price.deviation_from_p50_pct < 0 ? "sub" : price.deviation_from_p50_pct > 0 ? "peste" : "față de"} mediana observată. Intervalul P10–P90 cuprinde zona centrală a prețurilor cerute în baza de date, nu garantează prețul de vânzare.</p></> : <p className="risk-description">Sunt necesare cel puțin 10 anunțuri din {vehicle.generation ? "aceeași generație" : "același model"} pentru evaluarea prețului.</p>}
-          <ComponentScore value={price.score} weight={weights.price} />
+          <ComponentScore value={price.score} weight={weights.price} flag={price.flag} />
         </article>
 
         <div className="risk-detail-grid">
           <article className="risk-detail-card"><span className="risk-eyebrow">Kilometraj</span><h3>{mileage.actual_mileage == null ? "Nespecificat" : mileageLabels[mileage.direction]}</h3>
             <dl className="risk-data-list"><div><dt>În anunț</dt><dd>{mileage.actual_mileage == null ? "Nespecificat" : `${number(mileage.actual_mileage)} km`}</dd></div><div><dt>Mediană observată</dt><dd>{mileage.expected_median_mileage == null ? "Indisponibilă" : `${number(mileage.expected_median_mileage)} km`}</dd></div><div><dt>Exemple disponibile</dt><dd>{mileage.actual_mileage == null ? "Neevaluat" : number(mileage.sample_size)}</dd></div></dl>
             <p className="risk-description">Comparație: {comparisonLabels[mileage.comparison_level]}. Un kilometraj neobișnuit nu dovedește modificarea odometrului.</p>
-            <ComponentScore value={mileage.score} weight={weights.mileage} />
+            <ComponentScore value={mileage.score} weight={weights.mileage} flag={mileage.flag} />
           </article>
           <article className="risk-detail-card"><span className="risk-eyebrow">Configurație</span><h3>Specificațiile ofertei</h3>
             <p className="risk-description">{specs.supported_fields} {specs.supported_fields === 1 ? "câmp evaluat" : "câmpuri evaluate"} pe baza configurațiilor observate.</p>

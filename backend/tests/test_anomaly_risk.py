@@ -29,7 +29,8 @@ from database import get_db
 from models import Listing
 from anomaly_risk_schemas import AnomalyRiskRequest, AnomalyRiskResponse
 from routers import anomaly_risk as route
-from services.anomaly_risk import AnomalyRiskService, DEFAULT_ARTIFACT_DIR, ModelUnavailableError, SCORING_POLICY
+from services.anomaly_risk import (AnomalyRiskService, DEFAULT_ARTIFACT_DIR,
+                                   DEFAULT_RUNTIME_CONFIG_PATH, ModelUnavailableError, SCORING_POLICY)
 
 VEHICLE = dict(brand="Toyota", model="Auris", generation="II (2012 - 2018)",
                year=2013, mileage=315000, engine=1.4, fuel_type="Diesel",
@@ -99,6 +100,14 @@ class InputTests(unittest.TestCase):
         self.assertEqual(value.brand, "Unknown")
         self.assertIsNone(value.mileage)
 
+    def test_default_scoring_config_does_not_need_ml_artifacts(self):
+        with tempfile.TemporaryDirectory() as directory, \
+             patch.dict("os.environ", {"ANOMALY_RISK_ARTIFACT_DIR": ""}), \
+             patch("services.anomaly_risk.DEFAULT_ARTIFACT_DIR", Path(directory)):
+            service = AnomalyRiskService()
+        self.assertEqual(service.metadata["model_version"], "anomaly-risk-v2")
+        self.assertEqual(service.SCORING["weights"], SCORING_POLICY["weights"])
+
     def test_missing_artifacts_fail_clearly(self):
         with tempfile.TemporaryDirectory() as directory:
             with self.assertRaises(ModelUnavailableError):
@@ -150,7 +159,7 @@ class SupportPolicyUnitTests(unittest.TestCase):
         self.assertEqual(penalties[-1], 0)
 
 
-@unittest.skipUnless((DEFAULT_ARTIFACT_DIR / "model_metadata.json").exists(), "Deploy reference scoring metadata for integration tests")
+@unittest.skipUnless(DEFAULT_RUNTIME_CONFIG_PATH.exists(), "Deploy runtime scoring config for integration tests")
 class ModelTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -160,7 +169,10 @@ class ModelTests(unittest.TestCase):
         configure_test_database(cls)
         cls.app.dependency_overrides[route.get_anomaly_risk_service] = lambda: cls.service
         # Execute only original notebook function definitions, never training cells.
-        notebook = json.loads((DEFAULT_ARTIFACT_DIR.parent / "anomaly_risk.ipynb").read_text(encoding="utf-8"))
+        notebook_path = DEFAULT_ARTIFACT_DIR.parent / "anomaly_risk.ipynb"
+        if not notebook_path.exists():
+            return  # Runtime tests do not require the optional offline notebook.
+        notebook = json.loads(notebook_path.read_text(encoding="utf-8"))
         wanted = {"prepare_features", "ordered_quantiles", "apply_calibration", "group_split_indices"}
         namespace = dict(np=np, pd=pd, FEATURES=cls.service.FEATURES, CATEGORICAL=cls.service.CATEGORICAL,
                          NUMERIC=cls.service.NUMERIC, MISSING=cls.service.MISSING, SCORING=cls.service.SCORING,
@@ -234,7 +246,7 @@ class ModelTests(unittest.TestCase):
         mileage = result["components"]["mileage_anomaly"]["score"]
         self.assertGreater(mileage, 50)
         self.assertLess(mileage, 70)
-        self.assertEqual(result["effective_weights"], {"price": .75, "mileage": .1, "specification": .15})
+        self.assertEqual(result["effective_weights"], {"price": .60, "mileage": .25, "specification": .15})
         self.assertEqual(result["risk_level"], "low")
 
     def typical_vehicle(self):
@@ -282,8 +294,8 @@ class ModelTests(unittest.TestCase):
         self.assertLess(moderate_score, extreme_score)
         self.assertEqual(low_result["components"]["mileage_anomaly"]["direction"], "unusually_low")
         self.assertEqual(extreme_result["components"]["mileage_anomaly"]["direction"], "unusually_high")
-        self.assertLess(moderate_result["anomaly_score"] - median_result["anomaly_score"], 7)
-        self.assertLessEqual(extreme_result["anomaly_score"] - median_result["anomaly_score"], 10)
+        self.assertLess(moderate_result["anomaly_score"] - median_result["anomaly_score"], 17.5)
+        self.assertLessEqual(extreme_result["anomaly_score"] - median_result["anomaly_score"], 25)
         self.assertNotEqual(extreme_result["risk_level"], "high")
 
     def test_common_rare_and_unseen_specifications(self):
@@ -483,8 +495,9 @@ class ModelTests(unittest.TestCase):
         self.assertNotIn("private internals", response.text)
 
     @unittest.skipUnless((DEFAULT_ARTIFACT_DIR.parent / "data_ml.csv").exists()
-                         and (DEFAULT_ARTIFACT_DIR / "price_quantile_model.cbm").exists(),
-                         "Offline model or evaluation CSV unavailable")
+                         and (DEFAULT_ARTIFACT_DIR / "price_quantile_model.cbm").exists()
+                         and (DEFAULT_ARTIFACT_DIR.parent / "anomaly_risk.ipynb").exists(),
+                         "Offline model, notebook or evaluation CSV unavailable")
     def test_saved_holdout_accuracy_is_preserved(self):
         raw = pd.read_csv(DEFAULT_ARTIFACT_DIR.parent / "data_ml.csv")
         target = pd.to_numeric(raw["price_eur"], errors="coerce")
@@ -509,8 +522,8 @@ class ModelTests(unittest.TestCase):
         self.assertAlmostEqual(float(coverage), .7982001867730707, places=10)
 
 
-@unittest.skipUnless((DEFAULT_ARTIFACT_DIR / "model_metadata.json").exists(),
-                     "Deploy reference scoring metadata for HTTP integration tests")
+@unittest.skipUnless(DEFAULT_RUNTIME_CONFIG_PATH.exists(),
+                     "Deploy runtime scoring config for HTTP integration tests")
 class HttpIntegrationTests(unittest.TestCase):
     """Use the real dependency and statistics loader with a local SQLite database."""
 

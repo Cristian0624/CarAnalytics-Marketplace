@@ -126,6 +126,66 @@ class DatabasePriceTests(unittest.TestCase):
                 np.testing.assert_allclose([result[name] for name in Q_NAMES], quantiles)
                 self.assertAlmostEqual(result["price_anomaly_score"], score)
 
+    def test_extreme_flags_require_score_distance_and_25_usable_comparisons(self):
+        flag = self.service.extreme_anomaly_flag
+        for component in ("price", "mileage"):
+            with self.subTest(component=component):
+                self.assertIsNone(flag(component, 150, 100, 100, 24))
+                self.assertIsNone(flag(component, 150, 100, 79.99, 25))
+                self.assertIsNone(flag(component, 124.99, 100, 100, 25))
+                self.assertEqual(flag(component, 125, 100, 80, 25), f"extreme_{component}_high")
+                self.assertEqual(flag(component, 75, 100, 80, 25), f"extreme_{component}_low")
+                self.assertIsNone(flag(component, None, None, None, 25))
+                self.assertIsNone(flag(component, 100, 0, 100, 25))
+
+    def test_http_flags_both_tails_and_preserves_weighted_total(self):
+        self.seed(np.linspace(4000, 6000, 25).tolist(), mileage=150000, year=2011,
+                  engine="1.6", fuel_type="Benzină", gearbox="Mecanică",
+                  drivetrain="Din față", body_type="Hatchback")
+        vehicle = VEHICLE | {"year": 2011, "engine": 1.6, "fuel_type": "Benzină",
+                             "gearbox": "Mecanică", "drivetrain": "Din față", "body_type": "Hatchback"}
+        with TestClient(self.app) as client:
+            for actual_price, mileage, direction in [(1000, 1000, "low"), (12000, 500000, "high")]:
+                with self.subTest(direction=direction):
+                    response = client.post("/anomaly-risk", json=vehicle | {"price": actual_price, "mileage": mileage})
+                    self.assertEqual(response.status_code, 200, response.text)
+                    result = response.json()
+                    self.assertEqual(result["components"]["price_anomaly"]["flag"], f"extreme_price_{direction}")
+                    self.assertEqual(result["components"]["mileage_anomaly"]["flag"], f"extreme_mileage_{direction}")
+                    self.assertEqual(result["effective_weights"], {"price": .6, "mileage": .25, "specification": .15})
+                    expected = sum(weight * result["components"][name + "_anomaly"]["score"]
+                                   for name, weight in result["effective_weights"].items())
+                    self.assertAlmostEqual(result["anomaly_score"], expected + result["market_support"]["rarity_penalty"])
+
+            normal = client.post("/anomaly-risk", json=vehicle | {"price": 5000, "mileage": 150000}).json()
+            self.assertIsNone(normal["components"]["price_anomaly"]["flag"])
+            self.assertIsNone(normal["components"]["mileage_anomaly"]["flag"])
+            excluded = client.post("/anomaly-risk", json=vehicle | {"listing_id": 1, "price": 12000, "mileage": 500000}).json()
+            self.assertEqual(excluded["components"]["price_anomaly"]["count"], 24)
+            self.assertIsNone(excluded["components"]["price_anomaly"]["flag"])
+            self.assertIsNone(excluded["components"]["mileage_anomaly"]["flag"])
+
+    def test_flag_support_is_per_component_and_missing_components_still_reweight(self):
+        prices = [5000] * 25
+        rows = [{"mileage": 150000}] * 24 + [{"mileage": None}]
+        result = self.service.assess_listing_risk(VEHICLE | {"price": 12000, "mileage": 500000}, prices, 25, rows)
+        self.assertEqual(result["components"]["price_anomaly"]["flag"], "extreme_price_high")
+        self.assertIsNone(result["components"]["mileage_anomaly"]["flag"])
+        self.assertAlmostEqual(result["effective_weights"]["price"], .6 / .85)
+        self.assertAlmostEqual(result["effective_weights"]["mileage"], .25 / .85)
+        self.assertNotIn("specification", result["effective_weights"])
+        missing = self.service.assess_listing_risk(VEHICLE, prices, 25, rows)
+        self.assertIsNone(missing["components"]["mileage_anomaly"]["flag"])
+        self.assertEqual(missing["effective_weights"], {"price": 1})
+
+    def test_nearly_identical_comparisons_do_not_flag_small_changes(self):
+        result = self.service.assess_listing_risk(
+            VEHICLE | {"price": 5010, "mileage": 150010}, [5000] * 25, 25, [{"mileage": 150000}] * 25
+        )
+        for component in ("price_anomaly", "mileage_anomaly"):
+            self.assertGreater(result["components"][component]["score"], 80)
+            self.assertIsNone(result["components"][component]["flag"])
+
     def test_price_eur_is_used_without_trimming_or_deduplication(self):
         prices = [4000] * 18 + [10000, 100000]
         self.seed(prices, price=1, currency="USD", original_price=2)
