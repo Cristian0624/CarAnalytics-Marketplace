@@ -13,9 +13,13 @@ SPEC_FIELDS = ["year", "engine", "fuel_type", "gearbox", "drivetrain", "body_typ
 FEATURES = ["brand", "model", "generation", "year", "mileage", "engine",
             "fuel_type", "gearbox", "drivetrain", "body_type"]
 DEFAULT_ARTIFACT_DIR = Path(__file__).resolve().parents[1] / "ML_models/anomaly_risk/artifacts"
-SCORING_POLICY_VERSION = "anomaly-risk-v2.6-selected-group"
+DEFAULT_RUNTIME_CONFIG_PATH = Path(__file__).with_name("anomaly_risk_config.json")
+SCORING_POLICY_VERSION = "anomaly-risk-v2.7-extreme-signals"
 SCORING_POLICY = {
-    "weights": {"price": 0.75, "mileage": 0.10, "specification": 0.15},
+    "weights": {"price": 0.60, "mileage": 0.25, "specification": 0.15},
+    "extreme_min_samples": 25,
+    "extreme_min_score": 80.0,
+    "extreme_min_median_deviation": 0.25,
     "mileage_min_samples": 20,
     "spec_min_samples": 25,
     "mileage_curve": "p50=0,p25/p75=10,p10/p90=20,p05/p95=40,exponential_tail_to_100",
@@ -24,40 +28,31 @@ SCORING_POLICY = {
 }
 
 
-STATISTICAL_CONSTANTS = {
-    "risk_medium": 25.0,
-    "risk_high": 50.0,
-    "inner_score": 20.0,
-    "outer_score": 60.0,
-    "spread_floor": 1.0,
-    "tail_width_fraction": 0.1,
-    "nearby_year_radius": 2,
-    "engine_tolerance": 0.051,
-    "spec_rare_frequency": 0.05,
-    "spec_very_rare_frequency": 0.01,
-    "spec_max_rarity_score": 60.0,
-    "spec_outside_year_score": 80.0,
-    "confidence_medium": 45.0,
-    "confidence_high": 75.0,
-    "confidence_model_support": 200,
-    "confidence_generation_support": 100,
-    "confidence_mileage_support": 100,
-    "confidence_spec_support": 100,
-    "confidence_relative_width_scale": 1.0,
-}
+class ModelUnavailableError(RuntimeError):
+    """Missing, incompatible or unreadable deployment artifacts."""
+
 
 class AnomalyRiskService:
-    def __init__(self):
-        self.metadata = {"model_version": "anomaly-risk-statistical"}
-        self.SCORING = {**STATISTICAL_CONSTANTS, **SCORING_POLICY}
-        self.FEATURES = FEATURES
-        self.CATEGORICAL = [
-            "brand", "model", "generation",
-            "fuel_type", "gearbox", "drivetrain", "body_type"
-        ]
-        self.NUMERIC = ["year", "mileage", "engine"]
-        self.MISSING = "__MISSING__"
-
+    def __init__(self, artifact_dir=None):
+        configured_dir = artifact_dir or os.getenv("ANOMALY_RISK_ARTIFACT_DIR")
+        metadata_path = (Path(configured_dir) / "model_metadata.json"
+                         if configured_dir else DEFAULT_RUNTIME_CONFIG_PATH)
+        try:
+            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+            if (metadata["model_version"] != "anomaly-risk-v2"
+                    or metadata["input_feature_names"] != FEATURES
+                    or metadata["feature_names"] != FEATURES
+                    or metadata["derived_features"]
+                    or metadata.get("scoring_policy_version") != "anomaly-risk-v2.3"):
+                raise ValueError("Unsupported scoring configuration contract")
+            self.metadata = {"model_version": metadata["model_version"]}
+            self.SCORING = {**metadata["anomaly_scoring_constants"], **SCORING_POLICY}
+            self.FEATURES = FEATURES
+            self.CATEGORICAL = metadata["categorical_feature_names"]
+            self.NUMERIC = metadata["numeric_feature_names"]
+            self.MISSING = metadata["missing_category"]
+        except Exception as exc:
+            raise ModelUnavailableError("Anomaly scoring configuration could not be loaded") from exc
 
     def prepare_features(self, frame):
         result = frame.reindex(columns=self.FEATURES).copy()
@@ -336,6 +331,21 @@ class AnomalyRiskService:
                     if price_available else None
                 )}
 
+    def extreme_anomaly_flag(self, component, actual, median, score, count):
+        """Flag a supported tail anomaly with a substantial median deviation.
+
+        The relative-distance guard avoids alerts for tiny differences when
+        observed percentile bands are nearly identical. It does not alter scores.
+        """
+        if (score is None or score < self.SCORING["extreme_min_score"]
+                or count < self.SCORING["extreme_min_samples"]
+                or actual is None or median is None or median <= 0):
+            return None
+        if abs(actual - median) / median < self.SCORING["extreme_min_median_deviation"]:
+            return None
+        direction = "low" if actual < median else "high"
+        return f"extreme_{component}_{direction}"
+
     def assess_listing_risk(self, vehicle, prices, model_observations, comparison_rows):
         if "price" not in vehicle:
             raise ValueError("Supply price as the asking price in EUR")
@@ -343,6 +353,13 @@ class AnomalyRiskService:
         price = self.analyze_price_anomaly(vehicle["price"], prices, comparison_level)
         mileage = self.analyze_mileage_anomaly(vehicle, comparison_rows)
         specification = self.analyze_specification(vehicle, comparison_rows)
+        price["flag"] = self.extreme_anomaly_flag(
+            "price", price["actual_price"], price["p50"], price["price_anomaly_score"], price["count"]
+        )
+        mileage["flag"] = self.extreme_anomaly_flag(
+            "mileage", mileage["actual_mileage"], mileage["expected_median_mileage"],
+            mileage["mileage_anomaly_score"], mileage["sample_size"]
+        )
         market_support = self.assess_market_support(len(prices))
         confidence = self.assess_market_confidence(vehicle, price, model_observations,
                                                    mileage, specification, market_support)

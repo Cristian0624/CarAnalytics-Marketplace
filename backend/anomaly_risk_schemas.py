@@ -46,6 +46,7 @@ class Confidence(BaseModel):
 
 
 class PriceAnomaly(BaseModel):
+    flag: Literal["extreme_price_low", "extreme_price_high"] | None = None
     actual_price: float
     count: int = Field(ge=0)
     support_level: Literal["insufficient", "limited", "normal"]
@@ -64,6 +65,7 @@ class PriceAnomaly(BaseModel):
 
 
 class MileageAnomaly(BaseModel):
+    flag: Literal["extreme_mileage_low", "extreme_mileage_high"] | None = None
     actual_mileage: float | None
     expected_median_mileage: float | None
     p05: float | None

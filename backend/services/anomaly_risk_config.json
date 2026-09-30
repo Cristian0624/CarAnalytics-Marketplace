@@ -1,0 +1,44 @@
+{
+  "model_version": "anomaly-risk-v2",
+  "input_feature_names": [
+    "brand", "model", "generation", "year", "mileage", "engine",
+    "fuel_type", "gearbox", "drivetrain", "body_type"
+  ],
+  "feature_names": [
+    "brand", "model", "generation", "year", "mileage", "engine",
+    "fuel_type", "gearbox", "drivetrain", "body_type"
+  ],
+  "categorical_feature_names": [
+    "brand", "model", "generation", "fuel_type", "gearbox", "drivetrain", "body_type"
+  ],
+  "numeric_feature_names": ["year", "mileage", "engine"],
+  "derived_features": [],
+  "missing_category": "__MISSING__",
+  "scoring_policy_version": "anomaly-risk-v2.3",
+  "anomaly_scoring_constants": {
+    "weights": {"price": 0.75, "mileage": 0.1, "specification": 0.15},
+    "risk_medium": 25.0,
+    "risk_high": 50.0,
+    "inner_score": 20.0,
+    "outer_score": 60.0,
+    "spread_floor": 1.0,
+    "tail_width_fraction": 0.1,
+    "mileage_min_samples": 30,
+    "nearby_year_radius": 2,
+    "spec_min_samples": 30,
+    "engine_tolerance": 0.051,
+    "spec_rare_frequency": 0.05,
+    "spec_very_rare_frequency": 0.01,
+    "spec_max_rarity_score": 60.0,
+    "spec_outside_year_score": 80.0,
+    "confidence_medium": 45.0,
+    "confidence_high": 75.0,
+    "confidence_model_support": 200,
+    "confidence_generation_support": 100,
+    "confidence_mileage_support": 100,
+    "confidence_spec_support": 100,
+    "confidence_relative_width_scale": 1.0,
+    "support_thresholds": {"very_rare_max": 4, "rare_max": 14, "limited_max": 29},
+    "rarity_penalties": {"rare_max": 8.0, "limited_max": 4.0}
+  }
+}

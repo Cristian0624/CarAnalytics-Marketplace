@@ -54,8 +54,18 @@ export function hasOverallScore(result) {
 }
 
 export function usesCurrentRiskPolicy(result) {
-  return result.scoring_policy_version === "anomaly-risk-v2.6-selected-group"
+  return ["anomaly-risk-v2.6-selected-group", "anomaly-risk-v2.7-extreme-signals"].includes(result.scoring_policy_version)
     && result.components.price_anomaly.source === "database";
+}
+
+export function extremeAnomalyMessage(flag) {
+  const messages = {
+    extreme_price_low: "Alertă: preț mult sub mediana grupului.",
+    extreme_price_high: "Alertă: preț mult peste mediana grupului.",
+    extreme_mileage_low: "Alertă: kilometraj mult sub mediana grupului.",
+    extreme_mileage_high: "Alertă: kilometraj mult peste mediana grupului.",
+  };
+  return messages[flag] ?? null;
 }
 
 export function riskExplanationLines(result, vehicle) {
