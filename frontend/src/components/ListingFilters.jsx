@@ -405,26 +405,27 @@ function ListingFilters({
   return (
     <section className="listing-filters">
 
-        <button
-            type="button"
-            className="recommendations-button"
-            onClick={() => {
-                window.location.href =
-                    "/recommendations";
-            }}
-        >
-            <span className="recommendations-button-icon">
-                ✨
-            </span>
+          <div className="listing-top-actions">
+              <button
+                  type="button"
+                  className="recommendations-button"
+                  onClick={() => {
+                      window.location.href = "/recommendations";
+                  }}
+              >
+                  <span className="recommendations-button-icon">
+                      ✨
+                  </span>
 
-            <span>
-                Find recommended cars
-            </span>
+                  <span>
+                      Find recommended cars
+                  </span>
 
-            <span className="recommendations-button-new">
-                New
-            </span>
-        </button>
+                  <span className="recommendations-button-new">
+                      New
+                  </span>
+              </button>
+          </div>
 
         {/* MAIN SEARCH */}
       <div

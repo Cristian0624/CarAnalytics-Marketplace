@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import "./AuthenticationPages.css";
 import PasswordInput from "../components/PasswordInput";
@@ -9,6 +9,7 @@ function AutentificarePage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -16,12 +17,17 @@ function AutentificarePage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setError("");
+  
     try {
-      await login(form);
-      navigate("/");
-    } catch (err) {
-      setError(err.message);
+      await login({
+        email: form.email,
+        password: form.password,
+      });
+  
+      const destination = location.state?.from || "/";
+      navigate(destination, { replace: true });
+    } catch (error) {
+      setError(error.message || "Autentificarea a eșuat.");
     }
   }
 

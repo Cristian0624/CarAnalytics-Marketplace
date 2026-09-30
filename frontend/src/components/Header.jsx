@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import AuthButton from "./AuthButton";
 import "./Header.css";
 
 function Header() {
+  const { user } = useAuth();
+
   return (
     <div className="header-wrapper">
       <header className="site-header">
@@ -13,6 +16,23 @@ function Header() {
             </div>
             <span>CarAnalytics</span>
           </Link>
+
+        
+          <div className="create-listing-wrapper">
+              <button
+                type="button"
+                className="create-listing-button"
+                onClick={() => {
+                  window.location.href = "/create-listing";
+                }}
+              >
+                Create listing
+              </button>
+              <div className="create-listing-icon-box">
+                <span className="create-listing-plus">+</span>
+              </div>
+            </div>
+        
         </div>
         <div className="header-right">
           <Link to="/" className="header-nav-link">
@@ -24,6 +44,11 @@ function Header() {
           <Link to="/anomaly-risk" className="header-nav-link">
             Analiza Risc
           </Link>
+          {user && (
+            <Link to="/my-listings" className="header-nav-link">
+              Anunțurile Mele
+            </Link>
+          )}
           <AuthButton />
         </div>
       </header>
