@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { deleteSaved, getSaved, listSaved, reanalyseSaved, savedPaths, updateSaved } from "../api/saved_items";
 import { useAuth } from "../context/AuthContext";
+import { getLogoFileName, getScoreClass } from "../components/CarCard";
 import { useFavourites } from "../context/FavouritesContext";
 import { describeFilters, listingFiltersToApi, listingFiltersToForm } from "../utils/listingFilters";
 import { savedDate, savedError } from "../utils/savedItems";
@@ -134,8 +135,27 @@ function SavedCollection({ kind }) {
     {loading ? <p role="status">Se încarcă salvările...</p> : data?.items.length ? <>
       <div className="saved-grid">{data.items.map((item) => <article className="saved-card" key={item.id}>
         <div className="saved-card-top"><span className="saved-eyebrow">{kind === "favourites" ? "★ FAVORIT" : kind === "risks" ? "ANALIZĂ" : "CĂUTARE"}</span><time dateTime={item.created_at}>{savedDate(item.created_at)}</time></div>
-        <h2><Link to={`${savedPaths[kind]}/${item.id}`}>{itemTitle(kind, item)}</Link></h2>
-        <ItemSummary kind={kind} item={item} />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '12px', textAlign: 'left' }}>
+            <div style={{ textAlign: 'left' }}>
+              <h2 style={{ marginTop: 0, textAlign: 'left' }}><Link to={`${savedPaths[kind]}/${item.id}`}>{itemTitle(kind, item)}</Link></h2>
+              <ItemSummary kind={kind} item={item} />
+            </div>
+            {(kind === 'favourites' || kind === 'risks') && (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                <img 
+                  src={`/logos/${getLogoFileName(kind === 'risks' ? item.input.brand : item.snapshot.brand)}`} 
+                  alt="Logo" 
+                  style={{ width: '50px', height: '50px', objectFit: 'contain' }}
+                  onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
+                />
+                {((kind === 'favourites' && item.snapshot.score != null) || (kind === 'risks' && item.result.anomaly_score != null)) && (
+                  <span className={`score-badge ${getScoreClass(kind === 'risks' ? item.result.anomaly_score : item.snapshot.score)}`} style={{ fontSize: '14px', padding: '4px 8px' }}>
+                    {Number(kind === 'risks' ? item.result.anomaly_score : item.snapshot.score).toFixed(0)}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         <div className="saved-actions"><Link className="saved-primary" to={`${savedPaths[kind]}/${item.id}`}>Deschide</Link>
           {kind === "searches" && <button className="saved-secondary" onClick={() => navigate("/listings", { state: { savedFilters: item.filters } })}>Vezi anunțurile</button>}
           <button className="saved-secondary" onClick={() => setEditing(item)}>{kind === "risks" ? "Redenumește" : "Editează"}</button>

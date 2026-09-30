@@ -497,27 +497,25 @@
 }
 
 .spec-group h4 {
-  font-family:sans-serif;
-  font-size: 18px;
+  font-family: sans-serif;
+  font-size: 16px;
   text-transform: uppercase;
-  color: #292929;
-  font-weight: 800;
+  color: #333;
+  font-weight: 700;
   letter-spacing: 0.5px;
-  margin: 0 0 12px 0;
-  padding-left: 2px;
-  border-bottom: 2px solid #e1e4e8;
-  padding-bottom: 8px;
+  margin: 0 0 16px 0;
+  text-align: center;
+  border-bottom: 1px solid #eaeaea;
+  padding-bottom: 12px;
 }
 
 .spec-row {
   display: flex;
   background: #ffffff;
-  border: 2px solid #e1e4e8;
-  border-radius: 12px;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
   padding: 16px 8px;
   gap: 0;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-  transition: box-shadow 0.2s ease;
 }
 .spec-row:hover {
   box-shadow: 0 6px 16px rgba(60, 60, 60, 0.06);
@@ -664,6 +662,7 @@
 }
 
 .score-circle .score-main {
+  color: var(--progress-color);
   font-size: 32px;
   font-weight: 800;
   line-height: 1;
@@ -692,6 +691,7 @@
 }
 
 .score-circle .score-main {
+  color: var(--progress-color);
   font-size: 40px;
   font-weight: 800;
   line-height: 1;
@@ -699,14 +699,19 @@
 
 .score-circle .score-sub {
   font-size: 10px;
-  color: #777;
+  color: #a3a3a3;
   margin-top: -2px;
 }
 
 @media (max-width: 600px) {
   .spec-row {
-    flex-wrap: wrap;
-  }
+  display: flex;
+  background: #ffffff;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  padding: 16px 8px;
+  gap: 0;
+}
   .spec-item {
     min-width: 40%;
   }

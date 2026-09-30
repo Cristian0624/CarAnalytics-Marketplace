@@ -7,7 +7,6 @@ function HomePage() {
       {/* 1. Hero Section */}
       <section className="hero-section">
         <div className="hero-content">
-          <div className="hero-badge">Propulsat de Algoritmi Avansați de Preț</div>
           <h1 className="hero-title">Află Valoarea Reală a Oricărei Mașini Instant.</h1>
           <p className="hero-subtitle">
             Nu mai plăti prea mult pentru mașini second-hand. Algoritmul nostru analizează mii de date din piață pentru a evalua precis fiecare anunț și a depista instant țepele supraevaluate.

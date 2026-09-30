@@ -24,6 +24,7 @@ function Header() {
           <Link to="/anomaly-risk" className="header-nav-link">
             Analiza Risc
           </Link>
+          
           <AuthButton />
         </div>
       </header>

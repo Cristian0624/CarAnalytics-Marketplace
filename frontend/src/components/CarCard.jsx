@@ -7,7 +7,7 @@ import AnomalyRiskResults from "./AnomalyRiskResults";
 import { buildRiskPayload } from "../utils/anomalyRisk";
 import { createPortal } from "react-dom";
 
-function getLogoFileName(brand) {
+export function getLogoFileName(brand) {
   if (!brand) return "unknown";
   let name = brand.toLowerCase().trim().replace(/ /g, '-');
   if (name === "mercedes") name = "mercedes-benz";
@@ -15,7 +15,7 @@ function getLogoFileName(brand) {
   return `${name}.png`;
 }
 
-function getScoreClass(score) {
+export function getScoreClass(score) {
   const value = Number(score);
   if (value < 30) return "score-red";
   if (value < 60) return "score-orange";
@@ -48,6 +48,7 @@ function CarCard({ car, expanded, position, onClick, showFavourite = true, peeki
 
   const [viewMode, setViewMode] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(12);
   const [riskResult, setRiskResult] = useState(null);
   const [loadingView, setLoadingView] = useState(false);
   const [viewError, setViewError] = useState("");
@@ -107,6 +108,7 @@ function CarCard({ car, expanded, position, onClick, showFavourite = true, peeki
       return;
     }
     setViewMode('recommendations');
+    setVisibleCount(12);
     setLoadingView(true);
     setViewError("");
     try {
@@ -223,7 +225,7 @@ function CarCard({ car, expanded, position, onClick, showFavourite = true, peeki
                 {currentCar.score !== null && currentCar.score !== undefined && (
                   <div className={`expanded-score-circular ${getScoreClass(score)}`}>
                     <span className="score-label">SCORE</span>
-                    <div className="score-circle">
+                    <div className="score-circle" style={{ "--progress": `${Math.min(100, Math.max(0, (score / 80) * 100))}%` }}>
                       <span className="score-main">{score.toFixed(0)}</span>
                       <span className="score-sub">{score.toFixed(0)}/80</span>
                     </div>
@@ -297,8 +299,10 @@ function CarCard({ car, expanded, position, onClick, showFavourite = true, peeki
                     <div className="recommendations-container">
                       <h3 style={{marginTop: 0, marginBottom: "16px", fontSize: "18px", color: "#111"}}>Mașini Recomandate</h3>
                       {recommendations.length > 0 ? (
+                        <>
+
                         <div className="recommendations-mini-grid">
-                          {recommendations.slice(0, 10).map(c => (
+                          {recommendations.slice(0, visibleCount).map(c => (
                             
                             <article key={c.id} className="car-card" onClick={(e) => {
                                 e.stopPropagation();
@@ -336,6 +340,17 @@ function CarCard({ car, expanded, position, onClick, showFavourite = true, peeki
                             </article>
                           ))}
                         </div>
+                        <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
+                          <button className="action-btn" onClick={(e) => { e.stopPropagation(); if (visibleCount <= 12) { setViewMode(null); } else { setVisibleCount(v => v - 12); } }} style={{ flex: 1, padding: '12px', background: '#f3f4f6', border: '1px solid #e5e7eb', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
+                            {visibleCount <= 12 ? "Restrânge" : "Arată mai puțin"}
+                          </button>
+                          {visibleCount < recommendations.length && (
+                            <button className="action-btn" onClick={(e) => { e.stopPropagation(); setVisibleCount(v => v + 12); }} style={{ flex: 1, padding: '12px', background: '#111', color: '#fff', border: '1px solid #111', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>
+                              Arată mai mult
+                            </button>
+                          )}
+                        </div>
+                        </>
                       ) : (
                         <p>Nu s-au găsit recomandări pentru această mașină.</p>
                       )}

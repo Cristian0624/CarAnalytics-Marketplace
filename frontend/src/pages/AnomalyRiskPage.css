@@ -224,3 +224,27 @@
   .risk-explanation-content { padding: 6px 18px 20px; }
   .risk-component-score small { margin-left: 0; }
 }
+
+
+.background-shapes {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.floating-shape {
+  position: absolute;
+  opacity: 0.12;
+  animation: float-shapes 8s ease-in-out infinite;
+}
+
+@keyframes float-shapes {
+  0% { transform: translateY(0px) rotate(var(--rot, 0deg)); }
+  50% { transform: translateY(-25px) rotate(calc(var(--rot, 0deg) + 12deg)); }
+  100% { transform: translateY(0px) rotate(var(--rot, 0deg)); }
+}
