@@ -1,4 +1,4 @@
-const { Document, NodeIO } = require('@gltf-transform/core');
+const { NodeIO } = require('@gltf-transform/core');
 const { KHRONOS_EXTENSIONS } = require('@gltf-transform/extensions');
 
 async function processGLB() {
