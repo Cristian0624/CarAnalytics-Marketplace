@@ -12,11 +12,11 @@
   justify-content: space-between;
   gap: 16px;
   padding: 16px 32px;
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(227, 221, 186, 0.92);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(15, 23, 42, 0.1);
-  box-shadow: 0 4px 30px rgba(15, 23, 42, 0.05);
+  border-bottom: 1px solid var(--brand-sage-dark, #978f52);
+  box-shadow: 0 4px 30px rgba(19, 46, 42, 0.12);
   position: sticky;
   top: 0;
   z-index: 50;
@@ -42,7 +42,7 @@
 }
 
 .header-nav-link {
-  color: #64748b;
+  color: var(--brand-ink-soft, #3a554f);
   text-decoration: none;
   font-weight: 600;
   font-size: 15px;
@@ -53,7 +53,7 @@
 }
 
 .header-nav-link:hover {
-  color: #0f172a;
+  color: var(--brand-brunswick-dark, #132e2a);
 }
 
 .header-nav-link::after {
@@ -63,7 +63,7 @@
   left: 50%;
   width: 0;
   height: 2px;
-  background: #0f172a;
+  background: var(--brand-brunswick, #1e443e);
   transition: all 0.3s ease;
   transform: translateX(-50%);
 }
@@ -86,12 +86,12 @@
 .brand-icon {
   width: 40px;
   height: 40px;
-  background: #0f172a;
+  background: var(--brand-brunswick, #1e443e);
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2);
+  box-shadow: 0 4px 10px rgba(19, 46, 42, 0.35);
 }
 
 .brand-icon img {
@@ -102,7 +102,7 @@
 }
 
 .header-brand span {
-  color: #0f172a;
+  color: var(--brand-brunswick, #1e443e);
 }
 
 @media (max-width: 640px) {
@@ -139,9 +139,9 @@
   width: 240px;
   height: 54px;
 
-  background: #111827;
-  color: #ffffff;
-  border: 2px solid #111827;
+  background: var(--brand-brunswick, #1e443e);
+  color: var(--brand-pearl-light, #e3ddba);
+  border: 2px solid var(--brand-brunswick, #1e443e);
   border-radius: 16px;
 
   font-size: 14px;
@@ -181,7 +181,7 @@
   margin-right: 4px;
   font-weight: 500;
   line-height: 1;
-  color: #2ecc71;
+  color: var(--brand-sage, #b3af72);
   transition: all 0.35s ease;
 }
 
@@ -189,12 +189,12 @@
 .create-listing-wrapper:hover .create-listing-button {
   width: 190px;
   background: transparent;
-  color: #2ecc71;
-  border-color: #2ecc71;
+  color: var(--brand-sage, #b3af72);
+  border-color: var(--brand-sage, #b3af72);
 }
 
 .create-listing-wrapper:hover .create-listing-icon-box {
-  border-color: #2ecc71;
+  border-color: var(--brand-sage, #b3af72);
   right: -25px;
 }
 
