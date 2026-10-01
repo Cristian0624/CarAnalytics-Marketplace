@@ -1,31 +1,45 @@
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import CarViewer from "../components/CarViewer";
 import "./HomePage.css";
 
 function HomePage() {
+  const { user } = useAuth();
+
   return (
     <div className="landing-page">
       {/* 1. Hero Section */}
       <section className="hero-section">
         <div className="hero-content">
-          <h1 className="hero-title">Află Valoarea Reală a Oricărei Mașini Instant.</h1>
-          <p className="hero-subtitle">
-            Nu mai plăti prea mult pentru mașini second-hand. Algoritmul nostru analizează mii de date din piață pentru a evalua precis fiecare anunț și a depista instant țepele supraevaluate.
-          </p>
-          <div className="hero-buttons">
-            <Link to="/listings" className="btn-primary">Răsfoiește Piața</Link>
-            <Link to="/register" className="btn-secondary">Înscrie-te Gratuit</Link>
-            <Link to="/anomaly-risk" className="btn-primary hero-risk-link">Estimeaza Riscul unei Oferte</Link>
-          </div>
+          {user ? (
+            <>
+              <div className="hero-badge">Bine ai revenit, {user.name}</div>
+              <h1 className="hero-title">Piața te așteaptă. Continuă vânătoarea.</h1>
+              <p className="hero-subtitle">
+                Anunțurile tale favorite sunt salvate, iar algoritmul nostru a evaluat deja ofertele noi apărute în piață.
+              </p>
+              <div className="hero-buttons">
+                <Link to="/listings" className="btn-primary">Răsfoiește Piața</Link>
+                <Link to="/favourites" className="btn-secondary">Anunțurile Mele</Link>
+                <Link to="/anomaly-risk" className="btn-primary hero-risk-link">Estimează Riscul unei Oferte</Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <h1 className="hero-title">Află Valoarea Reală a Oricărei Mașini Instant.</h1>
+              <p className="hero-subtitle">
+                Nu mai plăti prea mult pentru mașini second-hand. Algoritmul nostru analizează mii de date din piață pentru a evalua precis fiecare anunț și a depista instant țepele supraevaluate.
+              </p>
+              <div className="hero-buttons">
+                <Link to="/listings" className="btn-primary">Răsfoiește Piața</Link>
+                <Link to="/register" className="btn-secondary">Înscrie-te Gratuit</Link>
+                <Link to="/anomaly-risk" className="btn-primary hero-risk-link">Estimează Riscul unei Oferte</Link>
+              </div>
+            </>
+          )}
         </div>
         <div className="hero-image-placeholder">
-          <div className="abstract-ui">
-            <div className="ui-card top">Scor: 80/80 (Ofertă Perfectă)</div>
-            <div className="ui-card mid">Medie Piață: 14,000 €</div>
-            <div className="ui-card bot">Alertă Fraudă: Kilometraj Dat Înapoi</div>
-          </div>
-          <div className="hero-car-image">
-            <img src="/r8.png" alt="Audi R8" className="floating-car" />
-          </div>
+          <CarViewer />
         </div>
       </section>
 

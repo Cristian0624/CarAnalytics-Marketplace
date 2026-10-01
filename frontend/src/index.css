@@ -1,4 +1,12 @@
 :root {
+  --brand-brunswick: #1e443e;
+  --brand-brunswick-dark: #132e2a;
+  --brand-sage: #b3af72;
+  --brand-sage-dark: #978f52;
+  --brand-pearl: #cfc9a4;
+  --brand-pearl-light: #e3ddba;
+  --brand-page: #1c3b36;
+  --brand-ink-soft: #3a554f;
   --text: #6b6375;
   --text-h: #08060d;
   --bg: #fff;
@@ -18,7 +26,7 @@
   letter-spacing: 0.18px;
   color-scheme: light dark;
   color: var(--text);
-  background: var(--bg);
+  background: var(--brand-page, #1c3b36);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -51,8 +59,12 @@
 
 body {
   margin: 0;
-  background-color: #ffffff;
+  background-color: #1c3b36;
   min-height: 100vh;
+}
+
+html {
+  background-color: #1c3b36;
 }
 
 #root {

@@ -1,4 +1,6 @@
 .my-listings-topbar {
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -7,18 +9,46 @@
   margin-bottom: 24px;
 }
 
+.saved-page .saved-container {
+  position: relative;
+  z-index: 1;
+}
+
+.background-shapes {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.floating-shape {
+  position: absolute;
+  opacity: 0.12;
+  animation: float-shapes 8s ease-in-out infinite;
+}
+
+@keyframes float-shapes {
+  0% { transform: translateY(0px) rotate(var(--rot, 0deg)); }
+  50% { transform: translateY(-25px) rotate(calc(var(--rot, 0deg) + 12deg)); }
+  100% { transform: translateY(0px) rotate(var(--rot, 0deg)); }
+}
+
 .my-listings-count {
   font-size: 15px;
   font-weight: 600;
-  color: #475569;
+  color: var(--brand-sage, #b3af72);
 }
 
 .my-listings-add-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #0f172a;
-  color: white;
+  background: var(--brand-brunswick, #1e443e);
+  color: var(--brand-pearl-light, #e3ddba);
   padding: 10px 18px;
   border-radius: 10px;
   text-decoration: none;
@@ -28,7 +58,7 @@
 }
 
 .my-listings-add-btn:hover {
-  background: #1e293b;
+  background: var(--brand-brunswick-dark, #132e2a);
 }
 
 .my-listing-card {

@@ -1,6 +1,6 @@
 .create-listing-page {
     min-height: calc(100vh - 70px);
-    background: #f8fafc;
+    background: transparent;
     padding: 40px 24px 70px;
 }
 
@@ -33,7 +33,7 @@
 .create-listing-header h1 {
     margin: 0 0 8px;
 
-    color: #0f172a;
+    color: var(--brand-pearl-light, #e3ddba);
     font-size: 32px;
     line-height: 1.2;
     font-weight: 700;
@@ -42,7 +42,7 @@
 .create-listing-header p {
     margin: 0;
 
-    color: #64748b;
+    color: var(--brand-sage, #b3af72);
     font-size: 15px;
     line-height: 1.6;
 }

@@ -1,6 +1,6 @@
 .risk-page {
-  background: #fafafa;
-  color: #0f172a;
+  background: transparent;
+  color: var(--brand-pearl-light, #e3ddba);
   color-scheme: light;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   min-height: 100vh;
@@ -10,9 +10,9 @@
 .risk-page * { box-sizing: border-box; }
 .risk-container { max-width: 1126px; margin: 0 auto; }
 .risk-heading { text-align: center; max-width: 740px; margin: 32px auto 40px; }
-.risk-heading h1 { color: #0f172a; font-size: clamp(32px, 4vw, 52px); font-weight: 800; letter-spacing: -1.5px; line-height: 1.13; margin: 22px 0 18px; }
-.risk-heading p { color: #475569; line-height: 1.7; font-size: 18px; }
-.risk-form { border: 1px solid #cbd5e1; border-radius: 24px; background: #eef2f6; padding: 36px; box-shadow: 0 12px 32px rgb(15 23 42 / 7%); }
+.risk-heading h1 { color: var(--brand-pearl-light, #e3ddba); font-size: clamp(32px, 4vw, 52px); font-weight: 800; letter-spacing: -1.5px; line-height: 1.13; margin: 22px 0 18px; }
+.risk-heading p { color: var(--brand-sage, #b3af72); line-height: 1.7; font-size: 18px; }
+.risk-form { border: 1px solid var(--brand-sage, #b3af72); border-radius: 24px; background: var(--brand-pearl-light, #e3ddba); padding: 36px; box-shadow: 0 12px 32px rgb(19 46 42 / 25%); }
 .risk-form-heading { display: flex; justify-content: space-between; align-items: start; gap: 16px; margin-bottom: 30px; padding-bottom: 26px; border-bottom: 1px solid #cbd5e1; }
 .risk-form-heading h2, .risk-results-heading h2 { text-align: left; color: #0f172a; font-size: 34px; font-weight: 800; letter-spacing: -0.8px; margin: 0 0 10px; }
 .risk-form-heading p, .risk-form-heading > span { font-size: 16px; color: #475569; line-height: 1.6; }
@@ -21,24 +21,24 @@
 .risk-fields { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-bottom: 24px; }
 .risk-fields.risk-identity { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .risk-field { min-width: 0; }
-.risk-field label { display: block; font-size: 16px; line-height: 1.5; font-weight: 650; margin-bottom: 8px; }
-.risk-field input, .risk-field select { font: inherit; font-size: 16px; width: 100%; min-width: 0; height: 54px; padding: 0 14px; border: 1px solid #b8c5d5; border-radius: 10px; color: #111827; background: white; box-shadow: 0 1px 2px rgb(15 23 42 / 3%); }
-.risk-field input:hover:not(:disabled), .risk-field select:hover:not(:disabled) { border-color: #8193aa; }
+.risk-field label { display: block; font-size: 16px; line-height: 1.5; font-weight: 650; margin-bottom: 8px; color: var(--brand-brunswick-dark, #132e2a); }
+.risk-field input, .risk-field select { font: inherit; font-size: 16px; width: 100%; min-width: 0; height: 54px; padding: 0 14px; border: 1px solid var(--brand-sage, #b3af72); border-radius: 10px; color: #111827; background: white; box-shadow: 0 1px 2px rgb(15 23 42 / 3%); }
+.risk-field input:hover:not(:disabled), .risk-field select:hover:not(:disabled) { border-color: var(--brand-sage-dark, #978f52); }
 .risk-field input::placeholder { color: #64748b; }
 .risk-field input:disabled, .risk-field select:disabled { opacity: 1; color: #64748b; cursor: not-allowed; background: #f8fafc; border-color: #cbd5e1; }
-.risk-page :is(input, select, button, a, summary):focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
+.risk-page :is(input, select, button, a, summary):focus-visible { outline: 3px solid var(--brand-sage-dark, #978f52); outline-offset: 3px; }
 .risk-field small { display: block; font-size: 13px; line-height: 1.5; color: #475569; margin-top: 8px; }
 .risk-vehicle-select { position: relative; }
-.risk-suggestion-menu { position: absolute; top: 90px; left: 0; right: 0; z-index: 20; max-height: 280px; overflow-y: auto; border: 1px solid #b8c5d5; border-radius: 10px; background: white; box-shadow: 0 12px 28px rgb(15 23 42 / 14%); }
-.risk-suggestion-menu button { display: block; width: 100%; border: 0; border-radius: 0; background: white; color: #0f172a; font: inherit; font-size: 16px; text-align: left; cursor: pointer; padding: 12px 14px; }
-.risk-suggestion-menu button:hover, .risk-suggestion-menu button.active { background: #f0f4ff; color: #1d4ed8; }
+.risk-suggestion-menu { position: absolute; top: 90px; left: 0; right: 0; z-index: 20; max-height: 280px; overflow-y: auto; border: 1px solid var(--brand-sage, #b3af72); border-radius: 10px; background: var(--brand-pearl-light, #e3ddba); box-shadow: 0 12px 28px rgb(19 46 42 / 25%); }
+.risk-suggestion-menu button { display: block; width: 100%; border: 0; border-radius: 0; background: transparent; color: var(--brand-brunswick-dark, #132e2a); font: inherit; font-size: 16px; text-align: left; cursor: pointer; padding: 12px 14px; }
+.risk-suggestion-menu button:hover, .risk-suggestion-menu button.active { background: var(--brand-sage, #b3af72); color: var(--brand-brunswick-dark, #132e2a); }
 .risk-suggestion-menu p { color: #475569; font-size: 15px; padding: 12px 14px; }
 .risk-form-note { font-size: 15px; color: #475569; line-height: 1.7; max-width: 800px; }
 .risk-actions { display: flex; align-items: center; gap: 20px; margin-top: 24px; }
 .risk-submit, .risk-reset { font: inherit; cursor: pointer; font-size: 16px; font-weight: 600; border-radius: 10px; padding: 15px 24px; }
 .risk-actions .saved-secondary { font-size: 16px; padding: 14px 20px; }
-.risk-submit { display: inline-flex; align-items: center; justify-content: center; text-align: center; border: 1px solid #000; background: #000; color: white; }
-.risk-submit:hover { background: #333; }
+.risk-submit { display: inline-flex; align-items: center; justify-content: center; text-align: center; border: 1px solid var(--brand-brunswick, #1e443e); background: var(--brand-brunswick, #1e443e); color: var(--brand-pearl-light, #e3ddba); }
+.risk-submit:hover { background: var(--brand-brunswick-dark, #132e2a); }
 .risk-reset { border: 1px solid #efb7b7; background: #fff7f7; color: #b4232d; padding: 15px 20px; }
 .risk-reset:hover { border-color: #d87e84; background: #ffe8e8; color: #8f1c25; }
 .risk-form fieldset:disabled button { opacity: 0.6; cursor: wait; }
