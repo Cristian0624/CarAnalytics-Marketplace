@@ -150,7 +150,7 @@ class DatabasePriceTests(unittest.TestCase):
         self.assertEqual(mileage["expected_median_mileage"], 310000)
         self.assertLess(mileage["score"], 80)
         self.assertEqual(mileage["flag"], "extreme_mileage_low")
-        self.assertEqual(result["anomaly_score"], 80)
+        self.assertGreater(result["anomaly_score"], 99.9)
         self.assertEqual(result["risk_level"], "high")
         self.assertEqual(result["effective_weights"], {"price": 0, "mileage": 1})
 
@@ -160,7 +160,7 @@ class DatabasePriceTests(unittest.TestCase):
                 prices = [100] * 10 + [1000] * 5 + [2000] * 10
                 result = self.service.assess_listing_risk(VEHICLE | {"price": actual}, prices, 25, [])
                 self.assertLess(result["components"]["price_anomaly"]["score"], 80)
-                self.assertEqual(result["anomaly_score"], 80)
+                self.assertAlmostEqual(result["anomaly_score"], 81.818181818)
                 self.assertEqual(result["risk_level"], "high")
 
     def test_http_extreme_tails_override_weighted_total(self):
@@ -180,10 +180,9 @@ class DatabasePriceTests(unittest.TestCase):
                     self.assertEqual(sum(result["effective_weights"].values()), 1)
                     self.assertGreaterEqual(result["anomaly_score"], 80)
                     self.assertEqual(result["risk_level"], "high")
-                    self.assertEqual(result["anomaly_score"], max(result["components"][name + "_anomaly"]["score"] for name in ("price", "mileage")))
-                    expected = sum(weight * result["components"][name + "_anomaly"]["score"]
-                                   for name, weight in result["effective_weights"].items())
-                    self.assertAlmostEqual(result["anomaly_score"], expected + result["market_support"]["rarity_penalty"])
+                    expected = 99.7575757576 if direction == "low" else 100
+                    self.assertAlmostEqual(result["anomaly_score"], expected)
+                    self.assertEqual(result["market_support"]["rarity_penalty"], 0)
 
             normal = client.post("/anomaly-risk", json=vehicle | {"price": 5000, "mileage": 150000}).json()
             self.assertIsNone(normal["components"]["price_anomaly"]["flag"])
@@ -207,10 +206,33 @@ class DatabasePriceTests(unittest.TestCase):
                 )
                 self.assertEqual(result["risk_level"], "high")
                 self.assertGreaterEqual(result["anomaly_score"], 80)
-                self.assertEqual(result["anomaly_score"], result["components"][component + "_anomaly"]["score"])
+                expected = (92.7272727273 if values["price"] == 1000 else
+                            99.7575757576 if values["mileage"] == 1000 else 100)
+                self.assertAlmostEqual(result["anomaly_score"], expected)
                 self.assertEqual(result["effective_weights"][component], 1)
                 self.assertEqual(result["market_support"]["rarity_penalty"], 0)
                 self.assertIn("determines the overall score directly", result["message"])
+
+    def test_gradual_override_distinguishes_mileage_deviations(self):
+        rows = [{"mileage": 320000}] * 25
+        scores = []
+        for actual, expected in ((175999, 80.0001136364), (150000, 82.9545454545),
+                                 (80000, 90.9090909091), (10, 99.9988636364), (0, 100)):
+            with self.subTest(mileage=actual):
+                result = self.service.assess_listing_risk(
+                    VEHICLE | {"mileage": actual}, [5000] * 25, 25, rows
+                )
+                self.assertAlmostEqual(result["anomaly_score"], expected)
+                self.assertEqual(result["risk_level"], "high")
+                scores.append(result["anomaly_score"])
+        self.assertEqual(scores, sorted(set(scores)))
+
+    def test_gradual_override_is_symmetric_and_capped(self):
+        score = self.service.extreme_override_score
+        for deviation, expected in ((.45, 80), (.5, 81.8181818182), (.75, 90.9090909091), (1, 100)):
+            self.assertAlmostEqual(score(100 * (1 - deviation), 100), expected)
+            self.assertAlmostEqual(score(100 * (1 + deviation), 100), expected)
+        self.assertEqual(score(10000, 100), 100)
 
     def test_flag_support_is_per_component_and_missing_components_still_reweight(self):
         prices = [5000] * 25

@@ -4,7 +4,7 @@ import { extremeAnomalyMessage, usesCurrentRiskPolicy, buildRiskPayload, filterV
 
 test("extreme override policy explains the direct score in Romanian", () => {
   const result = {
-    scoring_policy_version: "anomaly-risk-v2.9-median-override",
+    scoring_policy_version: "anomaly-risk-v2.10-gradual-override",
     assessment_status: "full", anomaly_score: 95,
     market_support: { model_generation_observations: 25, rarity_penalty: 0 },
     confidence: { p10_p90_width: 1000, relative_interval_width: .2 },
@@ -18,8 +18,8 @@ test("extreme override policy explains the direct score in Romanian", () => {
   const lines = riskExplanationLines(result, { brand: "Toyota", model: "Auris" });
   assert.ok(lines.some((line) => line.includes("fără media ponderată")));
   assert.ok(lines.some((line) => line.includes("peste 45%")));
-  assert.ok(lines.some((line) => line.includes("cel puțin 80/100")));
-  assert.ok(lines.some((line) => line.includes("nu trebuie să atingă 80")));
+  assert.ok(lines.some((line) => line.includes("crește gradual de la 80")));
+  assert.ok(lines.some((line) => line.includes("100% sau mai mare")));
   assert.ok(lines.every((line) => !line.includes("include o ajustare")));
 });
 

@@ -247,7 +247,7 @@ class ModelTests(unittest.TestCase):
         self.assertGreater(mileage, 50)
         self.assertLess(mileage, 70)
         self.assertEqual(result["effective_weights"], {"price": 0, "mileage": 1, "specification": 0})
-        self.assertEqual(result["anomaly_score"], 80)
+        self.assertGreater(result["anomaly_score"], 80)
         self.assertEqual(result["risk_level"], "high")
 
     def typical_vehicle(self):
@@ -296,7 +296,7 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(low_result["components"]["mileage_anomaly"]["direction"], "unusually_low")
         self.assertEqual(extreme_result["components"]["mileage_anomaly"]["direction"], "unusually_high")
         self.assertLess(moderate_result["anomaly_score"] - median_result["anomaly_score"], 17.5)
-        self.assertEqual(extreme_result["anomaly_score"], extreme_score)
+        self.assertEqual(extreme_result["anomaly_score"], 100)
         self.assertEqual(extreme_result["risk_level"], "high")
 
     def test_common_rare_and_unseen_specifications(self):

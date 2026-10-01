@@ -14,7 +14,7 @@ FEATURES = ["brand", "model", "generation", "year", "mileage", "engine",
             "fuel_type", "gearbox", "drivetrain", "body_type"]
 DEFAULT_ARTIFACT_DIR = Path(__file__).resolve().parents[1] / "ML_models/anomaly_risk/artifacts"
 DEFAULT_RUNTIME_CONFIG_PATH = Path(__file__).with_name("anomaly_risk_config.json")
-SCORING_POLICY_VERSION = "anomaly-risk-v2.9-median-override"
+SCORING_POLICY_VERSION = "anomaly-risk-v2.10-gradual-override"
 SCORING_POLICY = {
     "weights": {"price": 0.60, "mileage": 0.25, "specification": 0.15},
     "extreme_min_samples": 25,
@@ -347,6 +347,14 @@ class AnomalyRiskService:
         direction = "low" if actual < median else "high"
         return f"extreme_{component}_{direction}"
 
+    def extreme_override_score(self, actual, median):
+        """Scale a qualifying median deviation from 80 at 45% to 100 at 100%."""
+        deviation = abs(actual - median) / median
+        threshold = self.SCORING["extreme_min_median_deviation"]
+        floor = self.SCORING["extreme_overall_floor"]
+        progress = min(1.0, max(0.0, (deviation - threshold) / (1.0 - threshold)))
+        return float(floor + (100.0 - floor) * progress)
+
     def assess_listing_risk(self, vehicle, prices, model_observations, comparison_rows):
         if "price" not in vehicle:
             raise ValueError("Supply price as the asking price in EUR")
@@ -393,8 +401,11 @@ class AnomalyRiskService:
         total = None
         level = None
         extreme_scores = {
-            name: scores[name]
-            for name, component in (("price", price), ("mileage", mileage))
+            name: self.extreme_override_score(actual, median)
+            for name, component, actual, median in (
+                ("price", price, price["actual_price"], price["p50"]),
+                ("mileage", mileage, mileage["actual_mileage"], mileage["expected_median_mileage"]),
+            )
             if component["flag"] is not None
         }
         if available:
@@ -402,12 +413,12 @@ class AnomalyRiskService:
                                      market_support["rarity_penalty"]))
             if extreme_scores:
                 strongest = max(extreme_scores, key=extreme_scores.get)
-                total = float(max(self.SCORING["extreme_overall_floor"], extreme_scores[strongest]))
+                total = extreme_scores[strongest]
                 market_support["rarity_penalty"] = 0.0
                 effective_weights = {name: 1.0 if name == strongest else 0.0 for name in available}
                 message = (
                     f"Extreme {strongest} anomaly determines the overall score directly "
-                    f"with a minimum of {self.SCORING['extreme_overall_floor']:g}/100; "
+                    "on a gradual scale from 80 at 45% median deviation to 100 at 100% deviation; "
                     "component weights and the rarity adjustment are not applied."
                 )
             level = "high" if total >= self.SCORING["risk_high"] else "medium" if total >= self.SCORING["risk_medium"] else "low"
