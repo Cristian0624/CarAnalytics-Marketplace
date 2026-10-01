@@ -2,6 +2,25 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { extremeAnomalyMessage, usesCurrentRiskPolicy, buildRiskPayload, filterVehicleOptions, hasOverallScore, resolveVehicleOption, riskErrorMessage, riskExplanationLines } from "../src/utils/anomalyRisk.js";
 
+test("extreme override policy explains the direct score in Romanian", () => {
+  const result = {
+    scoring_policy_version: "anomaly-risk-v2.8-extreme-override",
+    assessment_status: "full", anomaly_score: 95,
+    market_support: { model_generation_observations: 25, rarity_penalty: 0 },
+    confidence: { p10_p90_width: 1000, relative_interval_width: .2 },
+    components: {
+      price_anomaly: { source: "database", score: 95, flag: "extreme_price_high", count: 25, direction: "unusually_expensive" },
+      mileage_anomaly: { score: null },
+      specification_anomaly: { signals: [] },
+    },
+  };
+  assert.equal(usesCurrentRiskPolicy(result), true);
+  const lines = riskExplanationLines(result, { brand: "Toyota", model: "Auris" });
+  assert.ok(lines.some((line) => line.includes("fără media ponderată")));
+  assert.ok(lines.some((line) => line.includes("peste 45%")));
+  assert.ok(lines.every((line) => !line.includes("include o ajustare")));
+});
+
 test("request preserves exact database names, sends numbers, and excludes search-only fields", () => {
   const result = buildRiskPayload({ brand: " BMW ", model: "3 Series", generation: "F30 (2011 - 2019)", price: "12000.50", year: "2016", mileage: "150000", engine: "2.0", fuel_type: "Benzină", year_min: "2010" });
   assert.equal(result.brand, "BMW");

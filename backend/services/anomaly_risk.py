@@ -14,12 +14,12 @@ FEATURES = ["brand", "model", "generation", "year", "mileage", "engine",
             "fuel_type", "gearbox", "drivetrain", "body_type"]
 DEFAULT_ARTIFACT_DIR = Path(__file__).resolve().parents[1] / "ML_models/anomaly_risk/artifacts"
 DEFAULT_RUNTIME_CONFIG_PATH = Path(__file__).with_name("anomaly_risk_config.json")
-SCORING_POLICY_VERSION = "anomaly-risk-v2.7-extreme-signals"
+SCORING_POLICY_VERSION = "anomaly-risk-v2.8-extreme-override"
 SCORING_POLICY = {
     "weights": {"price": 0.60, "mileage": 0.25, "specification": 0.15},
     "extreme_min_samples": 25,
     "extreme_min_score": 80.0,
-    "extreme_min_median_deviation": 0.25,
+    "extreme_min_median_deviation": 0.45,
     "mileage_min_samples": 20,
     "spec_min_samples": 25,
     "mileage_curve": "p50=0,p25/p75=10,p10/p90=20,p05/p95=40,exponential_tail_to_100",
@@ -335,13 +335,14 @@ class AnomalyRiskService:
         """Flag a supported tail anomaly with a substantial median deviation.
 
         The relative-distance guard avoids alerts for tiny differences when
-        observed percentile bands are nearly identical. It does not alter scores.
+        observed percentile bands are nearly identical. Qualifying flags allow
+        the overall assessment to bypass the weighted average.
         """
         if (score is None or score < self.SCORING["extreme_min_score"]
                 or count < self.SCORING["extreme_min_samples"]
                 or actual is None or median is None or median <= 0):
             return None
-        if abs(actual - median) / median < self.SCORING["extreme_min_median_deviation"]:
+        if abs(actual - median) / median <= self.SCORING["extreme_min_median_deviation"]:
             return None
         direction = "low" if actual < median else "high"
         return f"extreme_{component}_{direction}"
@@ -391,16 +392,32 @@ class AnomalyRiskService:
         effective_weights = {name: self.SCORING["weights"][name] / weight_sum for name in available}
         total = None
         level = None
+        extreme_scores = {
+            name: scores[name]
+            for name, component in (("price", price), ("mileage", mileage))
+            if component["flag"] is not None
+        }
         if available:
             total = min(100.0, float(sum(effective_weights[name] * score for name, score in available.items()) +
                                      market_support["rarity_penalty"]))
+            if extreme_scores:
+                strongest = max(extreme_scores, key=extreme_scores.get)
+                total = float(extreme_scores[strongest])
+                market_support["rarity_penalty"] = 0.0
+                effective_weights = {name: 1.0 if name == strongest else 0.0 for name in available}
+                message = (
+                    f"Extreme {strongest} anomaly determines the overall score directly; "
+                    "component weights and the rarity adjustment are not applied."
+                )
             level = "high" if total >= self.SCORING["risk_high"] else "medium" if total >= self.SCORING["risk_medium"] else "low"
         else:
             message = "Insufficient evidence for any component; no overall anomaly score is available."
         reasons = [price["reason"], mileage["reason"]]
         reasons += [f"{s['field']}: {s['reason']}" for s in specification["signals"] if s["severity"] != "normal"]
         reasons += confidence["reasons"]
-        if available and market_support["rarity_penalty"]:
+        if extreme_scores:
+            reasons.append(message)
+        elif available and market_support["rarity_penalty"]:
             reasons.append(f"A {market_support['rarity_penalty']:.2f}-point rarity adjustment was applied to the overall score.")
         return {"scoring_policy_version": SCORING_POLICY_VERSION, "assessment_status": assessment_status,
                 "market_support": market_support, "message": message,

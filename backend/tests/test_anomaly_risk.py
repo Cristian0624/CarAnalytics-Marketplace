@@ -276,7 +276,7 @@ class ModelTests(unittest.TestCase):
                                mild_result["components"]["price_anomaly"]["score"] + 50)
             self.assertEqual(extreme["components"]["price_anomaly"]["direction"], direction)
 
-    def test_mileage_both_tails_and_weight_remains_supporting(self):
+    def test_mileage_both_tails_and_extreme_override(self):
         normal = self.typical_vehicle()
         median = self.service.analyze_mileage_anomaly(normal, CHARACTERISTICS)["p50"]
         vehicles = [normal | {"mileage": mileage} for mileage in (median, 0, 300000, 1000000)]
@@ -295,8 +295,8 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(low_result["components"]["mileage_anomaly"]["direction"], "unusually_low")
         self.assertEqual(extreme_result["components"]["mileage_anomaly"]["direction"], "unusually_high")
         self.assertLess(moderate_result["anomaly_score"] - median_result["anomaly_score"], 17.5)
-        self.assertLessEqual(extreme_result["anomaly_score"] - median_result["anomaly_score"], 25)
-        self.assertNotEqual(extreme_result["risk_level"], "high")
+        self.assertEqual(extreme_result["anomaly_score"], extreme_score)
+        self.assertEqual(extreme_result["risk_level"], "high")
 
     def test_common_rare_and_unseen_specifications(self):
         normal = self.typical_vehicle()

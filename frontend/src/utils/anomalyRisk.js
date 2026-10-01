@@ -54,7 +54,7 @@ export function hasOverallScore(result) {
 }
 
 export function usesCurrentRiskPolicy(result) {
-  return ["anomaly-risk-v2.6-selected-group", "anomaly-risk-v2.7-extreme-signals"].includes(result.scoring_policy_version)
+  return ["anomaly-risk-v2.6-selected-group", "anomaly-risk-v2.7-extreme-signals", "anomaly-risk-v2.8-extreme-override"].includes(result.scoring_policy_version)
     && result.components.price_anomaly.source === "database";
 }
 
@@ -76,6 +76,9 @@ export function riskExplanationLines(result, vehicle) {
   const lines = [
     `Grupul analizat: ${format(result.market_support.model_generation_observations)} anunțuri cu aceeași marcă și același model${vehicle.generation ? " și aceeași generație. Nu sunt incluse alte generații." : ", din toate generațiile, deoarece generația nu a fost specificată."}`,
   ];
+  if (result.scoring_policy_version === "anomaly-risk-v2.8-extreme-override" && (price.flag || mileage.flag)) {
+    lines.push("Scorul general este dat direct de cea mai puternică anomalie extremă de preț sau kilometraj, fără media ponderată sau ajustarea pentru raritate. Semnalul necesită minimum 25 de valori comparabile, un scor de minimum 80 și o abatere de peste 45% față de mediană.");
+  }
   if (price.score != null) {
     lines.push(`Intervalul observat P10–P90 are o lățime de ${format(result.confidence.p10_p90_width)} € (${format(result.confidence.relative_interval_width * 100, 1)}% din mediană), pe baza a ${format(price.count)} anunțuri cu aceeași marcă și același model${vehicle.generation ? " și aceeași generație" : " din toate generațiile"}. Anul, kilometrajul și configurația nu filtrează acest grup.`);
   } else {
