@@ -1,17 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import "./Autocomplete.css";
+import { highlightParts } from "../utils/autocomplete";
+import { filterVehicleOptions, resolveVehicleOption } from "../utils/anomalyRisk";
 
 function HighlightMatch({ text, query }) {
   if (!query) return <span>{text}</span>;
-  const regex = new RegExp(`(${query})`, "gi");
-  const parts = text.split(regex);
+  const parts = highlightParts(text, query);
   return (
     <span>
       {parts.map((part, i) =>
-        part.toLowerCase() === query.toLowerCase() ? (
-          <span key={i} className="highlight-match">{part}</span>
+        part.match ? (
+          <span key={i} className="highlight-match">{part.text}</span>
         ) : (
-          <span key={i}>{part}</span>
+          <span key={i}>{part.text}</span>
         )
       )}
     </span>
@@ -25,9 +26,15 @@ export default function Autocomplete({
   fetchSuggestions,
   placeholder,
   disabled = false,
+  options,
+  loading = false,
+  error = false,
+  label,
 }) {
   const [suggestions, setSuggestions] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const [searching, setSearching] = useState(false);
   const wrapperRef = useRef(null);
 
   useEffect(() => {
@@ -44,49 +51,89 @@ export default function Autocomplete({
     let active = true;
 
     async function loadSuggestions() {
-      if (!isOpen) return;
+      if (!isOpen || disabled) return;
       
       try {
-        const results = await fetchSuggestions(value || "");
+        const results = options
+          ? filterVehicleOptions(options, options.includes(value) ? "" : value || "")
+          : await fetchSuggestions(value || "");
         if (active) {
           setSuggestions(results);
+          setSearching(false);
         }
       } catch (e) {
-        if (active) setSuggestions([]);
+        if (active) {
+          setSuggestions([]);
+          setSearching(false);
+        }
       }
     }
 
     const timer = setTimeout(() => {
       loadSuggestions();
-    }, 200); // debounce
+    }, 350);
 
     return () => {
       active = false;
       clearTimeout(timer);
     };
-  }, [value, isOpen, fetchSuggestions]);
+  }, [value, isOpen, fetchSuggestions, options, disabled]);
+
+  function choose(option) {
+    onSelect(option);
+    setIsOpen(false);
+    setActiveIndex(-1);
+  }
 
   return (
     <div className="autocomplete-wrapper" ref={wrapperRef}>
       <input
         type="text"
+        aria-label={label ?? placeholder}
+        autoComplete="off"
         value={value}
         onChange={(e) => {
           onChange(e.target.value);
           setIsOpen(true);
+          setActiveIndex(-1);
+          setSearching(true);
         }}
-        onFocus={() => setIsOpen(true)}
+        onFocus={() => { setIsOpen(true); setActiveIndex(-1); setSearching(true); }}
+        onBlur={() => {
+          setIsOpen(false);
+          const selected = options && resolveVehicleOption(options, value);
+          if (selected && selected !== value) onSelect(selected);
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") setIsOpen(false);
+          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            setIsOpen(true);
+            setActiveIndex((index) => Math.max(0, Math.min(suggestions.length - 1, index + (event.key === "ArrowDown" ? 1 : -1))));
+          }
+          if (event.key === "Enter" && isOpen) {
+            event.preventDefault();
+            if (suggestions.length && !loading && !error && !searching) {
+              choose(suggestions[activeIndex] ?? suggestions[0]);
+            }
+          }
+        }}
         placeholder={placeholder}
         disabled={disabled}
       />
-      {isOpen && suggestions.length > 0 && (
+      {isOpen && !disabled && (options || suggestions.length > 0) && (
         <ul className="autocomplete-list">
-          {suggestions.map((s, idx) => (
+          {error ? <li role="status">Opțiunile nu s-au putut încărca. Reîncearcă.</li>
+            : loading ? <li role="status">Se încarcă opțiunile…</li>
+            : searching ? <li role="status">Se caută potriviri…</li>
+            : !suggestions.length ? <li role="status">Nicio opțiune găsită.</li>
+            : suggestions.map((s, idx) => (
             <li
               key={idx}
-              onMouseDown={() => {
-                onSelect(s);
-                setIsOpen(false);
+              className={activeIndex === idx ? "active" : ""}
+              onMouseDown={(event) => {
+                event.preventDefault();
+                choose(s);
               }}
             >
               <HighlightMatch text={s} query={value} />

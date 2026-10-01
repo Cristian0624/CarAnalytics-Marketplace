@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./ListingFilters.css";
-import Autocomplete from "./Autocomplete";
-import { getPredictionBrands, getPredictionModels, getPredictionGenerations } from "../api/predictions";
+import MarketplaceVehicleFields, { FilterHint } from "./MarketplaceVehicleFields";
+import { listingFilterError, updateListingFilter } from "../utils/listingFilters";
 
 const API_URL =
   import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
@@ -137,7 +137,8 @@ function MultiSelect({
   selected = [],
   onChange,
   label = "Selectează",
-  title = "Alege opțiunile"
+  title = "Alege opțiunile",
+  disabled = false,
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -158,13 +159,14 @@ function MultiSelect({
       <button
         type="button"
         className="multi-select-toggle"
+        disabled={disabled}
         onClick={() => setIsOpen(true)}
       >
         {selected.length > 0 ? `${label} (${selected.length})` : label}
         <span className="chevron">▼</span>
       </button>
 
-      {isOpen && (
+      {isOpen && !disabled && (
         <div className="filter-modal-overlay" onClick={() => setIsOpen(false)}>
           <div className="filter-modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="filter-modal-header">
@@ -216,17 +218,11 @@ function ListingFilters({
     useRef(null);
 
   function update(field, value) {
-    setFilters((current) => {
-      const newFilters = { ...current, [field]: value };
-      if (field === "brandText" && value !== current.brandText) {
-        newFilters.modelText = "";
-        newFilters.generationText = "";
-      } else if (field === "modelText" && value !== current.modelText) {
-        newFilters.generationText = "";
-      }
-      return newFilters;
-    });
+    setFilters((current) => updateListingFilter(current, field, value));
   }
+
+  const filterError = listingFilterError(filters);
+  const classDisabled = Boolean(filters.modelText?.trim()) && !filters.class?.length;
 
   /*
    * WORD COMPLETION
@@ -413,7 +409,7 @@ function ListingFilters({
               <h2>Filtre avansate</h2>
 
               <p>
-                Reduceți numărul de anunțuri folosind criterii specifice
+                  Mărcile și modelele disponibile provin din anunțurile auto din Republica Moldova.
               </p>
             </div>
 
@@ -428,69 +424,7 @@ function ListingFilters({
 
           <div className="filter-grid">
 
-            {/* BRAND */}
-            <div className="filter-group">
-              <label>Marcă</label>
-
-              <Autocomplete
-                value={filters.brandText ?? ""}
-                onChange={(v) => update("brandText", v)}
-                onSelect={(v) => update("brandText", v)}
-                fetchSuggestions={async (query) => {
-                  try {
-                    const data = await getPredictionBrands(query);
-                    return data.brands || [];
-                  } catch (e) {
-                    return [];
-                  }
-                }}
-                placeholder="e.g. BMW"
-              />
-            </div>
-
-            {/* MODEL */}
-            <div className="filter-group">
-              <label>Model</label>
-
-              <Autocomplete
-                value={filters.modelText ?? ""}
-                onChange={(v) => update("modelText", v)}
-                onSelect={(v) => update("modelText", v)}
-                fetchSuggestions={async (query) => {
-                  if (!filters.brandText) return [];
-                  try {
-                    const data = await getPredictionModels(filters.brandText, query);
-                    return data.models || [];
-                  } catch (e) {
-                    return [];
-                  }
-                }}
-                placeholder="e.g. 3 Series"
-                disabled={!filters.brandText}
-              />
-            </div>
-
-            {/* GENERATION */}
-            <div className="filter-group">
-              <label>Generație</label>
-
-              <Autocomplete
-                value={filters.generationText ?? ""}
-                onChange={(v) => update("generationText", v)}
-                onSelect={(v) => update("generationText", v)}
-                fetchSuggestions={async (query) => {
-                  if (!filters.brandText || !filters.modelText) return [];
-                  try {
-                    const data = await getPredictionGenerations(filters.brandText, filters.modelText, query);
-                    return data.generations || [];
-                  } catch (e) {
-                    return [];
-                  }
-                }}
-                placeholder="e.g. G20"
-                disabled={!filters.modelText}
-              />
-            </div>
+            <MarketplaceVehicleFields filters={filters} update={update} />
 
             {/* PRICE */}
             <div className="filter-group">
@@ -819,6 +753,7 @@ function ListingFilters({
 
               <MultiSelect
                 options={CAR_CLASSES}
+                disabled={classDisabled}
                 selected={
                   filters.class ?? []
                 }
@@ -829,6 +764,7 @@ function ListingFilters({
                   )
                 }
               />
+              {classDisabled && <FilterHint>Eliminați modelul pentru a alege clasele mașinii.</FilterHint>}
             </div>
 
             {/* SCORE */}
@@ -856,38 +792,6 @@ function ListingFilters({
                   )
                 }
               />
-            </div>
-
-            {/* SAME MODEL */}
-            <div className="filter-group">
-              <label>Același model</label>
-
-              <select
-                value={
-                  filters.same_model === null
-                    ? ""
-                    : String(
-                        filters.same_model
-                      )
-                }
-                onChange={(e) => {
-                  const value =
-                    e.target.value;
-
-                  update(
-                    "same_model",
-                    value === ""
-                      ? null
-                      : value === "true"
-                  );
-                }}
-              >
-                <option value="">Oricare</option>
-
-                <option value="true">Da</option>
-
-                <option value="false">Nu</option>
-              </select>
             </div>
 
             {/* SORT */}
@@ -942,12 +846,13 @@ function ListingFilters({
           </div>
 
           <div className="filters-footer">
+            {filterError && <p className="filter-validation-error" role="alert">{filterError}</p>}
             {actions}
             <button
               type="button"
               className="apply-filters-button"
               onClick={onSearch}
-              disabled={loading}
+              disabled={loading || Boolean(filterError)}
             >
               {searchLabel}
             </button>

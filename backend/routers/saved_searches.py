@@ -1,5 +1,6 @@
 """Save filter definitions and rerun them against current listings."""
-from fastapi import APIRouter, Depends, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -58,5 +59,8 @@ def delete_saved_search(item_id: int, user: User = Depends(get_current_user), db
 def run_saved_search(item_id: int, page: int = Query(1, ge=1), limit: int = Query(20, ge=1, le=100),
                      user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     item = require_owned(SavedItemsRepository(db, SavedSearch), item_id, user.id)
-    filters = SavedSearchFilters.model_validate(item.filters).to_listing_filters()
+    try:
+        filters = SavedSearchFilters.model_validate(item.filters).to_listing_filters()
+    except ValidationError:
+        raise HTTPException(422, "Actualizați filtrele salvate pentru regulile curente.") from None
     return ListingsService(ListingsRepository(db)).search_paginated(filters, page, limit)

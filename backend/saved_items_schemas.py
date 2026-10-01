@@ -44,7 +44,8 @@ class SavedSearchFilters(InputModel):
     seats_max: NonnegativeInt | None = None
     seller_type: Values | None = None
     registration_country: Values | None = None
-    same_model: bool | None = None
+    # Accept historical saves, but never forward the retired flag to filtering.
+    same_model: bool | None = Field(default=None, exclude=True)
     classes: Values | None = Field(default=None, alias="class")
     score_min: NonnegativeDecimal | None = None
     score_max: NonnegativeDecimal | None = None
@@ -53,7 +54,7 @@ class SavedSearchFilters(InputModel):
 
     @model_validator(mode="after")
     def validate_filters(self):
-        # Reuse the live endpoint's range and same_model checks.
+        # Reuse the live endpoint's range and vehicle selection checks.
         self.to_listing_filters()
         return self
 
@@ -107,7 +108,8 @@ class SavedItemResponse(BaseModel):
 
 class SavedSearchResponse(SavedItemResponse):
     name: str
-    filters: SavedSearchFilters
+    # Old combinations must remain readable/editable after validation changes.
+    filters: dict[str, Any]
 
 
 class SavedRiskResponse(SavedItemResponse):

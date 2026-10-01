@@ -37,10 +37,7 @@ class ListingsRepository:
             if values:
                 statement = statement.where(column.in_(values))
 
-        # The ordinary model filter remains available without same_model. When
-        # explicitly false, the caller is asking for comparable vehicles across
-        # models; when true, a selected model is required and used.
-        if filters.model and filters.same_model is not False:
+        if filters.model:
             statement = statement.where(Listing.model.in_(filters.model))
 
         ranges = {

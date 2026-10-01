@@ -4,7 +4,7 @@ const identities = ["brand", "model", "generation"];
 
 export function emptyListingFilters() {
   return {
-    search: "", brandText: "", modelText: "", generationText: "", same_model: null, sort_by: "", sort_order: "",
+    search: "", brandText: "", modelText: "", generationText: "", sort_by: "", sort_order: "",
     ...Object.fromEntries(ranges.flatMap((name) => [[`${name}_min`, ""], [`${name}_max`, ""]])),
     ...Object.fromEntries(selections.map((name) => [name, []])),
   };
@@ -25,7 +25,6 @@ export function listingFiltersToApi(form) {
   for (const key of selections) {
     if (form[key]?.length) result[key] = [...form[key]];
   }
-  if (form.same_model != null) result.same_model = form.same_model;
   if (form.sort_by) result.sort_by = form.sort_by;
   if (form.sort_order) result.sort_order = form.sort_order;
   // The free-text search box is not an accepted /listings API filter.
@@ -55,7 +54,26 @@ export function describeFilters(filters) {
     const min = filters[`${key}_min`], max = filters[`${key}_max`];
     if (min != null || max != null) parts.push(`${labels[key]}: ${min ?? "oricât"} – ${max ?? "oricât"}`);
   }
-  if (filters.same_model != null) parts.push(`Același model: ${filters.same_model ? "da" : "nu"}`);
   if (filters.sort_by) parts.push(`Sortare: ${{ price_eur: "preț", score: "scor", year: "an", mileage: "kilometraj" }[filters.sort_by]}, ${filters.sort_order === "desc" ? "descrescător" : "crescător"}`);
   return parts.length ? parts : ["Toate anunțurile"];
+}
+
+export function listingFilterError(form) {
+  const hasBrand = Boolean(form.brandText?.trim());
+  const hasModel = Boolean(form.modelText?.trim());
+  if (hasModel && form.class?.length) return "Alegeți fie modelul, fie clasa/clasele mașinii.";
+  if (hasModel && !hasBrand) return "Alegeți marca înainte de model.";
+  if (form.generationText?.trim() && (!hasBrand || !hasModel)) return "Alegeți marca și modelul înainte de generație.";
+  return "";
+}
+
+export function updateListingFilter(current, field, value) {
+  const next = { ...current, [field]: value };
+  if (field === "brandText" && value !== current.brandText) {
+    next.modelText = "";
+    next.generationText = "";
+  } else if (field === "modelText" && value !== current.modelText) {
+    next.generationText = "";
+  }
+  return next;
 }

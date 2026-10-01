@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { searchListingsPaginated } from "../api/listings";
 import { createSaved } from "../api/saved_items";
-import { listingFiltersToApi, listingFiltersToForm, emptyListingFilters } from "../utils/listingFilters";
+import { listingFiltersToApi, listingFiltersToForm, emptyListingFilters, listingFilterError } from "../utils/listingFilters";
 import CarCard from "../components/CarCard";
 import ListingFilters from "../components/ListingFilters";
 import SaveItemButton from "../components/SaveItemButton";
@@ -28,6 +28,12 @@ function ListingSearch({ initialFilters }) {
     let current = true;
     setLoading(true);
     setError("");
+    const validationError = listingFilterError(listingFiltersToForm(query.filters));
+    if (validationError) {
+      setError(validationError);
+      setLoading(false);
+      return;
+    }
     searchListingsPaginated(query.filters, query.page, ITEMS_PER_PAGE).then((response) => {
       if (current) { setData(response); setExpandedCarId(null); }
     }).catch((err) => {
@@ -43,6 +49,8 @@ function ListingSearch({ initialFilters }) {
   function handleSearch(override) {
     const values = override && typeof override === "object" && !override.nativeEvent && !override.type ? override : filters;
     setFilters(values);
+    const validationError = listingFilterError(values);
+    if (validationError) { setError(validationError); return; }
     setQuery({ filters: listingFiltersToApi(values), page: 1, applied: true });
     scrollToResults();
   }

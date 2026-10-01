@@ -1,5 +1,7 @@
 .header-wrapper {
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 50;
   width: 100%;
   pointer-events: none; 
 }
@@ -17,9 +19,6 @@
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--brand-sage-dark, #978f52);
   box-shadow: 0 4px 30px rgba(19, 46, 42, 0.12);
-  position: sticky;
-  top: 0;
-  z-index: 50;
   pointer-events: auto;
   transition: all 0.3s ease;
 }
@@ -52,7 +51,8 @@
   position: relative;
 }
 
-.header-nav-link:hover {
+.header-nav-link:hover,
+.header-nav-link.active {
   color: var(--brand-brunswick-dark, #132e2a);
 }
 
@@ -68,7 +68,8 @@
   transform: translateX(-50%);
 }
 
-.header-nav-link:hover::after {
+.header-nav-link:hover::after,
+.header-nav-link.active::after {
   width: 60%;
 }
 

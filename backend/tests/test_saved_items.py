@@ -17,7 +17,7 @@ from sqlalchemy.schema import CreateTable
 
 from database import Base, get_db
 from models import Listing, User, UserSession
-from routers import anomaly_risk, favourites, saved_risk_assessments, saved_searches
+from routers import anomaly_risk, favourites, listings, saved_risk_assessments, saved_searches
 from saved_items_models import FavouriteListing, SavedRiskAssessment, SavedSearch
 from security import create_access_token
 
@@ -110,7 +110,7 @@ class SavedItemsTests(unittest.TestCase):
                 yield db
 
         self.app = FastAPI()
-        for router in (anomaly_risk.router, saved_searches.router, saved_risk_assessments.router, favourites.router):
+        for router in (anomaly_risk.router, saved_searches.router, saved_risk_assessments.router, favourites.router, listings.router):
             self.app.include_router(router)
         self.app.dependency_overrides[get_db] = sessions
         self.risk_engine = FakeEngine()
@@ -221,7 +221,8 @@ class SavedItemsTests(unittest.TestCase):
         self.assertEqual(self.client.get(f"/saved-searches/{item['id']}").json()["filters"], item["filters"])
 
     def test_invalid_filters_and_updates_rejected(self):
-        for filters in ({"price_min": 100, "price_max": 10}, {"same_model": True},
+        for filters in ({"price_min": 100, "price_max": 10}, {"model": ["Golf"]},
+                        {"generation": ["I"]}, {"brand": ["VW"], "model": ["Golf"], "class": ["E"]},
                         {"brand": []}, {"brand": [" , "]}, {"mileage_min": -1},
                         {"sort_by": "DROP TABLE"}, {"typo": "x"}, {"price_min": "NaN"}):
             with self.subTest(filters=filters):
@@ -230,6 +231,64 @@ class SavedItemsTests(unittest.TestCase):
         item = self.create_search()
         for payload in ({}, {"filters": None}, {"name": None}, {"name": "  "}):
             self.assertEqual(self.client.patch(f"/saved-searches/{item['id']}", json=payload).status_code, 422)
+
+    def test_marketplace_filter_dependencies_and_class_search(self):
+        for endpoint in ("/listings", "/listings/paginated"):
+            for params in ({"model": "Auris"}, {"generation": "II"},
+                           {"brand": "Toyota", "generation": "II"},
+                           {"brand": "Toyota", "model": "Auris", "class": "D"}):
+                with self.subTest(endpoint=endpoint, params=params):
+                    self.assertEqual(self.client.get(endpoint, params=params).status_code, 422)
+        response = self.client.get("/listings/paginated", params=[("class", "C"), ("class", "D")])
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()["total"], 2)
+        response = self.client.get("/listings/paginated", params={"brand": "Toyota", "class": "C"})
+        self.assertEqual([item["id"] for item in response.json()["items"]], [1])
+        response = self.client.get("/listings/paginated", params={
+            "brand": "Toyota", "model": "Wrong model", "same_model": "false",
+        })
+        self.assertEqual(response.json()["total"], 0)
+        response = self.client.get("/listings/paginated", params={
+            "brand": "Toyota", "model": "Auris", "generation": "II",
+        })
+        self.assertEqual([item["id"] for item in response.json()["items"]], [1])
+
+    def test_marketplace_options_are_complete_and_cascade(self):
+        with self.engine.begin() as connection:
+            connection.execute(insert(Listing.__table__), [
+                {"id": 100 + index, "brand": f"Zbrand {index:02}", "model": "Example", "engine": "1.4", "generation": None}
+                for index in range(30)
+            ] + [
+                {"id": 200 + index, "brand": "Toyota", "model": "Auris",
+                 "generation": f"Generation ({index})", "engine": "1.4"}
+                for index in range(30)
+            ])
+        response = self.client.get("/listings/options")
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(len(response.json()["brand"]), 32)
+        self.assertIn("Zbrand 29", response.json()["brand"])
+        self.assertEqual(self.client.get("/listings/options?brand=Toyota").json()["model"], ["Auris"])
+        generations = self.client.get("/listings/options?brand=Toyota&model=Auris").json()["generation"]
+        self.assertEqual(len(generations), 31)
+        self.assertIn("Generation (29)", generations)
+        self.assertNotIn("F30", generations)
+
+    def test_historical_search_remains_editable_and_retired_flag_does_not_broaden_it(self):
+        original = self.create_search()
+        with self.engine.begin() as connection:
+            connection.execute(update(SavedSearch).where(SavedSearch.id == original["id"]).values(filters={
+                "brand": ["Toyota"], "model": ["Auris"], "class": ["D"], "same_model": False,
+            }))
+        path = f"/saved-searches/{original['id']}"
+        self.assertEqual(self.client.get(path).status_code, 200)
+        self.assertEqual(self.client.get(path + "/results").status_code, 422)
+        self.assertEqual(self.client.patch(path, json={"name": "Still editable"}).status_code, 200)
+        response = self.client.patch(path, json={"filters": {
+            "brand": ["Toyota"], "model": ["Wrong model"], "same_model": False,
+        }})
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertNotIn("same_model", response.json()["filters"])
+        self.assertEqual(self.client.get(path + "/results").json()["total"], 0)
 
     def test_pagination_and_search_delete(self):
         first = self.create_search()

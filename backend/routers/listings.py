@@ -31,7 +31,7 @@ class ListingFilters:
         doors_min: int | None = Query(None, ge=0), doors_max: int | None = Query(None, ge=0),
         seats_min: int | None = Query(None, ge=0), seats_max: int | None = Query(None, ge=0),
         seller_type: list[str] | None = Query(None), registration_country: list[str] | None = Query(None),
-        same_model: bool | None = Query(None), classes: list[str] | None = Query(None, alias="class"),
+        classes: list[str] | None = Query(None, alias="class"),
         score_min: Decimal | None = Query(None, ge=0), score_max: Decimal | None = Query(None, ge=0),
         sort_by: str | None = Query(None, pattern="^(score|price_eur|year|mileage)$"),
         sort_order: str | None = Query(None, pattern="^(asc|desc)$"),
@@ -47,7 +47,6 @@ class ListingFilters:
         self.seller_type = _split_values(seller_type)
         self.registration_country = _split_values(registration_country)
         self.classes = _split_values(classes)
-        self.same_model = same_model
         self.sort_by = sort_by
         self.sort_order = sort_order
         for name, value in locals().items():
@@ -62,11 +61,12 @@ class ListingFilters:
             if minimum is not None and maximum is not None and minimum > maximum:
                 raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"{label}_min must be less than or equal to {label}_max")
 
-        if self.same_model is True and not self.model:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="model must be provided when same_model is true",
-            )
+        if self.model and not self.brand:
+            raise HTTPException(422, "Alegeți marca înainte de model.")
+        if self.generation and (not self.brand or not self.model):
+            raise HTTPException(422, "Alegeți marca și modelul înainte de generație.")
+        if self.model and self.classes:
+            raise HTTPException(422, "Alegeți fie modelul, fie clasa/clasele mașinii.")
 
 
 def _split_values(value: list[str] | None) -> list[str] | None:

@@ -52,7 +52,7 @@
   align-items: center;
 }
 
-.autocomplete-list li:hover {
+.autocomplete-list li:hover, .autocomplete-list li.active {
   background: #f3f4f6;
   color: #111827;
 }

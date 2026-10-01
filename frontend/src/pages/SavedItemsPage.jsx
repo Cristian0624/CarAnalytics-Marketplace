@@ -4,7 +4,7 @@ import { deleteSaved, getSaved, listSaved, reanalyseSaved, savedPaths, updateSav
 import { useAuth } from "../context/AuthContext";
 import { getLogoFileName, getScoreClass } from "../components/CarCard";
 import { useFavourites } from "../context/FavouritesContext";
-import { describeFilters, listingFiltersToApi, listingFiltersToForm } from "../utils/listingFilters";
+import { describeFilters, listingFiltersToApi, listingFiltersToForm, listingFilterError } from "../utils/listingFilters";
 import { savedDate, savedError } from "../utils/savedItems";
 import AnomalyRiskResults from "../components/AnomalyRiskResults";
 import CarCard from "../components/CarCard";
@@ -230,6 +230,7 @@ function SavedEditor({ kind, item, onCancel, onDone }) {
     event?.preventDefault?.();
     if (pending.current) return;
     if (kind !== "favourites" && !name.trim()) { setError("Introdu un nume."); return; }
+    if (kind === "searches" && listingFilterError(filters)) { setError(listingFilterError(filters)); return; }
     pending.current = true;
     setBusy(true);
     setError("");

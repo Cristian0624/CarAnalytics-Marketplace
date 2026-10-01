@@ -1,10 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import AuthButton from "./AuthButton";
 import "./Header.css";
 
 function Header() {
   const { user } = useAuth();
+  const navClass = ({ isActive }) => `header-nav-link${isActive ? " active" : ""}`;
 
   return (
     <div className="header-wrapper">
@@ -18,19 +19,17 @@ function Header() {
           </Link>
         </div>
         <div className="header-right">
-          <Link to="/" className="header-nav-link">
+          <NavLink to="/" end className={navClass}>
             Acasă
-          </Link>
-          <Link to="/listings" className="header-nav-link">
+          </NavLink>
+          <NavLink to="/listings" className={navClass}>
             Piață
-          </Link>
-          <Link to="/anomaly-risk" className="header-nav-link">
+          </NavLink>
+          <NavLink to="/anomaly-risk" className={navClass}>
             Analiza Risc
-          </Link>
+          </NavLink>
           {user && (
-            <Link to="/my-listings" className="header-nav-link">
-              Anunțurile Mele
-            </Link>
+            <NavLink to="/profile" className={navClass}>Profilul meu</NavLink>
           )}
           
           <AuthButton />

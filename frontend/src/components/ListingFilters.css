@@ -861,3 +861,20 @@
     display: none;
   }
 }
+.filter-disabled-hint {
+  display: block;
+  margin-top: 8px;
+  color: #475569;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: left;
+}
+.filter-group input:disabled,
+.filter-group button:disabled {
+  cursor: not-allowed;
+  opacity: 1;
+  color: #64748b;
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+.filter-validation-error { color: #991b1b; font-size: 14px; }

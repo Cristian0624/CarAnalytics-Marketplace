@@ -3,10 +3,10 @@ import assert from "node:assert/strict";
 import { describeFilters, emptyListingFilters, listingFiltersToApi, listingFiltersToForm } from "../src/utils/listingFilters.js";
 import { findFavourite, savedError } from "../src/utils/savedItems.js";
 
-test("saved filters round trip all supported fields including class, false and zero", () => {
-  const filters = { brand: ["BMW", "Toyota"], model: ["3 Series"], generation: ["F30"], class: ["D-segment (Mid-size)"],
+test("saved filters round trip all supported fields including classes and zero", () => {
+  const filters = { brand: ["BMW", "Toyota"], class: ["D-segment (Mid-size)"],
     fuel_type: ["Diesel"], gearbox: ["Automată"], body_types: ["Sedan"], state: ["Cu rulaj"], drivetrains: ["Din spate"],
-    seller_type: ["Dealer auto"], registration_country: ["Republica Moldova"], same_model: false,
+    seller_type: ["Dealer auto"], registration_country: ["Republica Moldova"],
     price_min: 0, price_max: 20000, mileage_min: 0, mileage_max: 250000, year_min: 2012, year_max: 2018,
     engine_min: 0, engine_max: 3.0, horsepower_min: 0, horsepower_max: 350, doors_min: 2, doors_max: 5,
     seats_min: 2, seats_max: 7, score_min: 0, score_max: 80, sort_by: "price_eur", sort_order: "desc" };
@@ -41,7 +41,7 @@ test("favourite matching follows source URL across changed local IDs", () => {
 });
 
 test("saved filter summaries show actual criteria rather than listing results", () => {
-  assert.deepEqual(describeFilters({ price_min: 0, price_max: 9000, same_model: false }), ["Preț (€): 0 – 9000", "Același model: nu"]);
+  assert.deepEqual(describeFilters({ price_min: 0, price_max: 9000, same_model: false }), ["Preț (€): 0 – 9000"]);
   assert.deepEqual(describeFilters({}), ["Toate anunțurile"]);
 });
 
