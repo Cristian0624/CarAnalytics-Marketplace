@@ -241,13 +241,14 @@ class ModelTests(unittest.TestCase):
         self.assertLess(score(130000, stats), 70)
         self.assertGreater(score(200000, stats), 90)
 
-    def test_toyota_high_mileage_is_medium_signal_and_low_combined_risk(self):
+    def test_toyota_mileage_deviation_overrides_medium_component_score(self):
         result = self.service.assess_listing_risk(VEHICLE, PRICES, 200, CHARACTERISTICS)
         mileage = result["components"]["mileage_anomaly"]["score"]
         self.assertGreater(mileage, 50)
         self.assertLess(mileage, 70)
-        self.assertEqual(result["effective_weights"], {"price": .60, "mileage": .25, "specification": .15})
-        self.assertEqual(result["risk_level"], "low")
+        self.assertEqual(result["effective_weights"], {"price": 0, "mileage": 1, "specification": 0})
+        self.assertEqual(result["anomaly_score"], 80)
+        self.assertEqual(result["risk_level"], "high")
 
     def typical_vehicle(self):
         vehicle = VEHICLE | {"mileage": 235000}
@@ -279,7 +280,7 @@ class ModelTests(unittest.TestCase):
     def test_mileage_both_tails_and_extreme_override(self):
         normal = self.typical_vehicle()
         median = self.service.analyze_mileage_anomaly(normal, CHARACTERISTICS)["p50"]
-        vehicles = [normal | {"mileage": mileage} for mileage in (median, 0, 300000, 1000000)]
+        vehicles = [normal | {"mileage": mileage} for mileage in (median, 0, median * 1.3, 1000000)]
         baseline_price = self.service.analyze_price_anomaly(normal["price"], PRICES)
         with patch.object(self.service, "analyze_price_anomaly", return_value=baseline_price):
             median_result, low_result, moderate_result, extreme_result = [
@@ -402,7 +403,10 @@ class ModelTests(unittest.TestCase):
         }
         for observations, (support_level, status, penalty, confidence) in cases.items():
             with self.subTest(observations=observations):
-                result = self.service.assess_listing_risk(VEHICLE, sample_prices(observations), 200, CHARACTERISTICS)
+                vehicle = VEHICLE | {
+                    "mileage": self.service.analyze_mileage_anomaly(VEHICLE, CHARACTERISTICS)["p50"]
+                }
+                result = self.service.assess_listing_risk(vehicle, sample_prices(observations), 200, CHARACTERISTICS)
                 self.assertEqual(result["market_support"]["support_level"], support_level)
                 self.assertEqual(result["assessment_status"], status)
                 self.assertEqual(result["market_support"]["rarity_penalty"], penalty)

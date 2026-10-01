@@ -14,11 +14,11 @@ FEATURES = ["brand", "model", "generation", "year", "mileage", "engine",
             "fuel_type", "gearbox", "drivetrain", "body_type"]
 DEFAULT_ARTIFACT_DIR = Path(__file__).resolve().parents[1] / "ML_models/anomaly_risk/artifacts"
 DEFAULT_RUNTIME_CONFIG_PATH = Path(__file__).with_name("anomaly_risk_config.json")
-SCORING_POLICY_VERSION = "anomaly-risk-v2.8-extreme-override"
+SCORING_POLICY_VERSION = "anomaly-risk-v2.9-median-override"
 SCORING_POLICY = {
     "weights": {"price": 0.60, "mileage": 0.25, "specification": 0.15},
     "extreme_min_samples": 25,
-    "extreme_min_score": 80.0,
+    "extreme_overall_floor": 80.0,
     "extreme_min_median_deviation": 0.45,
     "mileage_min_samples": 20,
     "spec_min_samples": 25,
@@ -332,13 +332,13 @@ class AnomalyRiskService:
                 )}
 
     def extreme_anomaly_flag(self, component, actual, median, score, count):
-        """Flag a supported tail anomaly with a substantial median deviation.
+        """Flag a supported median deviation independently of the percentile score.
 
         The relative-distance guard avoids alerts for tiny differences when
         observed percentile bands are nearly identical. Qualifying flags allow
         the overall assessment to bypass the weighted average.
         """
-        if (score is None or score < self.SCORING["extreme_min_score"]
+        if (score is None
                 or count < self.SCORING["extreme_min_samples"]
                 or actual is None or median is None or median <= 0):
             return None
@@ -402,11 +402,12 @@ class AnomalyRiskService:
                                      market_support["rarity_penalty"]))
             if extreme_scores:
                 strongest = max(extreme_scores, key=extreme_scores.get)
-                total = float(extreme_scores[strongest])
+                total = float(max(self.SCORING["extreme_overall_floor"], extreme_scores[strongest]))
                 market_support["rarity_penalty"] = 0.0
                 effective_weights = {name: 1.0 if name == strongest else 0.0 for name in available}
                 message = (
-                    f"Extreme {strongest} anomaly determines the overall score directly; "
+                    f"Extreme {strongest} anomaly determines the overall score directly "
+                    f"with a minimum of {self.SCORING['extreme_overall_floor']:g}/100; "
                     "component weights and the rarity adjustment are not applied."
                 )
             level = "high" if total >= self.SCORING["risk_high"] else "medium" if total >= self.SCORING["risk_medium"] else "low"

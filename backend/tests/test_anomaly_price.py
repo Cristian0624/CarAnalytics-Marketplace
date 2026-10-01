@@ -126,18 +126,42 @@ class DatabasePriceTests(unittest.TestCase):
                 np.testing.assert_allclose([result[name] for name in Q_NAMES], quantiles)
                 self.assertAlmostEqual(result["price_anomaly_score"], score)
 
-    def test_extreme_flags_require_score_distance_and_25_usable_comparisons(self):
+    def test_extreme_flags_require_distance_and_25_usable_comparisons_not_high_score(self):
         flag = self.service.extreme_anomaly_flag
         for component in ("price", "mileage"):
             with self.subTest(component=component):
                 self.assertIsNone(flag(component, 150, 100, 100, 24))
-                self.assertIsNone(flag(component, 150, 100, 79.99, 25))
+                self.assertEqual(flag(component, 150, 100, 17, 25), f"extreme_{component}_high")
                 for actual in (125, 75, 144.99, 55.01, 145, 55):
                     self.assertIsNone(flag(component, actual, 100, 100, 25))
                 self.assertEqual(flag(component, 145.01, 100, 80, 25), f"extreme_{component}_high")
                 self.assertEqual(flag(component, 54.99, 100, 80, 25), f"extreme_{component}_low")
                 self.assertIsNone(flag(component, None, None, None, 25))
                 self.assertIsNone(flag(component, 100, 0, 100, 25))
+
+    def test_ten_km_against_310k_median_overrides_low_percentile_score(self):
+        # A broad lower tail kept the original mileage score below 80.
+        mileages = [0] * 10 + [310000] * 15
+        rows = [{"mileage": value} for value in mileages]
+        result = self.service.assess_listing_risk(
+            VEHICLE | {"mileage": 10}, [5000] * 25, 25, rows
+        )
+        mileage = result["components"]["mileage_anomaly"]
+        self.assertEqual(mileage["expected_median_mileage"], 310000)
+        self.assertLess(mileage["score"], 80)
+        self.assertEqual(mileage["flag"], "extreme_mileage_low")
+        self.assertEqual(result["anomaly_score"], 80)
+        self.assertEqual(result["risk_level"], "high")
+        self.assertEqual(result["effective_weights"], {"price": 0, "mileage": 1})
+
+    def test_broad_price_distribution_also_overrides_low_percentile_score(self):
+        for actual in (500, 1500):
+            with self.subTest(price=actual):
+                prices = [100] * 10 + [1000] * 5 + [2000] * 10
+                result = self.service.assess_listing_risk(VEHICLE | {"price": actual}, prices, 25, [])
+                self.assertLess(result["components"]["price_anomaly"]["score"], 80)
+                self.assertEqual(result["anomaly_score"], 80)
+                self.assertEqual(result["risk_level"], "high")
 
     def test_http_extreme_tails_override_weighted_total(self):
         self.seed(np.linspace(4000, 6000, 25).tolist(), mileage=150000, year=2011,
