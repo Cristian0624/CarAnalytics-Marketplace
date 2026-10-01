@@ -1,14 +1,15 @@
 :root {
-  --brand-brunswick: #1e443e;
-  --brand-brunswick-dark: #132e2a;
-  --brand-sage: #b3af72;
-  --brand-sage-dark: #978f52;
-  --brand-pearl: #cfc9a4;
-  --brand-pearl-light: #e3ddba;
-  --brand-page: #1c3b36;
-  --brand-ink-soft: #3a554f;
-  --text: #6b6375;
-  --text-h: #08060d;
+  --brand-charcoal: #17202A;
+  --brand-ink: #17202A;
+  --brand-muted: #54666E;
+  --brand-teal: #14B8A6;
+  --brand-teal-dark: #0E7C70;
+  --brand-teal-tint: rgba(20, 184, 166, 0.12);
+  --brand-offwhite: #F5F7F6;
+  --brand-surface: #FFFFFF;
+  --brand-border: #DFE5E4;
+  --text: #54666E;
+  --text-h: #17202A;
   --bg: #fff;
   --border: #e5e4e7;
   --code-bg: #f4f3ec;
@@ -26,7 +27,7 @@
   letter-spacing: 0.18px;
   color-scheme: light dark;
   color: var(--text);
-  background: var(--brand-page, #1c3b36);
+  background: var(--brand-offwhite);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -59,12 +60,12 @@
 
 body {
   margin: 0;
-  background-color: #1c3b36;
+  background-color: var(--brand-offwhite);
   min-height: 100vh;
 }
 
 html {
-  background-color: #1c3b36;
+  background-color: var(--brand-offwhite);
 }
 
 #root {
@@ -156,8 +157,8 @@ code {
 }
 
 .auth-input:focus {
-  outline: 2px solid #2563eb;
-  border-color: #2563eb;
+  outline: 2px solid var(--brand-teal-dark);
+  border-color: var(--brand-teal-dark);
 }
 
 .auth-submit {
@@ -166,13 +167,13 @@ code {
   font-weight: 600;
   border: none;
   border-radius: 8px;
-  background-color: #2563eb;
-  color: white;
+  background-color: var(--brand-charcoal);
+  color: #FFFFFF;
   cursor: pointer;
 }
 
 .auth-submit:hover {
-  background-color: #1d4ed8;
+  filter: brightness(1.4);
 }
 
 .auth-error {

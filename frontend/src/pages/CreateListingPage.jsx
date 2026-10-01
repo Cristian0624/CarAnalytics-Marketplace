@@ -7,6 +7,7 @@ import { estimatePrice } from "../api/price_estimate";
 import { createAnalysis } from "../api/analysis";
 
 import Autocomplete from "../components/Autocomplete";
+import BackgroundTriangles from "../components/BackgroundTriangles";
 import {
     getPredictionBrands,
     getPredictionModels,
@@ -575,6 +576,7 @@ export default function CreateListingPage() {
     return (
         <main className="create-listing-page">
 
+            <BackgroundTriangles />
             <div className="create-listing-container">
 
                 <div className="create-listing-header">

@@ -45,7 +45,7 @@
 .autocomplete-list li {
   padding: 8px 16px;
   cursor: pointer;
-  color: #374151;
+  color: var(--brand-charcoal);
   font-size: 14px;
   transition: all 0.15s ease;
   display: flex;
@@ -53,12 +53,12 @@
 }
 
 .autocomplete-list li:hover {
-  background: #f3f4f6;
-  color: #111827;
+  background: var(--brand-teal-tint);
+  color: var(--brand-charcoal);
 }
 
 .highlight-match {
-  color: #2563eb; /* Clean blue instead of yellow background */
+  color: var(--brand-teal-dark);
   font-weight: 700;
   background-color: transparent;
 }
