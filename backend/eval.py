@@ -182,35 +182,9 @@ def evaluate_and_update_db(table_name="listings_cleaned", price_col="price_eur",
     if 'state' in df.columns:
         damaged_mask = df['state'].str.lower().str.contains('damage|salvage|crash|wreck|defect|piese|acte', na=False)
         df.loc[damaged_mask, 'calc_score'] = np.minimum(df.loc[damaged_mask, 'calc_score'], 10.0)
-        
-    try:
-        from backend.services.anomaly_risk import AnomalyRiskService
-        assessor = AnomalyRiskService()
-        
-        print("Integrating AnomalyRiskService tandem penalty...")
-        comp_groups = dict(tuple(full_df.groupby(['brand', 'model'])))
-        
-        for idx, row in df.iterrows():
-            if pd.isna(row['med_price']):
-                continue
-            
-            vehicle = row.to_dict()
-            if 'price_eur' in vehicle:
-                vehicle['price'] = vehicle['price_eur']
-                
-            comp_rows_df = comp_groups.get((row['brand'], row['model']))
-            if comp_rows_df is None:
-                continue
-                
-            prices = comp_rows_df['price_eur'].dropna().tolist()
-            if not prices:
-                continue
-                
-            res = assessor.assess_listing_risk(vehicle, prices, len(prices), comp_rows_df.to_dict(orient='records'))
-            if res and res.get('anomaly_score'):
-                df.loc[idx, 'calc_score'] -= res['anomaly_score']
-    except Exception as e:
-        print("Could not apply AnomalyRiskService tandem logic:", e)
+
+    # TANDEM LOGIC REMOVED due to extreme processing time on 60k rows.
+    # The Outlier filtering + Bucket Expansion already mathematically fixes the Deal Score.
 
     df['final_score'] = df['calc_score'].clip(0, 100).round(2)
     df.loc[df['med_price'].isna(), 'final_score'] = 50.0
