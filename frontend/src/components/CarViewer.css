@@ -19,7 +19,7 @@
 .car-viewer-credit {
   margin-top: 4px;
   font-size: 11px;
-  color: var(--brand-ink-soft, #3a554f);
+  color: var(--brand-muted);
   opacity: 0.8;
 }
 

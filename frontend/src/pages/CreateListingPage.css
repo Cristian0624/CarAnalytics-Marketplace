@@ -5,6 +5,8 @@
 }
 
 .create-listing-container {
+    position: relative;
+    z-index: 1;
     width: min(1100px, 100%);
     margin: 0 auto;
 }
@@ -19,7 +21,7 @@
     padding: 0;
     margin-bottom: 18px;
 
-    color: #64748b;
+    color: #54666E;
     font-size: 14px;
     font-weight: 500;
 
@@ -27,13 +29,13 @@
 }
 
 .create-listing-back:hover {
-    color: #2563eb;
+    color: #0E7C70;
 }
 
 .create-listing-header h1 {
     margin: 0 0 8px;
 
-    color: var(--brand-pearl-light, #e3ddba);
+    color: var(--brand-charcoal);
     font-size: 32px;
     line-height: 1.2;
     font-weight: 700;
@@ -42,7 +44,7 @@
 .create-listing-header p {
     margin: 0;
 
-    color: var(--brand-sage, #b3af72);
+    color: var(--brand-muted);
     font-size: 15px;
     line-height: 1.6;
 }
@@ -82,10 +84,10 @@
 
 .create-listing-section {
     background: #ffffff;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--brand-border);
     border-radius: 14px;
     padding: 26px;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+    box-shadow: 0 2px 8px rgba(23, 32, 42, 0.05);
 }
 
 .create-listing-section-header {
@@ -95,7 +97,7 @@
 .create-listing-section-header h2 {
     margin: 0 0 5px;
 
-    color: #0f172a;
+    color: #17202A;
     font-size: 19px;
     font-weight: 700;
 }
@@ -103,7 +105,7 @@
 .create-listing-section-header p {
     margin: 0;
 
-    color: #64748b;
+    color: #54666E;
     font-size: 13px;
     line-height: 1.5;
 }
@@ -130,7 +132,7 @@
 .create-listing-field label {
     margin-bottom: 7px;
 
-    color: #334155;
+    color: #17202A;
     font-size: 13px;
     font-weight: 600;
 }
@@ -148,11 +150,11 @@
     height: 44px;
     padding: 0 12px;
 
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--brand-border);
     border-radius: 9px;
 
     background: #ffffff;
-    color: #0f172a;
+    color: #17202A;
 
     font-family: inherit;
     font-size: 14px;
@@ -167,8 +169,8 @@
 
 .create-listing-field input:focus,
 .create-listing-field select:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+    border-color: #0E7C70;
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
 }
 
 .create-listing-field input::placeholder {
@@ -186,7 +188,7 @@
 /* PRICE */
 
 .create-listing-price-section {
-    border-color: #dbeafe;
+    border-color: var(--brand-teal-tint);
     grid-column: 1 / -1;
 }
 
@@ -205,7 +207,7 @@
 .create-listing-price-input-area label {
     margin-bottom: 8px;
 
-    color: #334155;
+    color: #17202A;
     font-size: 13px;
     font-weight: 600;
 }
@@ -216,7 +218,7 @@
 
     height: 52px;
 
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--brand-border);
     border-radius: 10px;
 
     background: #ffffff;
@@ -227,14 +229,14 @@
 }
 
 .create-listing-price-input-wrapper:focus-within {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+    border-color: #0E7C70;
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
 }
 
 .create-listing-price-input-wrapper > span {
     padding-left: 15px;
 
-    color: #64748b;
+    color: #54666E;
     font-size: 17px;
     font-weight: 600;
 }
@@ -249,7 +251,7 @@
     padding: 0 14px 0 9px;
 
     background: transparent;
-    color: #0f172a;
+    color: #17202A;
 
     font-family: inherit;
     font-size: 18px;
@@ -310,13 +312,13 @@
 .create-listing-estimate-message {
     margin: 13px 0 0;
 
-    color: #64748b;
+    color: #54666E;
     font-size: 12px;
     line-height: 1.5;
 }
 
 .create-listing-estimate-placeholder {
-    color: #64748b;
+    color: #54666E;
     font-size: 13px;
     line-height: 1.5;
 }
@@ -334,7 +336,7 @@
 
     min-height: 80px;
 
-    color: #64748b;
+    color: #54666E;
     font-size: 13px;
 }
 
@@ -371,7 +373,7 @@
 }
 
 .create-listing-cancel-button {
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--brand-border);
     background: #ffffff;
     color: #475569;
 }
@@ -386,14 +388,14 @@
     justify-content: center;
     gap: 9px;
 
-    border: 1px solid #2563eb;
-    background: #2563eb;
+    border: 1px solid #0E7C70;
+    background: #0E7C70;
     color: #ffffff;
 }
 
 .create-listing-submit-button:hover:not(:disabled) {
-    background: #1d4ed8;
-    border-color: #1d4ed8;
+    background: #0B6B60;
+    border-color: #0B6B60;
 }
 
 .create-listing-submit-button:disabled,
@@ -415,7 +417,7 @@
 
     gap: 12px;
 
-    color: #64748b;
+    color: #54666E;
 }
 
 .create-listing-loading-page p {
@@ -428,8 +430,8 @@
 .create-listing-button-spinner {
     border-radius: 50%;
     border-style: solid;
-    border-color: #dbeafe;
-    border-top-color: #2563eb;
+    border-color: var(--brand-teal-tint);
+    border-top-color: #0E7C70;
 
     animation: create-listing-spin 0.8s linear infinite;
 }

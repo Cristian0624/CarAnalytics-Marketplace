@@ -2,10 +2,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, #083b08, #116211);
-  color: white;
+  background: var(--brand-charcoal);
+  color: var(--brand-offwhite);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 12px rgba(8, 59, 8, 0.2);
+  box-shadow: 0 4px 12px rgba(23, 32, 42, 0.25);
   padding: 10px 16px;
   border-radius: 10px;
   font-size: 14px;
@@ -17,6 +17,7 @@
 
 .home-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(8, 59, 8, 0.3);
-  background: linear-gradient(135deg, #0a4a0a, #157a15);
+  box-shadow: 0 6px 16px rgba(23, 32, 42, 0.3);
+  background: var(--brand-teal-dark);
+  border-color: var(--brand-teal-dark);
 }
