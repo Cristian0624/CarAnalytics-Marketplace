@@ -611,6 +611,7 @@
   width: 200px;
   height: 200px;
   object-fit: contain;
+  z-index: 0;
 }
 
 .score-label {

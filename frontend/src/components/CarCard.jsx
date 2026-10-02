@@ -207,10 +207,11 @@ function CarCard({ car, expanded, position, onClick, showFavourite = true, peeki
               <button className="close-card-button" onClick={handleClose} title="Close">✕</button>
 
               <div className="expanded-header">
-                <div>
-                  <h2 style={{ textTransform: "uppercase", margin: "0 0 4px 0", fontSize: "24px", color: '#17202A', fontWeight: 800 }}>
-                    {formatValue(currentCar.brand)} {formatValue(currentCar.model)} {currentCar.year ? `(${currentCar.year})` : ""}
-                  </h2>
+                  <div style={{ maxWidth: "50%" }}>
+                  <h2 style={{ textTransform: "uppercase", margin: "0 0 4px 0", fontSize: "24px", color: '#17202A', fontWeight: 800, textAlign: "left" }}>
+                      {formatValue(currentCar.brand)} {formatValue(currentCar.model)}
+                      {currentCar.year ? <span style={{ display: "block", fontSize: "20px", fontWeight: 700, marginTop: "4px" }}>({currentCar.year})</span> : ""}
+                    </h2>
                   {currentCar.generation && (
                     <p style={{ margin: '0 0 12px 0', color: '#54666E', textAlign: 'left' }}>
                       {typeof currentCar.generation === 'string' ? currentCar.generation.trim() : currentCar.generation}
