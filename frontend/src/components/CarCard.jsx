@@ -76,6 +76,25 @@ function CarCard({ car, expanded, position, onClick, showFavourite = true, peeki
     };
   }, [expanded, isClosing]);
 
+  useEffect(() => {
+    if (!expanded) {
+      setViewMode(null);
+      setCurrentCar(car);
+    }
+  }, [expanded, car]);
+  
+  useEffect(() => {
+    if (!expanded) return;
+  
+    const originalOverflow = document.body.style.overflow;
+  
+    document.body.style.overflow = "hidden";
+  
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [expanded]);
+
   function handleClose(event) {
     if (event) {
       event.stopPropagation();
