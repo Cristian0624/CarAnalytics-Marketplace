@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import psycopg2.extras
-from backend.database import engine as db_engine
+from database import engine as db_engine
 
 def evaluate_and_update_db(table_name="listings_cleaned", price_col="price_eur", full_evaluation=False):
     if full_evaluation:
