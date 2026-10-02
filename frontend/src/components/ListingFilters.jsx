@@ -1,883 +1,370 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import "./ListingFilters.css";
-import MarketplaceVehicleFields, { FilterHint } from "./MarketplaceVehicleFields";
+import VehicleTree from "./VehicleTree";
 import { listingFilterError, updateListingFilter } from "../utils/listingFilters";
 
-const API_URL =
-  import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8000";
+const FUEL_TYPES = ["Benzină", "Diesel", "Hybrid", "Electricitate", "Gaz / Benzină (propan)", "Gaz / Benzină (metan)", "Gaz",
+  "Plug-in Hybrid (benzină)", "Plug-in Hybrid (diesel)", "Mild Hybrid (benzină)", "Mild Hybrid (diesel)"];
+const GEARBOXES = ["Mecanică", "Automată", "Robotizată", "Variator", "Automat-Tiptronic"];
+const BODY_TYPES = ["Sedan", "Hatchback", "Universal", "Combi", "SUV", "Crossover", "Coupe", "Cabriolet", "Roadster", "Minivan",
+  "Microvan", "Microautobus", "Furgon", "Pickup", "Camionetă", "Platformă deschisă"];
+const STATES = ["Cu rulaj", "Uzat", "Necesită reparații"];
+const DRIVETRAINS = ["4x2", "Din față", "Din spate", "4x4"];
+const SELLER_TYPES = ["Persoană fizică", "Dealer auto"];
+const REGISTRATION_COUNTRIES = ["Republica Moldova"];
+const CAR_CLASSES = ["A-segment (Mini)", "B-segment (Supermini)", "C-segment (Compact)", "D-segment (Mid-size)", "E (Groot Midden)",
+  "F (Groot)", "G (Sportief)", "H (Sport)", "I (Luxe)", "J (Lower-Mpv)", "K (Upper-Mpv)", "L (Lower-Suv)", "M (Upper-Suv)", "N (Bestelauto)"];
 
-const FUEL_TYPES = [
-  "Gaz / Benzină (propan)",
-  "Hybrid",
-  "Gaz / Benzină (metan)",
-  "Plug-in Hybrid (diesel)",
-  "Diesel",
-  "Benzină",
-  "Mild Hybrid (diesel)",
-  "Gaz",
-  "Electricitate",
-  "Plug-in Hybrid (benzină)",
-  "Mild Hybrid (benzină)"
-];
+  const DROPS = [
+    { key: "fuel_type", title: "Combustibil", options: FUEL_TYPES },
+    { key: "body_types", title: "Caroserie", options: BODY_TYPES },
+    { key: "gearbox", title: "Cutie de viteze", options: GEARBOXES },
+  ];
 
-const GEARBOXES = [
-  "Mecanică",
-  "Variator",
-  "Robotizată",
-  "Automată",
-  "Automat-Tiptronic"
-];
+const fmt = (n) => Number(n).toLocaleString("ro-RO");
 
-const BODY_TYPES = [
-  "Hatchback",
-  "Microvan",
-  "SUV",
-  "Pickup",
-  "Cabriolet",
-  "Roadster",
-  "Coupe",
-  "Crossover",
-  "Camionetă",
-  "Sedan",
-  "Combi",
-  "Universal",
-  "Minivan",
-  "Furgon",
-  "Microautobus",
-  "Platformă deschisă"
-];
+/* Dual-thumb slider. Values are stored as strings; "" means "no limit". */
+function RangeSlider({ min, max, step, minValue, maxValue, onChange, unit = "", label }) {
+  const lo = minValue === "" || minValue == null ? min : Math.max(min, Number(minValue));
+  const hi = maxValue === "" || maxValue == null ? max : Math.min(max, Number(maxValue));
+  const pct = (v) => ((v - min) / (max - min)) * 100;
+  const commit = (a, b) => onChange(a <= min ? "" : String(a), b >= max ? "" : String(b));
 
-const STATES = [
-  "Cu rulaj",
-  "Uzat",
-  "Necesită reparații"
-];
-
-const DRIVETRAINS = [
-  "4x2",
-  "Din față",
-  "Din spate",
-  "4x4"
-];
-
-const SELLER_TYPES = [
-  "Persoană fizică",
-  "Dealer auto"
-];
-
-const REGISTRATION_COUNTRIES = [
-  "Republica Moldova"
-];
-
-const CAR_CLASSES = [
-  "C-segment (Compact)",
-  "F (Groot)",
-  "L (Lower-Suv)",
-  "K (Upper-Mpv)",
-  "J (Lower-Mpv)",
-  "I (Luxe)",
-  "E (Groot Midden)",
-  "D-segment (Mid-size)",
-  "A-segment (Mini)",
-  "G (Sportief)",
-  "N (Bestelauto)",
-  "B-segment (Supermini)",
-  "H (Sport)",
-  "M (Upper-Suv)"
-];
-
-function RangeInput({
-  minValue,
-  maxValue,
-  onMinChange,
-  onMaxChange,
-  placeholderMin = "Min",
-  placeholderMax = "Max",
-  step = "1",
-}) {
   return (
-    <div className="range-inputs">
-      <input
-        type="number"
-        min="0"
-        step={step}
-        value={minValue ?? ""}
-        onChange={(e) =>
-          onMinChange(
-            e.target.value === ""
-              ? null
-              : e.target.value
-          )
-        }
-        placeholder={placeholderMin}
-      />
-
-      <span>–</span>
-
-      <input
-        type="number"
-        min="0"
-        step={step}
-        value={maxValue ?? ""}
-        onChange={(e) =>
-          onMaxChange(
-            e.target.value === ""
-              ? null
-              : e.target.value
-          )
-        }
-        placeholder={placeholderMax}
-      />
+    <div className="rs">
+      <div className="rs-values">
+        <span>{fmt(lo)} {unit}</span>
+        <span>
+          {hi >= max && label === "An fabricație"
+            ? "Prezent"
+            : `${fmt(hi)}${hi >= max ? "+" : ""}`}
+          {unit && ` ${unit}`}
+        </span>
+      </div>
+      <div className="rs-track">
+        <div className="rs-fill" style={{ left: `${pct(lo)}%`, right: `${100 - pct(hi)}%` }} />
+        <input type="range" min={min} max={max} step={step} value={lo} aria-label={`${label} minim`}
+          onChange={(e) => commit(Math.min(Number(e.target.value), hi - step), hi)} />
+        <input type="range" min={min} max={max} step={step} value={hi} aria-label={`${label} maxim`}
+          onChange={(e) => commit(lo, Math.max(Number(e.target.value), lo + step))} />
+      </div>
     </div>
   );
 }
 
-function MultiSelect({
-  options,
-  selected = [],
-  onChange,
-  label = "Selectează",
-  title = "Alege opțiunile",
-  disabled = false,
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  function toggleOption(option) {
-    if (selected.includes(option)) {
-      onChange(
-        selected.filter(
-          (item) => item !== option
-        )
-      );
-    } else {
-      onChange([...selected, option]);
-    }
-  }
-
+function RangeInput({ minValue, maxValue, onMinChange, onMaxChange, step = "1" }) {
+  const set = (fn) => (e) => fn(e.target.value === "" ? null : e.target.value);
   return (
-    <>
-      <button
-        type="button"
-        className="multi-select-toggle"
-        disabled={disabled}
-        onClick={() => setIsOpen(true)}
-      >
-        {selected.length > 0 ? `${label} (${selected.length})` : label}
-        <span className="chevron">▼</span>
-      </button>
-
-      {isOpen && !disabled && (
-        <div className="filter-modal-overlay" onClick={() => setIsOpen(false)}>
-          <div className="filter-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="filter-modal-header">
-              <h3>{title}</h3>
-              <button className="filter-modal-close" onClick={() => setIsOpen(false)}>×</button>
-            </div>
-                        <div className="filter-modal-body grid-boxes">
-              {options.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  className={`filter-box-btn ${selected.includes(option) ? "selected" : ""}`}
-                  onClick={() => toggleOption(option)}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-            <div className="filter-modal-footer">
-              <button className="btn-primary" onClick={() => setIsOpen(false)}>Gata</button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+    <div className="range-inputs">
+      <input type="number" min="0" step={step} value={minValue ?? ""} onChange={set(onMinChange)} placeholder="Min" />
+      <span>–</span>
+      <input type="number" min="0" step={step} value={maxValue ?? ""} onChange={set(onMaxChange)} placeholder="Max" />
+    </div>
   );
 }
 
-function ListingFilters({
-  filters,
-  setFilters,
-  onSearch,
-  onReset,
-  loading,
-  actions,
-  searchLabel = "Aplică filtrele",
-  initiallyOpen = false,
+function Chips({ options, selected = [], onChange, disabled }) {
+  const toggle = (o) =>
+    onChange(selected.includes(o) ? selected.filter((x) => x !== o) : [...selected, o]);
+  return (
+    <div className="chips">
+      {options.map((o) => (
+        <button key={o} type="button" disabled={disabled} aria-pressed={selected.includes(o)}
+          className={`chip ${selected.includes(o) ? "on" : ""}`} onClick={() => toggle(o)}>
+          {o}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Group({ title, children, hint }) {
+  return (
+    <div className="filter-group">
+      <label>{title}</label>
+      {children}
+      {hint && <small className="filter-disabled-hint">{hint}</small>}
+    </div>
+  );
+}
+
+const ARRAY_FIELDS = ["fuel_type", "gearbox", "body_types", "state", "drivetrains", "seller_type", "registration_country", "class"];
+const RANGES = [
+  { min: "price_min", max: "price_max", label: "Preț", unit: "€" },
+  { min: "mileage_min", max: "mileage_max", label: "Rulaj", unit: "km" },
+  { min: "year_min", max: "year_max", label: "An", unit: "" },
+  { min: "engine_min", max: "engine_max", label: "Motor", unit: "L" },
+  { min: "horsepower_min", max: "horsepower_max", label: "CP", unit: "CP" },
+  { min: "doors_min", max: "doors_max", label: "Uși", unit: "" },
+  { min: "seats_min", max: "seats_max", label: "Locuri", unit: "" },
+  { min: "score_min", max: "score_max", label: "Scor", unit: "" },
+];
+
+/*
+ * Props are the same as before, plus:
+ *   resultCount  – number | null  (live count for the current filters)
+ *   countLoading – boolean
+ */
+export default function ListingFilters({
+  filters, setFilters, onSearch, onReset, loading, actions,
+  initiallyOpen = false, barExtras = null, resultCount = null, countLoading = false,
+  sortingActive = false,
 }) {
-  const [advancedOpen, setAdvancedOpen] =
-    useState(initiallyOpen);
+  const [open, setOpen] = useState(initiallyOpen);
+  const [more, setMore] = useState(false);
+  const [drop, setDrop] = useState(null);
 
-  const [suggestions, setSuggestions] =
-    useState([]);
-
-  const [showSuggestions, setShowSuggestions] =
-    useState(false);
-
-  const searchContainerRef =
-    useRef(null);
-
-  function update(field, value) {
-    setFilters((current) => updateListingFilter(current, field, value));
-  }
-
+  const update = (field, value) => setFilters((c) => updateListingFilter(c, field, value));
   const filterError = listingFilterError(filters);
-  const classDisabled = Boolean(filters.modelText?.trim()) && !filters.class?.length;
+  const hasClasses = Boolean(filters.class?.length);
+  const classDisabled = Boolean(filters.modelText?.trim()) && !hasClasses;
 
-  /*
-   * WORD COMPLETION
-   *
-   * Cautăes the backend as the user types.
-   *
-   * IMPORTANT:
-   * This expects your backend to have:
-   *
-   * GET /search/suggestions?q=...
-   *
-   * returning:
-   *
-   * {
-   *   "suggestions": ["BMW", "BMW 3 Series", ...]
-   * }
-   */
   useEffect(() => {
-    const query = filters.search?.trim();
-
-    if (!query || query.length < 2) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-
-    const timeout = setTimeout(
-      async () => {
-        try {
-          const response = await fetch(
-            `${API_URL}/search/suggestions?q=${encodeURIComponent(
-              query
-            )}`
-          );
-
-          if (!response.ok) {
-            setSuggestions([]);
-            return;
-          }
-
-          const data =
-            await response.json();
-
-          setSuggestions(
-            data.suggestions ?? []
-          );
-
-          setShowSuggestions(true);
-        } catch (error) {
-          console.error(
-            "Failed to load search suggestions:",
-            error
-          );
-
-          setSuggestions([]);
-        }
-      },
-      250
-    );
-
-    return () => clearTimeout(timeout);
-  }, [filters.search]);
-
-  /*
-   * Close suggestions when clicking outside
-   */
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (
-        searchContainerRef.current &&
-        !searchContainerRef.current.contains(
-          event.target
-        )
-      ) {
-        setShowSuggestions(false);
-      }
-    }
-
-    document.addEventListener(
-      "mousedown",
-      handleClickOutside
-    );
-
+    if (!open) return;
+    const onKey = (e) => e.key === "Escape" && setOpen(false);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener(
-        "mousedown",
-        handleClickOutside
-      );
+      document.body.style.overflow = prev;
+      document.removeEventListener("keydown", onKey);
     };
-  }, []);
+  }, [open]);
 
-  function selectSuggestion(suggestion) {
-    update("search", suggestion);
-    setShowSuggestions(false);
-  }
-
-  function handleCautăKeyDown(event) {
-    if (event.key === "Enter") {
-      setShowSuggestions(false);
-      onSearch();
-    }
-  }
-  // Function to remove a specific array filter
-  function removeArrayFilter(field, value) {
-    const newArray = filters[field].filter((item) => item !== value);
-    const newFilters = { ...filters, [field]: newArray };
-    update(field, newArray);
-    if (onSearch) onSearch(newFilters);
-  }
-
-  function removeRangeFilter(minField, maxField) {
-    const newFilters = { ...filters, [minField]: "", [maxField]: "" };
-    setFilters(current => ({ ...current, [minField]: "", [maxField]: "" }));
-    if (onSearch) onSearch(newFilters);
-  }
-
-  function removeStringFilter(field) {
-    const newFilters = { ...filters, [field]: "" };
-    if (field === 'brandText') {
-      newFilters.modelText = "";
-      newFilters.generationText = "";
-    } else if (field === 'modelText') {
-      newFilters.generationText = "";
-    }
-    setFilters(newFilters);
-    if (onSearch) onSearch(newFilters);
-  }
-
-  function removeBooleanFilter(field) {
-    setFilters((current) => ({
-      ...current,
-      [field]: null,
-    }));
-  }
-
-  // Generate pills
-  const activePills = [];
   
-  const arrayFields = ['fuel_type', 'gearbox', 'body_types', 'state', 'drivetrains', 'seller_type', 'registration_country', 'class'];
-  arrayFields.forEach(field => {
-    if (filters[field] && filters[field].length > 0) {
-      filters[field].forEach(val => {
-        activePills.push({
-          label: val,
-          onRemove: () => removeArrayFilter(field, val)
-        });
+
+  /* Removing a pill updates the filters and re-runs the search with the new values. */
+  function clearFields(changes) {
+    Object.entries(changes).forEach(([f, v]) => update(f, v));
+    onSearch?.({ ...filters, ...changes });
+  }
+
+  const pills = [];
+  const vehicle = [filters.brandText, filters.modelText, filters.generationText].filter(Boolean);
+  if (vehicle.length) {
+    pills.push({ label: vehicle.join(" › "),
+      onRemove: () => clearFields({ brandText: "", modelText: "", generationText: "" }) });
+  }
+  ARRAY_FIELDS.forEach((f) => (filters[f] ?? []).forEach((val) =>
+    pills.push({ label: val, onRemove: () => clearFields({ [f]: filters[f].filter((x) => x !== val) }) })));
+  RANGES.forEach((r) => {
+    if (filters[r.min] || filters[r.max]) {
+      const maxLabel =
+        filters[r.max] ||
+        (r.label === "An" ? "Prezent" : "Fără limită");
+  
+      pills.push({
+        label: `${r.label}: ${filters[r.min] || 0}–${maxLabel}${r.unit ? ` ${r.unit}` : ""}`,
+        onRemove: () => clearFields({ [r.min]: "", [r.max]: "" }),
       });
     }
   });
+  const hasActiveFilters = pills.length > 0 || sortingActive;
 
-  const rangeFields = [
-    { min: 'price_min', max: 'price_max', label: 'Preț', unit: '€' },
-    { min: 'mileage_min', max: 'mileage_max', label: 'Rulaj', unit: 'km' },
-    { min: 'year_min', max: 'year_max', label: 'An', unit: '' },
-    { min: 'engine_min', max: 'engine_max', label: 'Motor', unit: 'cm3' },
-    { min: 'horsepower_min', max: 'horsepower_max', label: 'CP', unit: 'CP' },
-    { min: 'score_min', max: 'score_max', label: 'Scor', unit: '' },
-  ];
+  const slider = (title, r, min, max, step, unit) => (
+    <Group title={title}>
+      <RangeSlider label={title} min={min} max={max} step={step} unit={unit}
+        minValue={filters[r.min]} maxValue={filters[r.max]}
+        onChange={(a, b) => { update(r.min, a); update(r.max, b); }} />
+    </Group>
+  );
+  const range = (title, r, step) => (
+    <Group title={title}>
+      <RangeInput step={step} minValue={filters[r.min]} maxValue={filters[r.max]}
+        onMinChange={(v) => update(r.min, v)} onMaxChange={(v) => update(r.max, v)} />
+    </Group>
+  );
+  const R = Object.fromEntries(RANGES.map((r) => [r.min.replace("_min", ""), r]));
 
-  rangeFields.forEach(rf => {
-    if (filters[rf.min] || filters[rf.max]) {
-      const minText = filters[rf.min] ? filters[rf.min] : "0";
-      const maxText = filters[rf.max] ? filters[rf.max] : "Max";
-      activePills.push({
-        label: `${rf.label}: ${minText}-${maxText} ${rf.unit}`,
-        onRemove: () => removeRangeFilter(rf.min, rf.max)
-      });
-    }
-  });
+  const countText = countLoading
+  ? "Se numără…"
+  : `${fmt(resultCount ?? 0)} anunțuri`;
 
-  if (filters.brandText) activePills.push({ label: `Marcă: ${filters.brandText}`, onRemove: () => removeStringFilter('brandText') });
-  if (filters.modelText) activePills.push({ label: `Model: ${filters.modelText}`, onRemove: () => removeStringFilter('modelText') });
-  if (filters.generationText) activePills.push({ label: `Generație: ${filters.generationText}`, onRemove: () => removeStringFilter('generationText') });
-
+  function apply() {
+    onSearch?.();
+    setOpen(false);
+  }
 
   return (
     <section className="listing-filters">
-
-      {/* ADVANCED FILTERS */}
-      <div className="advanced-filters">
-
-          <div className="filters-header">
-            <div>
-              <h2>Filtre avansate</h2>
-
-              <p>
-                  Mărcile și modelele disponibile provin din anunțurile auto din Republica Moldova.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              className="reset-filters-button"
-              onClick={onReset}
-            >
-              Resetează filtrele
-            </button>
-          </div>
-
-          <div className="filter-grid">
-
-            <MarketplaceVehicleFields filters={filters} update={update} />
-
-            {/* PRICE */}
-            <div className="filter-group">
-              <label>
-                Preț (€)
-              </label>
-
-              <RangeInput
-                minValue={
-                  filters.price_min
-                }
-                maxValue={
-                  filters.price_max
-                }
-                onMinChange={(value) =>
-                  update(
-                    "price_min",
-                    value
-                  )
-                }
-                onMaxChange={(value) =>
-                  update(
-                    "price_max",
-                    value
-                  )
-                }
-              />
-            </div>
-
-            {/* MILEAGE */}
-            <div className="filter-group">
-              <label>
-                Kilometraj (km)
-              </label>
-
-              <RangeInput
-                minValue={
-                  filters.mileage_min
-                }
-                maxValue={
-                  filters.mileage_max
-                }
-                onMinChange={(value) =>
-                  update(
-                    "mileage_min",
-                    value
-                  )
-                }
-                onMaxChange={(value) =>
-                  update(
-                    "mileage_max",
-                    value
-                  )
-                }
-              />
-            </div>
-
-            {/* YEAR */}
-            <div className="filter-group">
-              <label>An</label>
-
-              <RangeInput
-                minValue={
-                  filters.year_min
-                }
-                maxValue={
-                  filters.year_max
-                }
-                onMinChange={(value) =>
-                  update(
-                    "year_min",
-                    value
-                  )
-                }
-                onMaxChange={(value) =>
-                  update(
-                    "year_max",
-                    value
-                  )
-                }
-              />
-            </div>
-
-            {/* ENGINE */}
-            <div className="filter-group">
-              <label>
-                Capacitatea Motorului (L)
-              </label>
-
-              <RangeInput
-                minValue={
-                  filters.engine_min
-                }
-                maxValue={
-                  filters.engine_max
-                }
-                step="0.1"
-                onMinChange={(value) =>
-                  update(
-                    "engine_min",
-                    value
-                  )
-                }
-                onMaxChange={(value) =>
-                  update(
-                    "engine_max",
-                    value
-                  )
-                }
-              />
-            </div>
-
-            {/* HORSEPOWER */}
-            <div className="filter-group">
-              <label>Cai putere</label>
-
-              <RangeInput
-                minValue={
-                  filters.horsepower_min
-                }
-                maxValue={
-                  filters.horsepower_max
-                }
-                onMinChange={(value) =>
-                  update(
-                    "horsepower_min",
-                    value
-                  )
-                }
-                onMaxChange={(value) =>
-                  update(
-                    "horsepower_max",
-                    value
-                  )
-                }
-              />
-            </div>
-
-            {/* FUEL */}
-            <div className="filter-group">
-              <label>
-                Combustibil
-              </label>
-
-              <MultiSelect
-                options={FUEL_TYPES}
-                selected={
-                  filters.fuel_type ?? []
-                }
-                onChange={(value) =>
-                  update(
-                    "fuel_type",
-                    value
-                  )
-                }
-              />
-            </div>
-
-            {/* GEARBOX */}
-            <div className="filter-group">
-              <label>Cutie de viteze</label>
-
-              <MultiSelect
-                options={GEARBOXES}
-                selected={
-                  filters.gearbox ?? []
-                }
-                onChange={(value) =>
-                  update(
-                    "gearbox",
-                    value
-                  )
-                }
-              />
-            </div>
-
-            {/* BODY TYPE */}
-            <div className="filter-group">
-              <label>Caroserie</label>
-
-              <MultiSelect
-                options={BODY_TYPES}
-                selected={
-                  filters.body_types ?? []
-                }
-                onChange={(value) =>
-                  update(
-                    "body_types",
-                    value
-                  )
-                }
-              />
-            </div>
-
-            {/* STATE */}
-            <div className="filter-group">
-              <label>Stare</label>
-
-              <MultiSelect
-                options={STATES}
-                selected={
-                  filters.state ?? []
-                }
-                onChange={(value) =>
-                  update(
-                    "state",
-                    value
-                  )
-                }
-              />
-            </div>
-
-            {/* DRIVETRAIN */}
-            <div className="filter-group">
-              <label>Tracțiune</label>
-
-              <MultiSelect
-                options={DRIVETRAINS}
-                selected={
-                  filters.drivetrains ?? []
-                }
-                onChange={(value) =>
-                  update(
-                    "drivetrains",
-                    value
-                  )
-                }
-              />
-            </div>
-
-            {/* DOORS */}
-            <div className="filter-group">
-              <label>Uși</label>
-
-              <RangeInput
-                minValue={
-                  filters.doors_min
-                }
-                maxValue={
-                  filters.doors_max
-                }
-                onMinChange={(value) =>
-                  update(
-                    "doors_min",
-                    value
-                  )
-                }
-                onMaxChange={(value) =>
-                  update(
-                    "doors_max",
-                    value
-                  )
-                }
-              />
-            </div>
-
-            {/* SEATS */}
-            <div className="filter-group">
-              <label>Locuri</label>
-
-              <RangeInput
-                minValue={
-                  filters.seats_min
-                }
-                maxValue={
-                  filters.seats_max
-                }
-                onMinChange={(value) =>
-                  update(
-                    "seats_min",
-                    value
-                  )
-                }
-                onMaxChange={(value) =>
-                  update(
-                    "seats_max",
-                    value
-                  )
-                }
-              />
-            </div>
-
-            {/* SELLER */}
-            <div className="filter-group">
-              <label>Vânzător</label>
-
-              <MultiSelect
-                options={SELLER_TYPES}
-                selected={
-                  filters.seller_type ??
-                  []
-                }
-                onChange={(value) =>
-                  update(
-                    "seller_type",
-                    value
-                  )
-                }
-              />
-            </div>
-
-            {/* REGISTRATION */}
-            <div className="filter-group">
-              <label>Țara de înmatriculare</label>
-
-              <MultiSelect
-                options={
-                  REGISTRATION_COUNTRIES
-                }
-                selected={
-                  filters.registration_country ??
-                  []
-                }
-                onChange={(value) =>
-                  update(
-                    "registration_country",
-                    value
-                  )
-                }
-              />
-            </div>
-
-            {/* CLASS */}
-            <div className="filter-group">
-              <label>Clasa mașinii</label>
-
-              <MultiSelect
-                options={CAR_CLASSES}
-                disabled={classDisabled}
-                selected={
-                  filters.class ?? []
-                }
-                onChange={(value) =>
-                  update(
-                    "class",
-                    value
-                  )
-                }
-              />
-              {classDisabled && <FilterHint>Eliminați modelul pentru a alege clasele mașinii.</FilterHint>}
-            </div>
-
-            {/* SCORE */}
-            <div className="filter-group">
-              <label>Scor</label>
-
-              <RangeInput
-                minValue={
-                  filters.score_min
-                }
-                maxValue={
-                  filters.score_max
-                }
-                step="0.1"
-                onMinChange={(value) =>
-                  update(
-                    "score_min",
-                    value
-                  )
-                }
-                onMaxChange={(value) =>
-                  update(
-                    "score_max",
-                    value
-                  )
-                }
-              />
-            </div>
-
-            {/* SORT */}
-            <div className="filter-group">
-              <label>Sortează după</label>
-
-              <select
-                value={
-                  filters.sort_by ?? ""
-                }
-                onChange={(e) =>
-                  update(
-                    "sort_by",
-                    e.target.value || null
-                  )
-                }
-              >
-                <option value="">Nimic</option>
-
-                <option value="score">Scor</option>
-
-                <option value="price_eur">Preț</option>
-
-                <option value="year">An</option>
-
-                <option value="mileage">Rulaj</option>
-              </select>
-            </div>
-
-            {/* SORT ORDER */}
-            <div className="filter-group">
-              <label>Ordine sortare</label>
-
-              <select
-                value={
-                  filters.sort_order ?? ""
-                }
-                onChange={(e) =>
-                  update(
-                    "sort_order",
-                    e.target.value || null
-                  )
-                }
-              >
-                <option value="">Aleatoriu</option>
-
-                <option value="asc">Crescător</option>
-
-                <option value="desc">Descrescător</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="filters-footer">
-            {filterError && <p className="filter-validation-error" role="alert">{filterError}</p>}
-            {actions}
-            <button
-              type="button"
-              className="apply-filters-button"
-              onClick={onSearch}
-              disabled={loading || Boolean(filterError)}
-            >
-              {searchLabel}
-            </button>
-          </div>
+      <div className="lf-bar">
+        <button type="button" className={`lf-toggle ${open ? "open" : ""}`}
+          aria-expanded={open} onClick={() => setOpen((v) => !v)}>
+          Filtre avansate
+          {pills.length > 0 && <span className="lf-badge">{pills.length}</span>}
+          <span className="lf-arrow" aria-hidden="true">▾</span>
+        </button>
+        {barExtras}
+        <div className="lf-pills">
+          {pills.map((p, i) => (
+            <span key={i} className="filter-pill">
+              {p.label}
+              <button type="button" aria-label={`Elimină ${p.label}`} onClick={p.onRemove}>×</button>
+            </span>
+          ))}
         </div>
-{actions && <div className="saved-actions">{actions}</div>}
-      {activePills.length > 0 && (
-        <div className="active-filters-pills">
-          <div className="pills-header">
-            <span>Filtre active</span>
-            <button className="clear-all-btn" onClick={onReset}>Curăță tot</button>
-          </div>
-          <div className="pills-list">
-            {activePills.map((pill, idx) => (
-              <div key={idx} className="filter-pill">
-                <span>{pill.label}</span>
-                <button type="button" className="pill-remove-btn" onClick={pill.onRemove}>×</button>
+        {hasActiveFilters && (
+            <button type="button" className="lf-link" onClick={onReset}>
+              Curăță tot
+            </button>
+          )}
+      </div>
+
+      {open && createPortal(
+        <div className="lf-overlay" onClick={() => setOpen(false)}>
+        <div className="lf-panel" role="dialog" aria-label="Filtre avansate" onClick={(e) => e.stopPropagation()}>
+          <div className="lf-body">
+            <aside className="lf-tree">
+              <h3>Marcă</h3>
+              <VehicleTree filters={filters} update={update} lockModels={hasClasses} />
+            </aside>
+
+            <div className="lf-main">
+              <div className="filter-grid lf-single">
+                {slider("Preț", R.price, 0, 100000, 500, "€")}
+                {slider("An fabricație", R.year, 1990, 2026, 1, "")}
+                {slider("Rulaj", R.mileage, 0, 500000, 5000, "km")}
               </div>
-            ))}
+
+              <div className="lf-drops">
+                {DROPS.map((d) => {
+                  const selected = filters[d.key] ?? [];
+                  const isOpen = drop === d.key;
+
+                  return (
+                    <div key={d.key} className="lf-drop-wrapper">
+                      <button
+                        type="button"
+                        className={`lf-drop ${isOpen ? "open" : ""}`}
+                        aria-expanded={isOpen}
+                        onClick={() => setDrop(isOpen ? null : d.key)}
+                      >
+                        <span className={selected.length ? "selected-value" : ""}>
+                          {selected.length === 0
+                            ? d.title
+                            : selected[0]}
+                        </span>
+
+                        <span className={`lf-arrow ${isOpen ? "up" : ""}`}>
+                          ▾
+                        </span>
+                      </button>
+
+                      {isOpen && (
+                        <div className="lf-drop-panel">
+                          {d.options.map((option) => (
+                            <button
+                              key={option}
+                              type="button"
+                              className={`lf-option ${
+                                selected.includes(option) ? "selected" : ""
+                              }`}
+                              onClick={() => {
+                                update(
+                                  d.key,
+                                  selected.includes(option) ? [] : [option]
+                                );
+                                setDrop(null);
+                              }}
+                            >
+                              {option}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <button type="button" className="lf-more" aria-expanded={more} onClick={() => setMore((v) => !v)}>
+                {more ? "Mai puține filtre" : "Mai multe filtre"}
+                <span className={`lf-arrow ${more ? "up" : ""}`} aria-hidden="true">▾</span>
+              </button>
+
+              {more && (
+                <div className="filter-grid">
+                  <Group title="Tracțiune">
+                    <Chips options={DRIVETRAINS} selected={filters.drivetrains} onChange={(v) => update("drivetrains", v)} />
+                  </Group>
+                  <Group title="Stare">
+                    <Chips options={STATES} selected={filters.state} onChange={(v) => update("state", v)} />
+                  </Group>
+                  <Group title="Vânzător">
+                    <Chips options={SELLER_TYPES} selected={filters.seller_type} onChange={(v) => update("seller_type", v)} />
+                  </Group>
+                  <Group title="Țara de înmatriculare">
+                    <Chips options={REGISTRATION_COUNTRIES} selected={filters.registration_country}
+                      onChange={(v) => update("registration_country", v)} />
+                  </Group>
+                  <Group title="Clasa mașinii"
+                    hint={classDisabled ? "Eliminați modelul pentru a alege clasele mașinii." : null}>
+                    <Chips options={CAR_CLASSES} disabled={classDisabled} selected={filters.class}
+                      onChange={(v) => update("class", v)} />
+                  </Group>
+                  {range("Capacitate motor (L)", R.engine, "0.1")}
+                  {range("Cai putere", R.horsepower)}
+                  {range("Uși", R.doors)}
+                  {range("Locuri", R.seats)}
+                  {range("Scor", R.score, "0.1")}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="lf-footer">
+
+            <div className="lf-footer-left">
+              <button type="button" className="lf-reset" onClick={onReset}>
+                <span aria-hidden="true">↺</span>
+                Resetează filtrele
+              </button>
+
+              {pills.length > 0 && (
+                <div className="lf-footer-pills">
+                  {pills.map((p, i) => (
+                    <span key={i} className="lf-footer-pill">
+                      <span>{p.label}</span>
+
+                      <button
+                        type="button"
+                        aria-label={`Elimină ${p.label}`}
+                        onClick={p.onRemove}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {filterError && (
+              <p className="filter-validation-error" role="alert">
+                {filterError}
+              </p>
+            )}
+
+            <div className="lf-footer-actions">
+               <div className={`lf-actions-extra ${hasActiveFilters ? "visible" : ""}`}>
+                {actions}
+              </div>
+
+              <button
+                type="button"
+                className="apply-filters-button"
+                onClick={apply}
+                disabled={loading || Boolean(filterError)}
+              >
+                {countText}
+              </button>
+            </div>
           </div>
         </div>
+        </div>,
+        document.body
       )}
-
     </section>
   );
 }
-
-export default ListingFilters;

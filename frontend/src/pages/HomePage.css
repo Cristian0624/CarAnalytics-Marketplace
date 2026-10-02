@@ -176,6 +176,318 @@ h2 {
   font-weight: 800;
 }
 
+/* HOME PRICE ESTIMATOR */
+
+.home-estimator-section {
+  max-width: 1200px;
+  padding-top: 70px;
+  padding-bottom: 90px;
+}
+
+.home-estimator-header {
+  text-align: center;
+  max-width: 760px;
+  margin: 0 auto 40px;
+}
+
+.home-estimator-badge {
+  display: inline-block;
+  padding: 7px 16px;
+  margin-bottom: 14px;
+  border-radius: 999px;
+  background: var(--sage);
+  color: var(--brunswick-dark);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.home-estimator-header h2 {
+  margin-bottom: 14px;
+}
+
+.home-estimator-header p {
+  color: var(--ink-soft);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.home-estimator-card {
+  background: var(--pearl-light);
+  border: 1px solid var(--sage);
+  border-radius: 24px;
+  padding: 36px;
+  box-shadow: 0 15px 45px rgba(23, 32, 42, 0.08);
+}
+
+.home-estimator-form {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.home-estimator-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.home-estimator-field label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--brunswick-dark);
+}
+
+.home-estimator-field input,
+.home-estimator-field select {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  box-sizing: border-box;
+
+  border: 1px solid #D6DEDC;
+  border-radius: 9px;
+
+  background: #FFFFFF;
+  color: var(--brunswick-dark);
+
+  font-family: inherit;
+  font-size: 0.95rem;
+
+  outline: none;
+  transition: border-color 0.2s ease,
+              box-shadow 0.2s ease;
+}
+
+.home-estimator-field input:focus,
+.home-estimator-field select:focus {
+  border-color: var(--sage);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.12);
+}
+
+.home-estimator-field input::placeholder {
+  color: #9AA7A5;
+}
+
+.home-estimator-action {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.home-estimate-button {
+  min-width: 230px;
+  padding: 15px 30px;
+
+  border: none;
+  border-radius: 9px;
+
+  background: var(--sage);
+  color: var(--brunswick-dark);
+
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+
+  cursor: pointer;
+  transition: transform 0.2s ease,
+              background-color 0.2s ease,
+              box-shadow 0.2s ease;
+}
+
+.home-estimate-button:hover:not(:disabled) {
+  background: var(--sage-dark);
+  color: #FFFFFF;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(20, 184, 166, 0.25);
+}
+
+.home-estimate-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.home-estimate-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 9px;
+
+  border: 2px solid rgba(23, 32, 42, 0.25);
+  border-top-color: var(--brunswick-dark);
+  border-radius: 50%;
+
+  vertical-align: -3px;
+
+  animation: home-estimate-spin 0.7s linear infinite;
+}
+
+@keyframes home-estimate-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.home-estimate-error {
+  max-width: 700px;
+  margin: 24px auto 0;
+  padding: 14px 18px;
+
+  border-radius: 10px;
+  background: #FFF1F1;
+  border: 1px solid #E7BABA;
+
+  color: #8B3030;
+  text-align: center;
+  font-size: 0.92rem;
+}
+
+.home-estimate-result {
+  margin-top: 35px;
+  border-radius: 18px;
+  overflow: hidden;
+
+  background: var(--brunswick-dark);
+  color: #FFFFFF;
+}
+
+.home-result-main {
+  padding: 30px;
+  text-align: center;
+}
+
+.home-result-main > span {
+  display: block;
+  margin-bottom: 8px;
+
+  color: #B9C6C4;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+}
+
+.home-result-main > strong {
+  display: block;
+
+  color: var(--sage);
+  font-size: 3rem;
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+.home-result-main p {
+  max-width: 700px;
+  margin: 15px auto 0;
+
+  color: #D3DDDB;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.home-result-ranges {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.home-result-range {
+  padding: 24px;
+  text-align: center;
+}
+
+.home-result-range + .home-result-range {
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.home-result-range span {
+  display: block;
+  margin-bottom: 8px;
+
+  color: #B9C6C4;
+  font-size: 0.85rem;
+}
+
+.home-result-range strong {
+  color: #FFFFFF;
+  font-size: 1.1rem;
+}
+
+.home-result-range-highlight {
+  background: rgba(20, 184, 166, 0.09);
+}
+
+.home-result-range-highlight strong {
+  color: var(--sage);
+}
+
+.home-estimate-no-data {
+  margin-top: 28px;
+  padding: 22px;
+
+  border-radius: 14px;
+  background: #F7F9F8;
+  border: 1px solid #DCE4E2;
+
+  text-align: center;
+}
+
+.home-estimate-no-data strong {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--brunswick-dark);
+}
+
+.home-estimate-no-data p {
+  margin: 0;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+
+/* AUTOCOMPLETE INSIDE ESTIMATOR */
+
+.home-estimator-field .autocomplete-container {
+  width: 100%;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+  .home-estimator-form {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .home-result-ranges {
+    grid-template-columns: 1fr;
+  }
+
+  .home-result-range + .home-result-range {
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+@media (max-width: 540px) {
+  .home-estimator-card {
+    padding: 22px;
+    border-radius: 18px;
+  }
+
+  .home-estimator-form {
+    grid-template-columns: 1fr;
+  }
+
+  .home-result-main > strong {
+    font-size: 2.3rem;
+  }
+
+  .home-estimate-button {
+    width: 100%;
+  }
+}
+
 /* FEATURES */
 .features-grid {
   display: grid;
