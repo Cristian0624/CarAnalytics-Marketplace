@@ -9,6 +9,7 @@ import { savedDate, savedError } from "../utils/savedItems";
 import AnomalyRiskResults from "../components/AnomalyRiskResults";
 import CarCard from "../components/CarCard";
 import ListingFilters from "../components/ListingFilters";
+import BackgroundTriangles from "../components/BackgroundTriangles";
 import "./AnomalyRiskPage.css";
 import "./SavedItemsPage.css";
 
@@ -40,6 +41,7 @@ export default function SavedItemsPage({ kind }) {
 
   return (
     <main className="saved-page">
+      <BackgroundTriangles />
       <div className="saved-container">
         <header className="saved-heading">
           <span className="saved-eyebrow">CONTUL MEU</span>

@@ -38,8 +38,8 @@ def evaluate_and_update_db(table_name="listings_cleaned"):
         if pd.isna(med_price) or med_price == 0:
             return pd.Series({'med_price': np.nan, 'baseline_mileage': np.nan, 'dep_per_10k': np.nan})
             
-        # "Take the cars that have a relative same price as the median +- 500 euros"
-        middle_cars = group[np.abs(group[price_col] - med_price) <= 500]
+        # "Take the cars that have a relative same price as the median +- 5% of the median"
+        middle_cars = group[np.abs(group[price_col] - med_price) <= (0.05 * med_price)]
         if len(middle_cars) > 0:
             # "and make the average for the mileage for that few cars that are in the middle"
             baseline_mileage = middle_cars['mileage'].mean()

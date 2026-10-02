@@ -54,7 +54,7 @@
 .recommendations-title h1 {
   margin: 0 0 6px;
 
-  color: var(--brand-pearl-light, #e3ddba);
+  color: var(--brand-charcoal);
 
   font-size: 30px;
   font-weight: 650;
@@ -64,7 +64,7 @@
 .recommendations-title p {
   margin: 0;
 
-  color: var(--brand-sage, #b3af72);
+  color: var(--brand-muted);
   font-size: 14px;
 }
 

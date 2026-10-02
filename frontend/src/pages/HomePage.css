@@ -1,16 +1,16 @@
 /* HomePage.css - Modern Landing Page Styles */
 
 .landing-page {
-  --brunswick: #1e443e;
-  --brunswick-dark: #132e2a;
-  --sage: #b3af72;
-  --sage-dark: #978f52;
-  --pearl: #cfc9a4;
-  --pearl-light: #e3ddba;
-  --page-bg: #1c3b36;
-  --ink-soft: #3a554f;
+  --brunswick: #17202A;
+  --brunswick-dark: #17202A;
+  --sage: #14B8A6;
+  --sage-dark: #0E7C70;
+  --pearl: #F5F7F6;
+  --pearl-light: #FFFFFF;
+  --page-bg: #F5F7F6;
+  --ink-soft: #54666E;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  color: var(--pearl-light);
+  color: var(--brand-ink);
   background-color: var(--page-bg);
   overflow-x: hidden;
 }
@@ -26,7 +26,7 @@ h2 {
   font-size: 2.2rem;
   margin-bottom: 40px;
   font-weight: 700;
-  color: var(--pearl-light);
+  color: var(--brand-charcoal);
 }
 
 /* HERO SECTION */
@@ -52,7 +52,7 @@ h2 {
   line-height: 1.1;
   font-weight: 800;
   margin-bottom: 24px;
-  color: var(--pearl-light);
+  color: var(--brand-charcoal);
 }
 
 .hero-badge {
@@ -70,7 +70,7 @@ h2 {
 .hero-subtitle {
   font-size: 1.2rem;
   line-height: 1.6;
-  color: var(--pearl);
+  color: var(--brand-muted);
   margin-bottom: 32px;
 }
 
@@ -107,15 +107,15 @@ h2 {
 }
 
 .btn-secondary {
-  background-color: transparent;
-  color: var(--pearl-light);
-  border: 1px solid var(--pearl);
+  background-color: var(--brand-surface);
+  color: var(--brand-charcoal);
+  border: 1px solid var(--brand-charcoal);
 }
 
 .btn-secondary:hover {
-  background-color: var(--pearl-light);
-  color: var(--brunswick-dark);
-  border-color: var(--pearl-light);
+  background-color: var(--brand-teal-tint);
+  color: var(--brand-teal-dark);
+  border-color: var(--brand-teal);
 }
 
 .large {
@@ -154,12 +154,12 @@ h2 {
 .partners-section {
   text-align: center;
   padding: 40px 20px;
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
+  border-top: 1px solid var(--brand-border);
+  border-bottom: 1px solid var(--brand-border);
 }
 
 .partners-section p {
-  color: #64748b;
+  color: var(--brand-muted);
   margin-bottom: 24px;
   font-size: 0.9rem;
   text-transform: uppercase;
@@ -171,7 +171,7 @@ h2 {
   justify-content: center;
   gap: 40px;
   flex-wrap: wrap;
-  color: #94a3b8;
+  color: var(--brand-muted);
   font-size: 1.5rem;
   font-weight: 800;
 }
@@ -193,7 +193,7 @@ h2 {
 
 .feature-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 10px 30px rgba(23, 32, 42, 0.12);
 }
 
 .feature-card h3 {
@@ -215,7 +215,7 @@ h2 {
 }
 
 .why-us-section h2 {
-  color: var(--pearl-light);
+  color: var(--brand-offwhite);
 }
 
 .why-car-image {
@@ -258,11 +258,11 @@ h2 {
 .why-item h4 {
   font-size: 1.2rem;
   margin-bottom: 12px;
-  color: var(--pearl-light);
+  color: var(--brand-offwhite);
 }
 
 .why-item p {
-  color: var(--pearl);
+  color: #B9C6C4;
   font-size: 0.95rem;
 }
 
@@ -290,9 +290,7 @@ h2 {
 }
 
 .reviews-empty .btn-secondary:hover {
-  background: var(--brunswick-dark);
-  border-color: var(--brunswick-dark);
-  color: var(--pearl-light);
+  filter: brightness(1.1);
 }
 
 /* FAQ */
@@ -329,8 +327,8 @@ h2 {
 }
 
 .cta-box {
-  background: var(--sage);
-  color: var(--brunswick-dark);
+  background: var(--brand-charcoal);
+  color: var(--brand-offwhite);
   text-align: center;
   padding: 80px 20px;
   border-radius: 24px;
@@ -339,36 +337,32 @@ h2 {
 }
 
 .cta-box h2 {
-  color: var(--brunswick-dark);
+  color: var(--brand-offwhite);
   margin-bottom: 16px;
 }
 
 .cta-box p {
-  color: var(--brunswick);
+  color: #B9C6C4;
   margin-bottom: 32px;
   font-size: 1.2rem;
 }
 
 .cta-box .btn-primary {
-  background: var(--brunswick);
-  color: var(--pearl-light);
-  border: 2px solid var(--brunswick);
-  box-shadow: 0 8px 24px rgba(19, 46, 42, 0.35);
+  background: var(--brand-teal-dark);
+  color: #FFFFFF;
+  border: 2px solid var(--brand-teal-dark);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .cta-box .btn-primary:hover {
-  background: var(--brunswick-dark);
-  border-color: var(--brunswick-dark);
-  color: var(--pearl-light);
+  filter: brightness(1.2);
 }
 
 /* FOOTER */
 .footer-section {
-  background: rgba(227, 221, 186, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid var(--sage-dark);
-  box-shadow: 0 -4px 30px rgba(19, 46, 42, 0.12);
+  background: var(--brand-charcoal);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 -4px 30px rgba(23, 32, 42, 0.2);
   padding: 40px 20px;
   max-width: 100%;
 }
@@ -386,18 +380,18 @@ h2 {
 .footer-logo {
   font-weight: 800;
   font-size: 1.2rem;
-  color: var(--brunswick);
+  color: var(--brand-offwhite);
 }
 
 .footer-links a {
-  color: var(--ink-soft);
+  color: #B9C6C4;
   text-decoration: none;
   margin: 0 12px;
   font-size: 0.9rem;
 }
 
 .footer-links a:hover {
-  color: var(--brunswick);
+  color: var(--brand-teal);
 }
 
 

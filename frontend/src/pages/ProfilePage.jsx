@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { apiRequest } from "../api/api";
+import BackgroundTriangles from "../components/BackgroundTriangles";
 import "./SavedItemsPage.css";
 import PasswordInput from "../components/PasswordInput";
 
@@ -109,6 +110,7 @@ export default function ProfilePage() {
 
   return (
     <main className="saved-page">
+      <BackgroundTriangles />
       <div className="saved-container">
         <header className="saved-heading">
           <span className="saved-eyebrow">CONTUL MEU</span>
