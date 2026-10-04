@@ -68,12 +68,5 @@ export function listingFilterError(form) {
 }
 
 export function updateListingFilter(current, field, value) {
-  const next = { ...current, [field]: value };
-  if (field === "brandText" && value !== current.brandText) {
-    next.modelText = "";
-    next.generationText = "";
-  } else if (field === "modelText" && value !== current.modelText) {
-    next.generationText = "";
-  }
-  return next;
+  return { ...current, [field]: value };
 }

@@ -15,13 +15,20 @@ function useOptions(brand, model, enabled) {
   return data;
 }
 
+
+const modelToBrand = {};
+const genToModel = {};
+const brandModels = {};
+const modelGens = {};
+
 function Row({ checked, inherited, partial, open, expandable, disabled, label, onCheck, onToggle, level }) {
+  const isChecked = Boolean(checked || inherited);
   return (
     <li className={`vt-row vt-level-${level}`}>
-      <input type="checkbox" checked={checked || inherited} disabled={disabled}
+      <input type="checkbox" checked={isChecked} disabled={disabled}
         className={`${inherited && !checked ? "inherited" : ""} ${partial ? "partial" : ""}`}
         onChange={onCheck} aria-label={label} />
-      <button type="button" className={`vt-text ${checked ? "is-on" : ""}`}
+      <button type="button" className={`vt-text ${isChecked ? "is-on" : ""}`}
         onClick={expandable ? onToggle : onCheck} disabled={disabled && !expandable}
         style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         {label}
@@ -40,18 +47,40 @@ function Status({ data, children }) {
 }
 
 export default function VehicleTree({ filters, update, lockModels }) {
-  const [openBrand, setOpenBrand] = useState(filters.brandText || null);
-  const [openModel, setOpenModel] = useState(filters.modelText || null);
+  const [openBrand, setOpenBrand] = useState(null);
+  const [openModel, setOpenModel] = useState(null);
   const [q, setQ] = useState("");
 
   const brandData = useOptions(undefined, undefined, true);
   const modelData = useOptions(openBrand, undefined, Boolean(openBrand));
   const genData = useOptions(openBrand, openModel, Boolean(openBrand && openModel));
 
-  function pick(brand, model = "", generation = "") {
-    update("brandText", brand);
-    update("modelText", model);
-    update("generationText", generation);
+  useEffect(() => {
+    if (openBrand && modelData?.model) {
+      brandModels[openBrand] = modelData.model;
+      modelData.model.forEach(m => { modelToBrand[m] = openBrand; });
+    }
+  }, [openBrand, modelData]);
+
+  useEffect(() => {
+    if (openModel && genData?.generation) {
+      modelGens[openModel] = genData.generation;
+      genData.generation.forEach(g => { genToModel[g] = openModel; });
+    }
+  }, [openModel, genData]);
+
+  const list = (v) => (v || "").split(",").map((x) => x.trim()).filter(Boolean);
+  const selBrands = list(filters.brandText);
+  const selModels = list(filters.modelText);
+  const selGens = list(filters.generationText);
+
+  const toggle = (arr, v) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
+  const withItem = (arr, v) => (arr.includes(v) ? arr : [...arr, v]);
+  
+  function commit(brands, models, gens) {
+    update("brandText", brands.join(", "));
+    update("modelText", models.join(", "));
+    update("generationText", gens.join(", "));
   }
 
   const brands = (brandData?.brand ?? []).filter((b) =>
@@ -66,37 +95,116 @@ export default function VehicleTree({ filters, update, lockModels }) {
         <Status data={brandData}>
           {brands.map((b) => {
             const isOpen = openBrand === b;
-            const brandOn = filters.brandText === b && !filters.modelText;
-            const brandPartial = filters.brandText === b && Boolean(filters.modelText);
+            const brandInList = selBrands.includes(b);
+            
+            const bModelsKnown = brandModels[b] || (isOpen ? modelData?.model : null) || [];
+            const bSelModels = selModels.filter(m => bModelsKnown.includes(m) || modelToBrand[m] === b);
+            
+            const brandOn = brandInList && bSelModels.length === 0;
+            const brandPartial = brandInList && bSelModels.length > 0;
+
             return (
               <li key={b} className="vt-branch">
                 <ul>
                   <Row level={0} label={b} open={isOpen} expandable
                     checked={brandOn} partial={brandPartial}
-                    onCheck={() => (brandOn ? pick("") : pick(b))}
+                    onCheck={() => {
+                      if (brandOn) {
+                        // Uncheck fully checked brand
+                        const newBrands = selBrands.filter(x => x !== b);
+                        const newModels = selModels.filter(m => modelToBrand[m] !== b);
+                        const newGens = selGens.filter(g => {
+                          const mx = genToModel[g];
+                          return mx ? modelToBrand[mx] !== b : true;
+                        });
+                        commit(newBrands, newModels, newGens);
+                      } else {
+                        // Make it fully checked (whether it was partial or empty)
+                        const newModels = selModels.filter(m => modelToBrand[m] !== b);
+                        const newGens = selGens.filter(g => {
+                          const mx = genToModel[g];
+                          return mx ? modelToBrand[mx] !== b : true;
+                        });
+                        commit(withItem(selBrands, b), newModels, newGens);
+                      }
+                    }}
                     onToggle={() => { setOpenBrand(isOpen ? null : b); setOpenModel(null); }} />
                   {isOpen && (
                     <Status data={modelData}>
                       {(modelData?.model ?? []).map((m) => {
                         const mOpen = openModel === m;
-                        const mOn = filters.brandText === b && filters.modelText === m && !filters.generationText;
-                        const mPartial = filters.brandText === b && filters.modelText === m && Boolean(filters.generationText);
+                        const mExplicitlyChecked = selModels.includes(m);
+                        const mOn = brandOn || mExplicitlyChecked;
+                        
+                        const mGensKnown = modelGens[m] || (mOpen ? genData?.generation : null) || [];
+                        const mSelGens = selGens.filter(g => mGensKnown.includes(g) || genToModel[g] === m);
+                        
+                        // A model is partial if it is explicitly checked AND has specific generations selected.
+                        // Wait, if it's explicitly checked and no gens, it's FULL.
+                        const mPartial = mExplicitlyChecked && mSelGens.length > 0;
+                        const isVisuallyOn = mOn && !mPartial;
+
                         return (
                           <li key={m} className="vt-branch">
                             <ul>
                               <Row level={1} label={m} open={mOpen} expandable disabled={lockModels}
-                                checked={mOn} inherited={brandOn} partial={mPartial}
-                                onCheck={() => (mOn ? pick(b) : pick(b, m))}
+                                checked={isVisuallyOn} partial={mPartial}
+                                onCheck={() => {
+                                  if (isVisuallyOn || brandOn) {
+                                    // Uncheck model. If brand was fully checked, they want to uncheck this specific model, so we must uncheck the brand entirely.
+                                    const newBrands = selBrands.filter(x => x !== b);
+                                    let newModels = selModels.filter(x => modelToBrand[x] !== b);
+                                    newModels = newModels.filter(x => x !== m);
+                                    let newGens = selGens.filter(g => {
+                                      const mx = genToModel[g];
+                                      return mx ? modelToBrand[mx] !== b : true;
+                                    });
+                                    newGens = newGens.filter(g => genToModel[g] !== m);
+                                    commit(newBrands, newModels, newGens);
+                                  } else {
+                                    // Make model fully checked. Make brand partial (i.e. added to selBrands).
+                                    // We also clear any specific generations for this model, because it becomes fully checked.
+                                    let newGens = selGens.filter(g => genToModel[g] !== m);
+                                    commit(withItem(selBrands, b), withItem(selModels, m), newGens);
+                                  }
+                                }}
                                 onToggle={() => !lockModels && setOpenModel(mOpen ? null : m)} />
                               {mOpen && (
                                 <Status data={genData}>
-                                  {(genData?.generation ?? []).map((g) => (
+                                  {(genData?.generation ?? []).map((g) => {
+                                    const gExplicitlyChecked = selGens.includes(g);
+                                    const gOn = isVisuallyOn || gExplicitlyChecked;
+                                    
+                                    return (
                                     <Row key={g} level={2} label={g}
-                                      checked={filters.modelText === m && filters.generationText === g}
-                                      inherited={brandOn || mOn}
-                                      onCheck={() =>
-                                        filters.generationText === g ? pick(b, m) : pick(b, m, g)} />
-                                  ))}
+                                      checked={gOn}
+                                      onCheck={() => {
+                                        if (gOn) {
+                                          // Uncheck generation. Clear parent model and parent brand if they were fully checked.
+                                          const newBrands = brandOn ? selBrands.filter(x => x !== b) : selBrands;
+                                          let newModels = brandOn ? selModels.filter(x => modelToBrand[x] !== b) : selModels;
+                                          if (isVisuallyOn) {
+                                            newModels = newModels.filter(x => x !== m);
+                                          }
+                                          
+                                          let newGens = selGens.filter(x => x !== g);
+                                          if (brandOn) {
+                                            newGens = newGens.filter(gx => {
+                                              const mx = genToModel[gx];
+                                              return mx ? modelToBrand[mx] !== b : true;
+                                            });
+                                          }
+                                          if (isVisuallyOn) {
+                                            newGens = newGens.filter(gx => genToModel[gx] !== m);
+                                          }
+                                          commit(newBrands, newModels, newGens);
+                                        } else {
+                                          // Check generation explicitly. Add model and brand to parents so they become partial.
+                                          commit(withItem(selBrands, b), withItem(selModels, m), withItem(selGens, g));
+                                        }
+                                      }} />
+                                    );
+                                  })}
                                 </Status>
                               )}
                             </ul>
