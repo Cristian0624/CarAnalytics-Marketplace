@@ -239,15 +239,18 @@ class ModelTests(unittest.TestCase):
             self.assertAlmostEqual(score(mileage, stats), expected)
         self.assertGreater(score(130000, stats), 40)
         self.assertLess(score(130000, stats), 70)
-        self.assertGreater(score(200000, stats), 90)
+        self.assertGreater(score(200000, stats), 80)
+        self.assertLess(score(200000, stats), 90)
+        self.assertGreater(score(400000, stats), 99)
 
     def test_toyota_mileage_deviation_overrides_medium_component_score(self):
         result = self.service.assess_listing_risk(VEHICLE, PRICES, 200, CHARACTERISTICS)
         mileage = result["components"]["mileage_anomaly"]["score"]
-        self.assertGreater(mileage, 50)
-        self.assertLess(mileage, 70)
-        self.assertEqual(result["effective_weights"], {"price": 0, "mileage": 1, "specification": 0})
-        self.assertGreater(result["anomaly_score"], 80)
+        price = result["components"]["price_anomaly"]["score"]
+        self.assertAlmostEqual(mileage + .05 * price, result["anomaly_score"])
+        self.assertEqual(result["effective_weights"], {"price": .05, "mileage": 1, "specification": 0})
+        self.assertGreater(result["anomaly_score"], 60)
+        self.assertLess(result["anomaly_score"], 70)
         self.assertEqual(result["risk_level"], "high")
 
     def typical_vehicle(self):

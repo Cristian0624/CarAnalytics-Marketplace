@@ -237,7 +237,7 @@ function SavedCollection({ kind }) {
       })
       .catch((err) => {
         if (!controller.signal.aborted) {
-          setError(savedError(err));
+          setError(savedError(err, t));
         }
       })
       .finally(() => {
@@ -270,7 +270,7 @@ function SavedCollection({ kind }) {
       setDeleting(null);
       setRevision((value) => value + 1);
     } catch (err) {
-      setError(savedError(err));
+      setError(savedError(err, t));
     } finally {
       setBusy(false);
     }
@@ -638,7 +638,7 @@ function SavedDetail({ kind, id }) {
       })
       .catch((err) => {
         if (!controller.signal.aborted) {
-          setError(savedError(err));
+          setError(savedError(err, t));
         }
       });
 
@@ -658,7 +658,7 @@ function SavedDetail({ kind, id }) {
         `${savedPaths.risks}/${record.id}`
       );
     } catch (err) {
-      setError(savedError(err));
+      setError(savedError(err, t));
     } finally {
       setBusy(false);
     }
@@ -962,7 +962,7 @@ function SavedEditor({
 
       onDone();
     } catch (err) {
-      setError(savedError(err));
+      setError(savedError(err, t));
     } finally {
       pending.current = false;
       setBusy(false);

@@ -81,6 +81,7 @@
 .risk-overall > strong { font-size: 16px; }
 .risk-level-low > strong { color: #86efac; }
 .risk-level-medium > strong { color: #fde68a; }
+.risk-level-medium_high > strong { color: #fdba74; }
 .risk-level-high > strong { color: #fca5a5; }
 .risk-overall p { font-size: 15px; color: #B9C6C4; line-height: 1.7; margin-top: 14px; }
 .risk-unavailable { background: #B9C6C4; color: #17202A; }
@@ -103,7 +104,7 @@
 .risk-card-heading { display: flex; justify-content: space-between; gap: 16px; align-items: start; }
 .risk-price-chart { padding: 80px 68px 145px; }
 .risk-price-plot { height: 10px; border-radius: 6px; background: #f1f5f9; position: relative; }
-.risk-axis-label { position: absolute; transform: translateX(-50%); text-align: center; white-space: nowrap; line-height: 1.5; }
+.risk-axis-label { width: 130px; position: absolute; transform: translateX(-50%); text-align: center; line-height: 1.5; overflow-wrap: anywhere; }
 .risk-axis-label span { display: block; color: #54666E; font-size: 14px; }
 .risk-axis-label strong { display: block; font-size: 22px; font-variant-numeric: tabular-nums; }
 .risk-axis-label span, .risk-axis-label strong { position: relative; z-index: 1; background: white; }
@@ -111,6 +112,8 @@
 .risk-label-median { bottom: 20px; color: #0E7C70; }
 .risk-label-min, .risk-label-max { top: 85px; }
 .risk-label-min strong, .risk-label-max strong { font-size: 18px; color: #334155; }
+.risk-price-card .risk-price-chart-packed { padding-bottom: 205px; min-height: 330px; }
+.risk-price-chart-packed .risk-label-max { top: 145px; }
 .risk-range { position: absolute; height: 100%; background: #93c5fd; border-radius: 6px; }
 .risk-median { position: absolute; top: -4px; height: 18px; width: 3px; background: #0E7C70; transform: translateX(-50%); }
 .risk-asking { position: absolute; top: -3px; width: 16px; height: 16px; background: #17202A; border: 3px solid white; border-radius: 50%; box-shadow: 0 0 0 1px #17202A; transform: translateX(-50%); }
@@ -128,12 +131,12 @@
   font-size: 16px;
 }
 .risk-component-score > span, .risk-component-score small { color: #54666E; }
-.risk-component-score > strong { font-size: 18px; color: #17202A; font-variant-numeric: tabular-nums; }
-.risk-component-score small { margin-left: auto; font-size: 14px; }
+.risk-component-score > strong { white-space: nowrap; font-size: 18px; color: #17202A; font-variant-numeric: tabular-nums; }
+.risk-component-score small { flex-basis: 100%; margin-left: 0; font-size: 14px; }
 .risk-detail-grid {
   display: grid;
   grid-column: 2;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   border: 1px solid #cbd2da;
   border-radius: 22px;
   background: #fff;
@@ -182,8 +185,14 @@
 .risk-explanation-chevron { margin-left: auto; flex-shrink: 0; color: #54666E; }
 .risk-explanation[open] .risk-explanation-chevron { transform: rotate(180deg); }
 .risk-explanation-content { padding: 8px 28px 26px; overflow-wrap: anywhere; }
+.risk-effect { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.risk-effect svg { width: 18px; height: 18px; flex: 0 0 18px; stroke-width: 2; }
+.risk-effect-positive { color: #08714c; }
+.risk-effect-negative { color: #b42318; }
+.risk-effect-neutral { color: #52616b; }
 .risk-explanation ul { list-style: none; padding: 0; margin: 0; }
-.risk-explanation li { padding: 16px 0; border-bottom: 1px solid #B9C6C4; line-height: 1.8; }
+.risk-explanation li { display: grid; grid-template-columns: 100px minmax(0, 1fr); align-items: baseline; gap: 14px; padding: 16px 0; border-bottom: 1px solid #B9C6C4; line-height: 1.8; }
+.risk-explanation li p { margin: 0; min-width: 0; }
 .risk-explanation li:last-child { border-bottom: 0; }
 .risk-explanation-interval { padding: 16px 20px; margin-top: 12px; background: #f1f5f9; border: 1px solid #dbe3ec; border-radius: 10px; line-height: 1.7; }
 .risk-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
@@ -217,7 +226,10 @@
   .risk-actions { gap: 8px; flex-wrap: wrap; }.risk-submit { padding: 14px 18px; }
   .risk-card-heading { flex-direction: column; margin-bottom: 16px; gap: 0; }.risk-detail-card { --risk-card-padding: 22px; }
   .risk-detail-card h3 { font-size: 25px; }
-  .risk-price-chart { padding: 80px 46px 145px; }
+  .risk-price-card .risk-price-chart { padding: 80px 46px 205px; min-height: 330px; }
+  .risk-label-max { top: 145px; }
+  .risk-axis-label { width: 112px; }
+  .risk-explanation li { grid-template-columns: minmax(0, 1fr); gap: 4px; }
   .risk-axis-label strong { font-size: 18px; }.risk-label-min strong, .risk-label-max strong { font-size: 16px; }
   .risk-axis-label span { font-size: 12px; }
   .risk-explanation summary { padding: 18px; gap: 12px; font-size: 17px; }

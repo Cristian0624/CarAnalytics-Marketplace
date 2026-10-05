@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { extremeAnomalyMessage, usesCurrentRiskPolicy, buildRiskPayload, filterVehicleOptions, hasOverallScore, resolveVehicleOption, riskErrorMessage, riskExplanationLines } from "../src/utils/anomalyRisk.js";
+import { extremeAnomalyMessage, usesCurrentRiskPolicy, buildRiskPayload, filterVehicleOptions, hasOverallScore, resolveVehicleOption, riskErrorMessage, riskExplanationLines, riskExplanationItems } from "../src/utils/anomalyRisk.js";
 
 test("extreme override policy explains the direct score in Romanian", () => {
   const result = {
@@ -21,6 +21,93 @@ test("extreme override policy explains the direct score in Romanian", () => {
   assert.ok(lines.some((line) => line.includes("crește gradual de la 80")));
   assert.ok(lines.some((line) => line.includes("100% sau mai mare")));
   assert.ok(lines.every((line) => !line.includes("include o ajustare")));
+});
+
+function contextualResult() {
+  return {
+    scoring_policy_version: "anomaly-risk-v2.12-unified-scores", assessment_status: "full", anomaly_score: 65,
+    market_support: { model_generation_observations: 30, rarity_penalty: 0 },
+    confidence: { p10_p90_width: 2000, relative_interval_width: .4 },
+    effective_weights: { price: .60 / .85, mileage: .25 / .85 },
+    scoring_context: { mode: "contextual_weighted", relation: "consistent_opposite", price_ratio: .5,
+      mileage_ratio: 2, balance_deviation: 0, joint_penalty: 3, override_scores: {} },
+    components: {
+      price_anomaly: { source: "database", score: 90, count: 30, direction: "unusually_cheap", actual_price: 2500, p25: 4500, p75: 5500 },
+      mileage_anomaly: { score: 60, sample_size: 30, direction: "unusually_high", comparison_level: "model_generation" },
+      specification_anomaly: { score: null, supported_fields: 0, signals: [] },
+    },
+  };
+}
+
+test("joint explanations stay concise and add only the applicable case", () => {
+  const result = contextualResult();
+  assert.equal(usesCurrentRiskPolicy(result), true);
+  const vehicle = { brand: "Toyota", model: "Auris", generation: "II", mileage: 300000 };
+  const items = riskExplanationItems(result, vehicle);
+  assert.ok(items.some(item => item.text.includes("Prețul mai mic însoțește kilometrajul mai mare")));
+  assert.ok(items.some(item => item.text.includes("3 puncte")));
+  assert.ok(items.every(item => !/Severitate|65%|60%|curba din percentile/.test(item.text)));
+  assert.deepEqual(riskExplanationLines(result, vehicle), items.map(item => item.text));
+  assert.ok(items.some(item => item.effect?.metric === "Anomalie" && item.effect.direction === "up"));
+  assert.ok(items.some(item => item.effect?.metric === "Încredere" && item.effect.direction === "down"));
+  assert.ok(items.length <= 9);
+});
+
+test("adaptive context policy displays the existing concise joint explanation", () => {
+  const result = contextualResult();
+  result.scoring_policy_version = "anomaly-risk-v2.13-adaptive-context";
+  result.scoring_context.price_ratio = 32000 / 41500;
+  result.scoring_context.mileage_ratio = 200000 / 150000;
+  assert.equal(usesCurrentRiskPolicy(result), true);
+  const lines = riskExplanationLines(result, { brand: "Toyota", model: "Auris" });
+  assert.ok(lines.some(line => line.includes("Prețul mai mic însoțește kilometrajul mai mare")));
+});
+
+test("cheaper higher-mileage reduction uses a downward anomaly arrow and one concise message", () => {
+  const result = contextualResult();
+  result.scoring_policy_version = "anomaly-risk-v2.14-mileage-price-reduction";
+  result.scoring_context.joint_reduction = 15.3;
+  result.scoring_context.joint_penalty = 1.3;
+  assert.equal(usesCurrentRiskPolicy(result), true);
+  const items = riskExplanationItems(result, { brand: "Toyota", model: "Auris" });
+  const explanation = items.find(item => item.text.includes("Kilometrajul explică parțial"));
+  assert.ok(explanation.text.includes("−15,3 puncte"));
+  assert.ok(explanation.text.includes("+1,3 puncte"));
+  assert.deepEqual(explanation.effect, { metric: "Anomalie", direction: "down" });
+  assert.equal(items.filter(item => item.text.includes("Kilometrajul explică parțial")).length, 1);
+});
+
+test("extreme explanations distinguish the pair without duplicating component scores", () => {
+  for (const [price_ratio, mileage_ratio, expected] of [[1.6, 1.8, "ambele ridicate"], [.4, .1, "ambele scăzute"], [10, .01, "abateri opuse"]]) {
+    const result = contextualResult();
+    result.scoring_context = { mode: "extreme", relation: "inconsistent", price_ratio, mileage_ratio, override_scores: { price: 85, mileage: 70 } };
+    const lines = riskExplanationLines(result, { brand: "Toyota", model: "Auris", mileage: 300000 });
+    assert.ok(lines.some(line => line.includes(expected)));
+    assert.ok(lines.some(line => line.includes("plus 5% din celălalt")));
+    assert.ok(lines.every(line => !/85\/100|70\/100|Severitate|65%/.test(line)));
+    assert.ok(lines.length <= 10);
+  }
+});
+
+test("a non-extreme counterpart is included in the concise joint explanation", () => {
+  for (const primary of ["price", "mileage"]) {
+    const result = contextualResult();
+    result.scoring_policy_version = "anomaly-risk-v2.16-joint-contributions";
+    result.effective_weights = { price: primary === "price" ? 1 : .05, mileage: primary === "mileage" ? 1 : .05 };
+    result.scoring_context = { mode: "extreme", relation: "inconsistent", price_ratio: 1.4,
+      mileage_ratio: 1.8, override_scores: { [primary]: 85 } };
+    assert.equal(usesCurrentRiskPolicy(result), true);
+    const lines = riskExplanationLines(result, { brand: "Toyota", model: "Auris", mileage: 300000 });
+    assert.ok(lines.some(line => line.includes("contează integral") && line.includes("adaugă 5% din scorul său")));
+    assert.ok(!lines.some(line => line.includes("Ambele semnale extreme")));
+    assert.ok(lines.length <= 10);
+
+    // Previously saved assessments retain their original explanation.
+    result.scoring_policy_version = "anomaly-risk-v2.15-risk-bands";
+    const historical = riskExplanationLines(result, { brand: "Toyota", model: "Auris" });
+    assert.ok(historical.some(line => line.includes("determină scorul general, fără ponderare")));
+    assert.ok(!historical.some(line => line.includes("adaugă 5% din scorul său")));
+  }
 });
 
 test("request preserves exact database names, sends numbers, and excludes search-only fields", () => {
@@ -52,6 +139,21 @@ test("very rare and missing overall scores are never displayed as zero risk", ()
   assert.equal(hasOverallScore({ assessment_status: "limited_support", anomaly_score: null }), false);
   assert.equal(hasOverallScore({ assessment_status: "limited_support", anomaly_score: 25 }), true);
   assert.equal(hasOverallScore({ assessment_status: "full", anomaly_score: 0 }), true);
+  assert.equal(hasOverallScore({ assessment_status: "partial", anomaly_score: null }), false);
+  assert.equal(hasOverallScore({ assessment_status: "partial", anomaly_score: 3.5 }), false);
+});
+
+test("smooth escalation explains actual contributions without mislabelling a large deviation as favourable", () => {
+  const result = contextualResult();
+  result.scoring_policy_version = "anomaly-risk-v2.17-smooth-extremes";
+  result.scoring_context = { mode: "blended", relation: "not_applicable", override_scores: { mileage: 95 } };
+  Object.assign(result.components.mileage_anomaly, { direction: "normal", score: 95, flag: null, sample_size: 24 });
+  assert.equal(usesCurrentRiskPolicy(result), true);
+  const items = riskExplanationItems(result, { brand: "Toyota", model: "Auris", mileage: 10 });
+  assert.ok(items.some(item => item.text.includes("crește progresiv în funcție") && item.effect.direction === "up"));
+  const mileage = items.find(item => item.text.startsWith("Kilometrajul are o abatere mare"));
+  assert.equal(mileage.effect.direction, "up");
+  assert.ok(!items.some(item => item.text.startsWith("Kilometrajul se află")));
 });
 
 test("validation errors name the affected fields without exposing server internals", () => {
@@ -59,6 +161,21 @@ test("validation errors name the affected fields without exposing server interna
   assert.match(riskErrorMessage({ status: 503 }), /momentan indisponibilă/);
   assert.match(riskErrorMessage(new TypeError("Failed to fetch")), /contacta serverul/);
   assert.match(riskErrorMessage({ name: "TimeoutError" }), /durează prea mult/);
+});
+
+test("partial price-mileage compensation explains remaining escalation without claiming normal weights", () => {
+  const result = contextualResult();
+  result.scoring_policy_version = "anomaly-risk-v2.17-smooth-extremes";
+  result.scoring_context = { mode: "blended", relation: "consistent_opposite", coherence_strength: .5,
+    price_ratio: 1.65, mileage_ratio: .76, joint_penalty: .4, joint_reduction: 0,
+    override_scores: { price: 88 } };
+  const items = riskExplanationItems(result, { brand: "Toyota", model: "Auris", mileage: 100000 });
+  const pairing = items.find(item => item.text.includes("Compensarea este doar parțială"));
+  assert.ok(pairing);
+  assert.equal(pairing.effect.direction, "down");
+  assert.ok(items.some(item => item.text.includes("crește progresiv") && item.effect.direction === "up"));
+  assert.ok(!items.some(item => item.text.includes("ponderi normale")));
+  assert.ok(items.length <= 10);
 });
 
 test("full vehicle option lists can be searched with case and accent differences", () => {
@@ -128,6 +245,35 @@ test("available database price explains the exact unfiltered comparison group", 
   assert.ok(lines.some((line) => line.includes("21 anunțuri") && line.includes("nu filtrează acest grup")));
   assert.ok(lines.some((line) => line.includes("zona centrală observată")));
   assert.ok(lines.every((line) => !line.includes("Prețul nu a fost evaluat")));
+});
+
+test("ordinary price and mileage findings are favourable even with small nonzero scores", () => {
+  const result = contextualResult();
+  result.scoring_context = null;
+  const price = result.components.price_anomaly;
+  const mileage = result.components.mileage_anomaly;
+  Object.assign(price, { direction: "normal", actual_price: 5100, score: 4 });
+  Object.assign(mileage, { direction: "normal", score: 10 });
+  const vehicle = { brand: "Toyota", model: "Auris", mileage: 160000 };
+  let items = riskExplanationItems(result, vehicle);
+  assert.deepEqual(items.find(item => item.text.includes("zona centrală observată")).effect,
+    { metric: "Anomalie", direction: "down" });
+  assert.deepEqual(items.find(item => item.text.startsWith("Kilometrajul se află")).effect,
+    { metric: "Anomalie", direction: "down" });
+
+  price.actual_price = 5800;
+  mileage.direction = "unusually_high";
+  items = riskExplanationItems(result, vehicle);
+  assert.equal(items.find(item => item.text.includes("în afara zonei centrale")).effect.direction, "up");
+  assert.equal(items.find(item => item.text.startsWith("Kilometrajul este neobișnuit")).effect.direction, "up");
+
+  // Broad observed intervals cannot turn an actual extreme alert green.
+  Object.assign(price, { actual_price: 5100, flag: "extreme_price_high", score: 85 });
+  Object.assign(mileage, { direction: "normal", flag: "extreme_mileage_high", score: 70 });
+  items = riskExplanationItems(result, vehicle);
+  assert.equal(items.find(item => item.text.startsWith("Alertă: preț")).effect.direction, "up");
+  assert.equal(items.find(item => item.text.startsWith("Alertă: kilometraj")).effect.direction, "up");
+  assert.ok(!items.some(item => item.text.includes("zona centrală observată") || item.text.startsWith("Kilometrajul se află")));
 });
 
 test("explanations show selected group instead of totals across other generations", () => {

@@ -4,18 +4,14 @@ import {
   getFieldLabel,
   extremeAnomalyMessage,
   hasOverallScore,
-  riskExplanationLines,
+  riskExplanationItems,
+  translateVehicleValue,
   usesCurrentRiskPolicy,
 } from "../utils/anomalyRisk";
+import { assessmentNumber } from "../utils/assessmentI18n";
 
-const number = (value, digits = 0) =>
-  value == null
-    ? null
-    : new Intl.NumberFormat(undefined, {
-        maximumFractionDigits: digits,
-      }).format(value);
-
-function ComponentScore({ value, weight, flag, t }) {
+function ComponentScore({ value, weight, flag, t, contextual = false }) {
+  const number = (value, digits = 0) => assessmentNumber(t, value, digits);
   const message = extremeAnomalyMessage(flag, t);
 
   return (
@@ -23,6 +19,7 @@ function ComponentScore({ value, weight, flag, t }) {
       {message && (
         <p className="risk-description" role="note">
           <strong>{message}</strong>
+           {contextual && t("assessment.contextual")}
         </p>
       )}
 
@@ -46,8 +43,23 @@ function ComponentScore({ value, weight, flag, t }) {
   );
 }
 
+function ContributionArrow({ direction, metric, t }) {
+  const favorable = metric === "Încredere" ? direction === "up" : direction === "down";
+  const tone = direction === "neutral" ? "neutral" : favorable ? "positive" : "negative";
+  const visualDirection = tone === "positive" ? "up" : tone === "negative" ? "down" : "neutral";
+  const label = t(`assessment.${tone}`);
+  const metricLabel = t(`assessment.${metric === "Încredere" ? "confidence" : metric === "Anomalie" ? "anomaly" : "context"}`);
+  return <span className={`risk-effect risk-effect-${tone}`}>
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d={visualDirection === "up" ? "M12 19V5m-6 6 6-6 6 6" : visualDirection === "down" ? "M12 5v14m-6-6 6 6 6-6" : "M5 12h14"} />
+    </svg>
+    <span>{metricLabel}<span className="risk-sr-only">: {label}</span></span>
+  </span>;
+}
+
 export default function AnomalyRiskResults({ result, vehicle }) {
   const { t } = useTranslation();
+  const number = (value, digits = 0) => value == null ? t("anomalyRiskResults.unavailable") : assessmentNumber(t, value, digits);
 
   const {
     price_anomaly: price,
@@ -97,7 +109,7 @@ export default function AnomalyRiskResults({ result, vehicle }) {
               <dd>
                 {price.p10 == null
                   ? t("anomalyRiskResults.unavailable")
-                  : `${price.p10} – ${price.p90}`}
+                  : `${number(price.p10)} € – ${number(price.p90)} €`}
               </dd>
             </div>
           </dl>
@@ -113,6 +125,7 @@ export default function AnomalyRiskResults({ result, vehicle }) {
 
   const scored = hasOverallScore(result);
   const rare = result.assessment_status === "very_rare";
+  const partial = result.assessment_status === "partial";
   const lowConfidence = result.market_confidence === "low";
   const priceAvailable = price.score != null;
 
@@ -125,6 +138,9 @@ export default function AnomalyRiskResults({ result, vehicle }) {
       : ((value - rangeStart) / (rangeEnd - rangeStart)) * 100;
 
   const weights = result.effective_weights;
+  const contextual = result.scoring_context?.mode === "contextual_weighted"
+    || (result.scoring_context?.mode === "blended" && result.scoring_context?.coherence_strength > 0);
+  const packedRange = position(price.p90) - position(price.p10) < 45;
 
   const priceDirection =
     price.deviation_from_p50_pct < 0
@@ -133,14 +149,9 @@ export default function AnomalyRiskResults({ result, vehicle }) {
         ? t("anomalyRiskResults.price.above")
         : t("anomalyRiskResults.price.equal");
 
-  const priceDescription = t("anomalyRiskResults.price.description", {
+  const priceDescription = t("assessment.priceDescription", {
     count: number(price.count),
-    generation: vehicle.generation
-      ? t("anomalyRiskResults.price.generation")
-      : "",
-    allGenerations: vehicle.generation
-      ? ""
-      : t("anomalyRiskResults.price.allGenerations"),
+    group: t(vehicle.generation ? "assessment.sameGeneration" : "assessment.allGenerations"),
   });
 
   return (
@@ -184,7 +195,7 @@ export default function AnomalyRiskResults({ result, vehicle }) {
               <span>
                 {scored
                   ? t("anomalyRiskResults.overview.overallScore")
-                  : t("anomalyRiskResults.overview.overallEvaluation")}
+                  : partial ? t("assessment.partialTitle") : t("anomalyRiskResults.overview.overallEvaluation")}
               </span>
 
               {scored ? (
@@ -208,11 +219,11 @@ export default function AnomalyRiskResults({ result, vehicle }) {
               ) : (
                 <>
                   <h3>
-                    {t("anomalyRiskResults.overview.insufficientData")}
+                    {partial ? t("assessment.partialScore") : t("anomalyRiskResults.overview.insufficientData")}
                   </h3>
 
                   <p>
-                    {t("anomalyRiskResults.overview.insufficientScore")}
+                    {partial ? t("assessment.partialDescription") : t("anomalyRiskResults.overview.insufficientScore")}
                   </p>
                 </>
               )}
@@ -270,14 +281,14 @@ export default function AnomalyRiskResults({ result, vehicle }) {
             </article>
           </div>
 
-          {(rare ||
+          {(rare || partial ||
             lowConfidence ||
             result.assessment_status === "limited_support") && (
             <div className="risk-caution" role="note">
               <strong>
                 {rare
                   ? t("anomalyRiskResults.caution.fewExamplesTitle")
-                  : t("anomalyRiskResults.caution.cautionTitle")}
+                  : partial ? t("assessment.partialCaution") : t("anomalyRiskResults.caution.cautionTitle")}
               </strong>
 
               <p>
@@ -285,7 +296,7 @@ export default function AnomalyRiskResults({ result, vehicle }) {
                   ? t(
                       "anomalyRiskResults.caution.fewExamplesDescription",
                     )
-                  : t(
+                  : partial ? t("assessment.partialCautionDescription") : t(
                       "anomalyRiskResults.caution.cautionDescription",
                     )}
               </p>
@@ -317,7 +328,7 @@ export default function AnomalyRiskResults({ result, vehicle }) {
           {priceAvailable ? (
             <>
               <div
-                className="risk-price-chart"
+                className={`risk-price-chart ${packedRange ? "risk-price-chart-packed" : ""}`}
                 role="group"
                 aria-label={t(
                   "anomalyRiskResults.price.chartAriaLabel",
@@ -427,6 +438,7 @@ export default function AnomalyRiskResults({ result, vehicle }) {
             value={price.score}
             weight={weights.price}
             flag={price.flag}
+            contextual={contextual}
             t={t}
           />
         </article>
@@ -494,6 +506,7 @@ export default function AnomalyRiskResults({ result, vehicle }) {
               value={mileage.score}
               weight={weights.mileage}
               flag={mileage.flag}
+              contextual={contextual}
               t={t}
             />
           </article>
@@ -516,7 +529,7 @@ export default function AnomalyRiskResults({ result, vehicle }) {
                 : t(
                     "anomalyRiskResults.specification.fieldsEvaluated",
                   )}{" "}
-              {t("anomalyRiskResults.overview.databaseAtAnalysis")}
+              {t("assessment.configBasis")}
             </p>
 
             <ul className="risk-spec-list">
@@ -524,7 +537,7 @@ export default function AnomalyRiskResults({ result, vehicle }) {
                 <li key={signal.field}>
                   <div>
                     <strong>
-                      {getFieldLabel[t, signal.field] ?? signal.field}
+                      {getFieldLabel(t, signal.field)}
                     </strong>
 
                     <span>
@@ -532,7 +545,7 @@ export default function AnomalyRiskResults({ result, vehicle }) {
                         ? t(
                             "anomalyRiskResults.specification.unspecified",
                           )
-                        : String(signal.value)}
+                        : translateVehicleValue(t, signal.field, signal.value)}
                     </span>
                   </div>
 
@@ -590,8 +603,11 @@ export default function AnomalyRiskResults({ result, vehicle }) {
 
         <div className="risk-explanation-content">
           <ul role="list">
-            {riskExplanationLines(result, vehicle, t).map((reason) => (
-              <li key={reason}>{reason}</li>
+            {riskExplanationItems(result, vehicle, t).map(({ text, effect }) => (
+              <li key={text}>
+                <ContributionArrow direction={effect?.direction ?? "neutral"} metric={effect?.metric ?? "Context"} t={t} />
+                <p>{text}</p>
+              </li>
             ))}
           </ul>
 

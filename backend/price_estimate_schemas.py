@@ -25,6 +25,8 @@ class PriceEstimateRequest(BaseModel):
     gearbox: Category
     drivetrain: Category
     body_type: Category
+    # Legacy request bounds validate the input, but comparison selection uses
+    # the complete brand/model/generation group. Proximity is a soft preference.
     year_min: Year
     year_max: Year
     mileage_min: Mileage
@@ -33,11 +35,11 @@ class PriceEstimateRequest(BaseModel):
     @model_validator(mode="after")
     def validate_ranges(self):
         if max(self.year, self.year_min, self.year_max) > date.today().year + 1:
-            raise ValueError("Years cannot exceed next calendar year")
+            raise ValueError("Anul de fabricație și limitele intervalului nu pot depăși anul calendaristic următor.")
         if not self.year_min <= self.year <= self.year_max:
-            raise ValueError("year_min <= year <= year_max is required")
+            raise ValueError("Anul de fabricație trebuie să fie între anul minim și anul maxim selectate.")
         if not self.mileage_min <= self.mileage <= self.mileage_max:
-            raise ValueError("mileage_min <= mileage <= mileage_max is required")
+            raise ValueError("Kilometrajul trebuie să fie între valoarea minimă și valoarea maximă selectate.")
         return self
 
 
@@ -79,6 +81,8 @@ class Comparison(BaseModel):
     same_model_count: int
     similar_model_count: int
     total_used: int
+    effective_sample_size: float = Field(default=0, ge=0)
+    near_engine_count: int = Field(default=0, ge=0)
     fetched: int
     eligible: int
     direct_comparables_available: int
@@ -105,8 +109,8 @@ class MarketStats(BaseModel):
     median_price: float
     lowest_price: float
     highest_price: float
-    average_year: float
-    average_mileage: float
+    average_year: float | None
+    average_mileage: float | None
 
 
 class DistributionBar(BaseModel):

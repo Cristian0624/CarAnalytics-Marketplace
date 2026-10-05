@@ -5,6 +5,7 @@ import "./HomePage.css";
 import { useEffect, useState, useRef } from "react";
 import { getListingOptions } from "../api/listings";
 import { estimatePrice } from "../api/price_estimate";
+import { priceEstimateComparisonMessage, priceEstimateErrorMessage, priceEstimateMileageBounds, priceEstimateYearBounds } from "../utils/priceEstimate";
 import Autocomplete from "../components/Autocomplete";
 import {
   getPredictionBrands,
@@ -222,11 +223,9 @@ function HomePage() {
       drivetrain: estimator.drivetrain,
       body_type: estimator.body_type,
 
-      year_min: Math.max(1886, year - 2),
-      year_max: year + 2,
+      ...priceEstimateYearBounds(year),
 
-      mileage_min: Math.max(0, mileage - 30000),
-      mileage_max: mileage + 30000,
+      ...priceEstimateMileageBounds(),
     };
 
     setEstimateLoading(true);
@@ -237,10 +236,7 @@ function HomePage() {
       const result = await estimatePrice(payload);
       setEstimate(result);
     } catch (error) {
-      setEstimateError(
-        error?.message ||
-        t("home.estimator.errors.estimate")
-      );
+      setEstimateError(priceEstimateErrorMessage(error, t));
     } finally {
       setEstimateLoading(false);
     }
@@ -671,7 +667,7 @@ function HomePage() {
 
                 {estimate.comparison?.message && (
                   <p>
-                    {estimate.comparison.message}
+                    {priceEstimateComparisonMessage(estimate.comparison, t)}
                   </p>
                 )}
 
@@ -740,7 +736,7 @@ function HomePage() {
                 </strong>
 
                 <p>
-                  {estimate.comparison?.message ||
+                  {priceEstimateComparisonMessage(estimate.comparison, t) ||
                     t("home.estimator.result.noDataDescription")}
                 </p>
               </div>

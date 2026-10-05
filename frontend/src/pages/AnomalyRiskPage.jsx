@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { assessAnomalyRisk } from "../api/anomaly_risk";
 import { getListingOptions } from "../api/listings";
 import { buildRiskPayload, resolveVehicleOption, riskErrorMessage } from "../utils/anomalyRisk";
+import { clearInputValidity, localizeInputValidity } from "../utils/assessmentErrors";
 import AnomalyRiskResults from "../components/AnomalyRiskResults";
 import VehicleSelect from "../components/VehicleSelect";
 import SaveItemButton from "../components/SaveItemButton";
@@ -125,7 +126,7 @@ export default function AnomalyRiskPage() {
       const response = await assessAnomalyRisk(payload, controller.signal);
       if (!controller.signal.aborted) { setSubmitted(payload); setResult(response); }
     } catch (err) {
-      if (err.name !== "AbortError") setError(riskErrorMessage(err));
+      if (err.name !== "AbortError") setError(riskErrorMessage(err, t));
     } finally {
       clearTimeout(timeout);
       requestRef.current = null;
@@ -169,7 +170,7 @@ export default function AnomalyRiskPage() {
         <p>{t("risk.description")}</p>
       </header>
 
-        <form className="risk-form" onSubmit={submit} aria-busy={loading}>
+        <form className="risk-form" onSubmit={submit} onInvalid={(event) => localizeInputValidity(event, t)} onInput={clearInputValidity} aria-busy={loading}>
         <div className="risk-form-heading">
           <div>
             <h2>{t("risk.aboutCar")}</h2>

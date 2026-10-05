@@ -1,4 +1,6 @@
-export function savedError(error, t) {
+import { translateAssessment } from "./assessmentI18n.js";
+
+export function savedError(error, t = (key) => translateAssessment(undefined, key)) {
   if (error.status === 401) {
     return t("savedItemsJS.errors.sessionExpired");
   }

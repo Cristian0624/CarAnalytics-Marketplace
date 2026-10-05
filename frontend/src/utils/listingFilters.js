@@ -1,3 +1,7 @@
+import { translateAssessment } from "./assessmentI18n.js";
+
+const defaultTranslate = (key, values) => translateAssessment(undefined, key, values);
+
 const ranges = [
   "price",
   "mileage",
@@ -129,7 +133,7 @@ export function listingFiltersToForm(filters = {}) {
   return form;
 }
 
-export function describeFilters(filters, t) {
+export function describeFilters(filters, t = defaultTranslate) {
   const parts = [];
 
   for (const key of [...identities, ...selections]) {
@@ -178,7 +182,7 @@ export function describeFilters(filters, t) {
     : [t("listingFilters.allListings")];
 }
 
-export function listingFilterError(form, t) {
+export function listingFilterError(form, t = defaultTranslate) {
   const hasBrand = Boolean(form.brandText?.trim());
   const hasModel = Boolean(form.modelText?.trim());
 

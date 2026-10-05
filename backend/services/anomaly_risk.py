@@ -2,6 +2,7 @@
 import json
 import os
 from collections import Counter
+from datetime import date
 from pathlib import Path
 
 import numpy as np
@@ -14,15 +15,32 @@ FEATURES = ["brand", "model", "generation", "year", "mileage", "engine",
             "fuel_type", "gearbox", "drivetrain", "body_type"]
 DEFAULT_ARTIFACT_DIR = Path(__file__).resolve().parents[1] / "ML_models/anomaly_risk/artifacts"
 DEFAULT_RUNTIME_CONFIG_PATH = Path(__file__).with_name("anomaly_risk_config.json")
-SCORING_POLICY_VERSION = "anomaly-risk-v2.10-gradual-override"
+SCORING_POLICY_VERSION = "anomaly-risk-v2.18-young-mileage"
 SCORING_POLICY = {
     "weights": {"price": 0.60, "mileage": 0.25, "specification": 0.15},
+    "risk_medium": 30.0,
+    "risk_medium_high": 50.0,
+    "risk_high": 66.0,
     "extreme_min_samples": 25,
     "extreme_overall_floor": 80.0,
     "extreme_min_median_deviation": 0.45,
+    "mileage_extreme_min_deviation": 0.65,
+    "mileage_extreme_floor": 60.0,
+    "price_extreme_transition": 0.10,
+    "mileage_extreme_transition": 0.15,
+    "young_mileage_score_factor": 0.35,
+    "young_mileage_full_leniency_age": 3.0,
+    "young_mileage_normal_age": 5.0,
+    "extreme_support_start": 15,
+    "joint_min_deviation": 0.15,
+    "joint_strong_deviation": 0.25,
+    "joint_balance_tolerance": 0.30,
+    "joint_penalty_max": 6.0,
+    "joint_reduction_max": 20.0,
+    "joint_reduction_fraction": 0.25,
     "mileage_min_samples": 20,
     "spec_min_samples": 25,
-    "mileage_curve": "p50=0,p25/p75=10,p10/p90=20,p05/p95=40,exponential_tail_to_100",
+    "mileage_curve": "p50=0,p25/p75=10,p10/p90=20,p05/p95=40,broader_exponential_tail_to_100",
     "support_thresholds": {"very_rare_max": 4, "rare_max": 14, "limited_max": 29},
     "rarity_penalties": {"rare_max": 8.0, "limited_max": 4.0},
 }
@@ -129,7 +147,7 @@ class AnomalyRiskService:
         """Score mileage more gently than price because driving patterns vary widely.
 
         The observed P05-P95 band reaches 40, not 60. Beyond it, the score rises
-        smoothly using the observed P90-P95 or P05-P10 tail width. This preserves
+        smoothly using a broader tail and a median-relative minimum. This preserves
         a high score for truly extreme mileage while keeping modest P95 exceedance
         in the supporting-signal range.
         """
@@ -138,19 +156,43 @@ class AnomalyRiskService:
             points = ((p50, 0.0), (p75, 10.0), (p90, 20.0), (p95, 40.0))
         else:
             points = ((p50, 0.0), (p25, 10.0), (p10, 20.0), (p05, 40.0))
+        # A nearly identical reference group must not make a few extra km unusual.
+        side = 1 if actual >= p50 else -1
+        minimum_distances = (0.05, 0.10, 0.20)
+        points = [(p50, 0.0)] + [
+            (p50 + side * max(abs(point - p50), p50 * minimum, self.SCORING["spread_floor"]), score)
+            for (point, score), minimum in zip(points[1:], minimum_distances)
+        ]
         value = float(actual)
         for (near, near_score), (far, far_score) in zip(points, points[1:]):
             if min(near, far) <= value <= max(near, far):
                 span = max(abs(far - near), self.SCORING["spread_floor"])
                 return float(near_score + (far_score - near_score) * abs(value - near) / span)
         boundary, boundary_score = points[-1]
-        tail_span = max(abs(p95 - p90) if value >= p50 else abs(p10 - p05),
+        tail_span = max(2 * (abs(p95 - p90) if value >= p50 else abs(p10 - p05)),
+                        p50 * 0.40, (p95 - p05) * 0.50,
                         self.SCORING["spread_floor"])
         return float(boundary_score + (100 - boundary_score) *
                      (1 - np.exp(-abs(value - boundary) / tail_span)))
 
     def normalized_vehicle(self, vehicle):
         return self.prepare_features(pd.DataFrame([vehicle])).iloc[0].to_dict()
+
+    def low_mileage_age_adjustment(self, year):
+        """Retain 35% of low-mileage severity through age three, then fade to five.
+
+        Production year gives an approximate age. Missing years keep the existing
+        policy; next-year vehicles allowed by the request schema count as age zero.
+        This adjusts severity only, never the selected comparison pool or median.
+        """
+        if year is None or pd.isna(year):
+            return None, 1.0
+        age = max(0, date.today().year - int(year))
+        start = self.SCORING["young_mileage_full_leniency_age"]
+        end = self.SCORING["young_mileage_normal_age"]
+        progress = float(np.clip((age - start) / (end - start), 0, 1))
+        minimum = self.SCORING["young_mileage_score_factor"]
+        return age, minimum + (1 - minimum) * progress
 
     def analyze_mileage_anomaly(self, vehicle, comparison_rows):
         v = self.normalized_vehicle(vehicle)
@@ -185,8 +227,14 @@ class AnomalyRiskService:
                       "Mileage is within the observed P10-P90 range for similar vehicles.")
             if level in {"model_generation", "model"}:
                 reason += " The comparison group includes different production years."
+            age, age_factor = self.low_mileage_age_adjustment(v["year"])
+            if actual >= stats["p50"]:
+                age_factor = 1.0
+            if age_factor < 1:
+                reason += f" Low-mileage severity is reduced for this approximately {age}-year-old vehicle."
             return {"actual_mileage": actual, "expected_median_mileage": stats["p50"], **stats,
-                    "mileage_anomaly_score": self.mileage_anomaly_score(actual, stats),
+                    "mileage_anomaly_score": self.mileage_anomaly_score(actual, stats) * age_factor,
+                    "vehicle_age_years": age, "age_adjustment_factor": age_factor,
                     "direction": direction, "comparison_level": level, "reason": reason}
         if available_count >= 10:
             median = float(np.median(reference["mileage"].dropna().to_numpy(dtype=float)))
@@ -342,18 +390,199 @@ class AnomalyRiskService:
                 or count < self.SCORING["extreme_min_samples"]
                 or actual is None or median is None or median <= 0):
             return None
-        if abs(actual - median) / median <= self.SCORING["extreme_min_median_deviation"]:
+        threshold = (self.SCORING["mileage_extreme_min_deviation"] if component == "mileage"
+                     else self.SCORING["extreme_min_median_deviation"])
+        if abs(actual - median) / median <= threshold:
             return None
         direction = "low" if actual < median else "high"
         return f"extreme_{component}_{direction}"
 
-    def extreme_override_score(self, actual, median):
-        """Scale a qualifying median deviation from 80 at 45% to 100 at 100%."""
+    def extreme_override_score(self, actual, median, component="price"):
+        """Price retains its curve; mileage starts lower and rises more slowly."""
         deviation = abs(actual - median) / median
         threshold = self.SCORING["extreme_min_median_deviation"]
         floor = self.SCORING["extreme_overall_floor"]
-        progress = min(1.0, max(0.0, (deviation - threshold) / (1.0 - threshold)))
+        end = 1.0
+        if component == "mileage":
+            threshold = self.SCORING["mileage_extreme_min_deviation"]
+            floor = self.SCORING["mileage_extreme_floor"]
+            # Near-zero mileage remains extreme; high mileage gets more latitude.
+            end = 1.0 if actual < median else 2.0
+        progress = min(1.0, max(0.0, (deviation - threshold) / (end - threshold)))
         return float(floor + (100.0 - floor) * progress)
+
+    def extreme_support_strength(self, count):
+        """Fade support in below 25 instead of discarding an available score."""
+        start = self.SCORING["extreme_support_start"]
+        end = self.SCORING["extreme_min_samples"]
+        return float(np.clip((count - start) / (end - start), 0, 1))
+
+    def extreme_transition_strength(self, component, actual, median, score, count):
+        if score is None or actual is None or median is None or median <= 0:
+            return 0.0
+        threshold = (self.SCORING["mileage_extreme_min_deviation"] if component == "mileage"
+                     else self.SCORING["extreme_min_median_deviation"])
+        deviation = abs(actual - median) / median
+        width = self.SCORING[f"{component}_extreme_transition"]
+        distance_strength = float(np.clip((deviation - threshold) / width, 0, 1))
+        return distance_strength * self.extreme_support_strength(count)
+
+    def price_mileage_context(self, price, mileage):
+        """A bounded inverse-price/mileage heuristic, never a fitted price model.
+
+        Multiply each value divided by its median: reciprocal changes give one.
+        Only moderate, supported changes can soften an override. Extreme values
+        cannot cancel each other simply because their product happens to be one.
+        """
+        context = {"relation": "unavailable", "price_ratio": None, "mileage_ratio": None,
+                   "balance_deviation": None, "coherence_strength": 0.0,
+                   "joint_penalty": 0.0, "joint_reduction": 0.0}
+        if (price["price_anomaly_score"] is None or mileage["mileage_anomaly_score"] is None
+                or price["count"] < self.SCORING["mileage_min_samples"]
+                or mileage["sample_size"] < self.SCORING["mileage_min_samples"]
+                or not price["p50"] or not mileage["expected_median_mileage"]):
+            return context
+        price_ratio = price["actual_price"] / price["p50"]
+        mileage_ratio = mileage["actual_mileage"] / mileage["expected_median_mileage"]
+        balance = abs(price_ratio * mileage_ratio - 1.0)
+        context.update(price_ratio=float(price_ratio), mileage_ratio=float(mileage_ratio),
+                       balance_deviation=float(balance), relation="not_applicable")
+        deviations = (price_ratio - 1.0, mileage_ratio - 1.0)
+        smaller_deviation = min(map(abs, deviations))
+        larger_deviation = max(map(abs, deviations))
+        # One clear deviation can bring a smaller, meaningful counterpart into
+        # the joint check. Two small changes still use the ordinary calculation.
+        if (smaller_deviation < self.SCORING["joint_min_deviation"]
+                or larger_deviation < self.SCORING["joint_strong_deviation"]):
+            return context
+        opposite = deviations[0] * deviations[1] < 0
+        moderate = 0.40 <= price_ratio <= 2.50 and 0.35 <= mileage_ratio <= 2.50
+        if opposite and moderate and balance <= self.SCORING["joint_balance_tolerance"]:
+            context["relation"] = "consistent_opposite"
+            context["coherence_strength"] = self.price_mileage_coherence_strength(
+                price_ratio, mileage_ratio, balance, smaller_deviation, larger_deviation,
+            )
+            context["joint_penalty"] = round(self.SCORING["joint_penalty_max"] *
+                                             min(1.0, min(map(abs, deviations))) *
+                                             self.extreme_support_strength(min(price["count"], mileage["sample_size"])) *
+                                             context["coherence_strength"], 2)
+        else:
+            context["relation"] = "inconsistent"
+        return context
+
+    def price_mileage_coherence_strength(self, price_ratio, mileage_ratio, balance,
+                                        smaller_deviation, larger_deviation):
+        """Keep clear pairs intact, but fade compensation at each existing guard."""
+        activation_strength = min(
+            (smaller_deviation - self.SCORING["joint_min_deviation"]) / 0.05,
+            (larger_deviation - self.SCORING["joint_strong_deviation"]) / 0.10,
+        )
+        balance_strength = (self.SCORING["joint_balance_tolerance"] - balance) / 0.10
+        boundary_strength = min(
+            price_ratio - 0.40, 2.50 - price_ratio,
+            mileage_ratio - 0.35, 2.50 - mileage_ratio,
+        ) / 0.10
+        strength = float(np.clip(min(activation_strength, balance_strength, boundary_strength), 0, 1))
+        return round(strength, 12)
+
+    def price_mileage_reduction(self, context, price, mileage, weighted_contribution):
+        """Credit a balanced cheaper/high-mileage pair without erasing anomalies."""
+        if (context["relation"] != "consistent_opposite"
+                or context["price_ratio"] >= 1 or context["mileage_ratio"] <= 1
+                or price["flag"] or mileage["flag"]):
+            return 0.0
+        deviations = (1 - context["price_ratio"], context["mileage_ratio"] - 1)
+        # Fade in beyond the activation thresholds instead of subtracting a
+        # fixed amount as soon as a pair barely qualifies.
+        smaller_strength = min(1.0, max(0.0,
+            (min(deviations) - self.SCORING["joint_min_deviation"]) / 0.05))
+        larger_strength = min(1.0, max(0.0,
+            (max(deviations) - self.SCORING["joint_strong_deviation"]) / 0.10))
+        balance_strength = max(0.0, 1 - context["balance_deviation"] /
+                               self.SCORING["joint_balance_tolerance"])
+        reduction = (self.SCORING["joint_reduction_max"] * balance_strength
+                     * smaller_strength * larger_strength)
+        # Withdraw the credit gradually near an extreme boundary, so setting
+        # the flag cannot suddenly remove the entire discount.
+        extreme_margin = min(
+            self.SCORING["extreme_min_median_deviation"] - deviations[0],
+            self.SCORING["mileage_extreme_min_deviation"] - deviations[1],
+        )
+        boundary_strength = float(np.clip(extreme_margin / 0.05, 0, 1))
+        support_strength = self.extreme_support_strength(min(price["count"], mileage["sample_size"]))
+        bounded_reduction = min(reduction, weighted_contribution * self.SCORING["joint_reduction_fraction"])
+        return float(bounded_reduction * boundary_strength * support_strength * context["coherence_strength"])
+
+    def combine_component_scores(self, scores, price, mileage, rarity_penalty):
+        available = {name: score for name, score in scores.items() if score is not None}
+        weight_sum = sum(self.SCORING["weights"][name] for name in available)
+        weights = {name: self.SCORING["weights"][name] / weight_sum for name in available}
+        context = self.price_mileage_context(price, mileage)
+        context.update(mode="weighted", weighted_score=None, override_scores={}, extreme_score=None,
+                       extreme_strength=0.0, applied_rarity_penalty=float(rarity_penalty))
+        if not available:
+            return None, weights, context
+        extremes = {}
+        strengths = {}
+        for name, item, actual, median in (
+            ("price", price, price["actual_price"], price["p50"]),
+            ("mileage", mileage, mileage["actual_mileage"], mileage["expected_median_mileage"]),
+        ):
+            count = item["count"] if name == "price" else item["sample_size"]
+            age_factor = item.get("age_adjustment_factor", 1.0) if name == "mileage" else 1.0
+            strength = self.extreme_transition_strength(name, actual, median, available.get(name), count)
+            strength *= age_factor
+            strength *= 1 - context["coherence_strength"]
+            if strength > 0:
+                target = max(available[name], self.extreme_override_score(actual, median, name) * age_factor)
+                # Keep a single displayed score, with no downward jump when the
+                # empirical score is already higher than the deviation curve.
+                available[name] += strength * (target - available[name])
+                item[f"{name}_anomaly_score"] = available[name]
+                extremes[name] = available[name]
+                strengths[name] = strength
+        weighted = float(sum(weights[name] * score for name, score in available.items()))
+        context["weighted_score"] = weighted
+        if context["relation"] == "consistent_opposite":
+            context["mode"] = "contextual_weighted"
+            pair_contribution = sum(weights[name] * available[name] for name in ("price", "mileage"))
+            context["joint_reduction"] = self.price_mileage_reduction(
+                context, price, mileage, pair_contribution,
+            )
+        joint_penalty = context["joint_penalty"]
+        joint_reduction = context["joint_reduction"]
+        total = min(100.0, max(0.0, weighted + rarity_penalty + joint_penalty - joint_reduction))
+        if extremes:
+            context["override_scores"] = extremes
+            if any(strength < 1 for strength in strengths.values()):
+                context.update(mode="blended", extreme_strength=max(strengths.values()))
+            # Evaluate both possible anchors. Choosing the strongest blended
+            # result avoids a jump when the dominant component changes.
+            best_total = total
+            best_weights = weights
+            for primary in extremes:
+                extreme_weights = dict.fromkeys(available, 0.0)
+                extreme_weights[primary] = 1.0
+                secondary = "mileage" if primary == "price" else "price"
+                if available.get(secondary, 0) > 0:
+                    extreme_weights[secondary] = 0.05
+                severity = min(100.0, sum(extreme_weights[name] * available[name] for name in available))
+                context["extreme_score"] = max(context["extreme_score"] or 0, severity)
+                strength = strengths[primary]
+                candidate_weights = {name: (1 - strength) * weights[name] + strength * extreme_weights[name]
+                                     for name in available}
+                applied_penalty = (1 - strength) * rarity_penalty
+                candidate = (sum(candidate_weights[name] * available[name] for name in available) + applied_penalty
+                             + (1 - strength) * (joint_penalty - joint_reduction))
+                candidate = min(100.0, max(0.0, float(candidate)))
+                if candidate > best_total or (strength == 1 and candidate == best_total):
+                    best_total, best_weights = candidate, candidate_weights
+                    context.update(mode="extreme" if strength == 1 else "blended",
+                                   extreme_strength=strength, applied_rarity_penalty=applied_penalty,
+                                   extreme_score=severity, joint_penalty=(1 - strength) * joint_penalty,
+                                   joint_reduction=(1 - strength) * joint_reduction)
+            total, weights = best_total, best_weights
+        return total, weights, context
 
     def assess_listing_risk(self, vehicle, prices, model_observations, comparison_rows):
         if "price" not in vehicle:
@@ -369,6 +598,9 @@ class AnomalyRiskService:
             "mileage", mileage["actual_mileage"], mileage["expected_median_mileage"],
             mileage["mileage_anomaly_score"], mileage["sample_size"]
         )
+        if mileage.get("age_adjustment_factor", 1.0) < 1:
+            # A young car's low mileage alone must not carry an extreme alert.
+            mileage["flag"] = None
         market_support = self.assess_market_support(len(prices))
         confidence = self.assess_market_confidence(vehicle, price, model_observations,
                                                    mileage, specification, market_support)
@@ -395,46 +627,53 @@ class AnomalyRiskService:
                     "effective_weights": {}, "reasons": reasons}
         scores = {"price": price["price_anomaly_score"], "mileage": mileage["mileage_anomaly_score"],
                   "specification": specification["specification_anomaly_score"]}
-        available = {name: score for name, score in scores.items() if score is not None}
-        weight_sum = sum(self.SCORING["weights"][name] for name in available)
-        effective_weights = {name: self.SCORING["weights"][name] / weight_sum for name in available}
-        total = None
-        level = None
-        extreme_scores = {
-            name: self.extreme_override_score(actual, median)
-            for name, component, actual, median in (
-                ("price", price, price["actual_price"], price["p50"]),
-                ("mileage", mileage, mileage["actual_mileage"], mileage["expected_median_mileage"]),
-            )
-            if component["flag"] is not None
-        }
-        if available:
-            total = min(100.0, float(sum(effective_weights[name] * score for name, score in available.items()) +
-                                     market_support["rarity_penalty"]))
-            if extreme_scores:
-                strongest = max(extreme_scores, key=extreme_scores.get)
-                total = extreme_scores[strongest]
-                market_support["rarity_penalty"] = 0.0
-                effective_weights = {name: 1.0 if name == strongest else 0.0 for name in available}
-                message = (
-                    f"Extreme {strongest} anomaly determines the overall score directly "
-                    "on a gradual scale from 80 at 45% median deviation to 100 at 100% deviation; "
-                    "component weights and the rarity adjustment are not applied."
-                )
-            level = "high" if total >= self.SCORING["risk_high"] else "medium" if total >= self.SCORING["risk_medium"] else "low"
+        partial = (vehicle.get("mileage") is not None and mileage["mileage_anomaly_score"] is None
+                   and price["price_anomaly_score"] is not None)
+        if partial:
+            assessment_status = "partial"
+            total, effective_weights, context = None, {}, None
+            message = "Price was evaluated, but the supplied mileage lacks 20 comparisons; no overall verdict is available."
         else:
+            total, effective_weights, context = self.combine_component_scores(
+                scores, price, mileage, market_support["rarity_penalty"]
+            )
+        level = None
+        if total is not None:
+            market_support["rarity_penalty"] = context.get("applied_rarity_penalty", market_support["rarity_penalty"])
+            if context["mode"] == "extreme":
+                market_support["rarity_penalty"] = 0.0
+                contributors = [name for name, weight in effective_weights.items() if weight > 0]
+                message = "Supported anomaly signals determine the overall score: " + ", ".join(contributors)
+            elif context["mode"] == "blended":
+                message = "Extreme contributions strengthen gradually with deviation and comparison support."
+            elif context["mode"] == "contextual_weighted":
+                message = ("Balanced lower price/higher mileage applies a bounded reduction to the weighted score."
+                           if context["joint_reduction"] > 0 else
+                           "Opposite moderate price/mileage deviations retain normal weights with a small joint adjustment.")
+            elif context["override_scores"]:
+                message = "Supported anomalies are evaluated together; the weighted result is retained because it is higher."
+            if total >= self.SCORING["risk_high"]:
+                level = "high"
+            elif total >= self.SCORING["risk_medium_high"]:
+                level = "medium_high"
+            elif total >= self.SCORING["risk_medium"]:
+                level = "medium"
+            else:
+                level = "low"
+        elif not partial:
             message = "Insufficient evidence for any component; no overall anomaly score is available."
         reasons = [price["reason"], mileage["reason"]]
         reasons += [f"{s['field']}: {s['reason']}" for s in specification["signals"] if s["severity"] != "normal"]
         reasons += confidence["reasons"]
-        if extreme_scores:
+        if message and total is not None:
             reasons.append(message)
-        elif available and market_support["rarity_penalty"]:
+        if total is not None and market_support["rarity_penalty"]:
             reasons.append(f"A {market_support['rarity_penalty']:.2f}-point rarity adjustment was applied to the overall score.")
         return {"scoring_policy_version": SCORING_POLICY_VERSION, "assessment_status": assessment_status,
                 "market_support": market_support, "message": message,
                 "anomaly_score": total, "risk_level": level, "market_confidence": confidence["market_confidence"],
                 "confidence_score": confidence["confidence_score"], "confidence": confidence,
+                "scoring_context": context,
                 "components": {"price_anomaly": {**price, "score": price["price_anomaly_score"]},
                                "mileage_anomaly": {**mileage, "score": mileage["mileage_anomaly_score"]},
                                "specification_anomaly": {**specification, "score": specification["specification_anomaly_score"]}},

@@ -4,6 +4,8 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getListingOptions } from "../api/listings";
 import { estimatePrice } from "../api/price_estimate";
+import { priceEstimateComparisonMessage, priceEstimateErrorMessage, priceEstimateMileageBounds, priceEstimateYearBounds } from "../utils/priceEstimate";
+import { assessmentValidationMessage, clearInputValidity, localizeInputValidity } from "../utils/assessmentErrors";
 import { createAnalysis } from "../api/analysis";
 
 import Autocomplete from "../components/Autocomplete";
@@ -132,11 +134,9 @@ function getEstimatePayload(form) {
         drivetrain: form.drivetrain,
         body_type: form.body_type,
 
-        year_min: Math.max(1886, year - 2),
-        year_max: year + 2,
+        ...priceEstimateYearBounds(year),
 
-        mileage_min: Math.max(0, mileage - 30000),
-        mileage_max: mileage + 30000,
+        ...priceEstimateMileageBounds(),
     };
 }
 
@@ -208,10 +208,7 @@ export default function CreateListingPage() {
                 }
             } catch (error) {
                 if (!cancelled) {
-                    setSubmitError(
-                        error?.message ||
-                        t("createListing.errors.loadOptions")
-                    );
+                    setSubmitError(t("createListing.errors.loadOptions"));
                 }
             } finally {
                 if (!cancelled) {
@@ -374,10 +371,7 @@ export default function CreateListingPage() {
                 if (!cancelled) {
                     setPriceEstimate(null);
 
-                    setEstimateError(
-                        error?.message ||
-                        t("createListing.errors.priceEstimate")
-                    );
+                    setEstimateError(priceEstimateErrorMessage(error, t));
                 }
             } finally {
                 if (!cancelled) {
@@ -413,35 +407,35 @@ export default function CreateListingPage() {
 
     function validateForm() {
         const errors = [];
-    
+
         if (!form.brand) errors.push(t("createListing.validation.brand"));
         if (!form.model) errors.push(t("createListing.validation.model"));
         if (!form.generation) errors.push(t("createListing.validation.generation"));
-    
+
         if (!form.year) errors.push(t("createListing.validation.year"));
         if (!form.mileage) errors.push(t("createListing.validation.mileage"));
-    
+
         if (!form.fuel_type) errors.push(t("createListing.validation.fuel"));
         if (!form.gearbox) errors.push(t("createListing.validation.gearbox"));
         if (!form.body_type) errors.push(t("createListing.validation.bodyType"));
         if (!form.drivetrain) errors.push(t("createListing.validation.drivetrain"));
-    
+
         if (!form.price_eur) {
             errors.push(t("createListing.validation.price"));
         }
-    
+
         if (parseNumber(form.year) === null) {
             errors.push(t("createListing.validation.yearNumber"));
         }
-    
+
         if (parseNumber(form.mileage) === null) {
             errors.push(t("createListing.validation.mileageNumber"));
         }
-    
+
         if (form.price_eur && parseNumber(form.price_eur) === null) {
             errors.push(t("createListing.validation.priceNumber"));
         }
-    
+
         return errors;
     }
 
@@ -533,7 +527,7 @@ export default function CreateListingPage() {
             }
 
             setSubmitError(
-                error?.message ||
+                assessmentValidationMessage(error?.detail, t) ||
                 t("createListing.errors.createListing")
             );
         } finally {
@@ -617,6 +611,8 @@ export default function CreateListingPage() {
                 <form
                     className="create-listing-form"
                     onSubmit={handleSubmit}
+                    onInvalid={(event) => localizeInputValidity(event, t)}
+                    onInput={clearInputValidity}
                 >
 
                     {/* VEHICLE */}
@@ -1309,7 +1305,7 @@ export default function CreateListingPage() {
 
                                         {priceEstimate?.comparison?.message && (
                                             <p className="create-listing-estimate-message">
-                                                {priceEstimate.comparison.message}
+                                                {priceEstimateComparisonMessage(priceEstimate.comparison, t)}
                                             </p>
                                         )}
                                     </>
@@ -1318,6 +1314,12 @@ export default function CreateListingPage() {
 
                                     <div className="create-listing-estimate-error">
                                         {estimateError}
+                                    </div>
+
+                                ) : priceEstimate && !priceEstimate.estimate_available ? (
+
+                                    <div className="create-listing-estimate-placeholder">
+                                        {priceEstimateComparisonMessage(priceEstimate.comparison, t)}
                                     </div>
 
                                 ) : (
