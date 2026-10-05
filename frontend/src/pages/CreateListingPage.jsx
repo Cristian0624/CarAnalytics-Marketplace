@@ -4,6 +4,8 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { getListingOptions } from "../api/listings";
 import { estimatePrice } from "../api/price_estimate";
+import { priceEstimateErrorMessage, priceEstimateMileageBounds, priceEstimateYearBounds } from "../utils/priceEstimate";
+import { assessmentValidationMessage, clearInputValidity, localizeInputValidity } from "../utils/assessmentErrors";
 import { createAnalysis } from "../api/analysis";
 
 import Autocomplete from "../components/Autocomplete";
@@ -131,11 +133,9 @@ function getEstimatePayload(form) {
         drivetrain: form.drivetrain,
         body_type: form.body_type,
 
-        year_min: Math.max(1886, year - 2),
-        year_max: year + 2,
+        ...priceEstimateYearBounds(year),
 
-        mileage_min: Math.max(0, mileage - 30000),
-        mileage_max: mileage + 30000,
+        ...priceEstimateMileageBounds(),
     };
 }
 
@@ -206,10 +206,7 @@ export default function CreateListingPage() {
                 }
             } catch (error) {
                 if (!cancelled) {
-                    setSubmitError(
-                        error?.message ||
-                        "Could not load vehicle options."
-                    );
+                    setSubmitError("Opțiunile pentru mașină nu au putut fi încărcate. Încearcă din nou.");
                 }
             } finally {
                 if (!cancelled) {
@@ -372,10 +369,7 @@ export default function CreateListingPage() {
                 if (!cancelled) {
                     setPriceEstimate(null);
 
-                    setEstimateError(
-                        error?.message ||
-                        "Could not calculate the recommended price."
-                    );
+                    setEstimateError(priceEstimateErrorMessage(error));
                 }
             } finally {
                 if (!cancelled) {
@@ -412,32 +406,32 @@ export default function CreateListingPage() {
     function validateForm() {
         const errors = [];
 
-        if (!form.brand) errors.push("Brand is required.");
-        if (!form.model) errors.push("Model is required.");
-        if (!form.generation) errors.push("Generation is required.");
+        if (!form.brand) errors.push("Selectează marca.");
+        if (!form.model) errors.push("Selectează modelul.");
+        if (!form.generation) errors.push("Selectează generația.");
 
-        if (!form.year) errors.push("Year is required.");
-        if (!form.mileage) errors.push("Mileage is required.");
+        if (!form.year) errors.push("Completează anul de fabricație.");
+        if (!form.mileage) errors.push("Completează kilometrajul.");
 
-        if (!form.fuel_type) errors.push("Fuel type is required.");
-        if (!form.gearbox) errors.push("Gearbox is required.");
-        if (!form.body_type) errors.push("Body type is required.");
-        if (!form.drivetrain) errors.push("Drivetrain is required.");
+        if (!form.fuel_type) errors.push("Selectează combustibilul.");
+        if (!form.gearbox) errors.push("Selectează cutia de viteze.");
+        if (!form.body_type) errors.push("Selectează caroseria.");
+        if (!form.drivetrain) errors.push("Selectează tracțiunea.");
 
         if (!form.price_eur) {
-            errors.push("Your asking price is required.");
+            errors.push("Completează prețul cerut.");
         }
 
         if (parseNumber(form.year) === null) {
-            errors.push("Year must be a valid number.");
+            errors.push("Introdu un an de fabricație valid.");
         }
 
         if (parseNumber(form.mileage) === null) {
-            errors.push("Mileage must be a valid number.");
+            errors.push("Introdu un kilometraj valid.");
         }
 
         if (form.price_eur && parseNumber(form.price_eur) === null) {
-            errors.push("Price must be a valid number.");
+            errors.push("Introdu un preț valid.");
         }
 
         return errors;
@@ -531,8 +525,8 @@ export default function CreateListingPage() {
             }
 
             setSubmitError(
-                error?.message ||
-                "Could not create the listing."
+                assessmentValidationMessage(error?.detail) ||
+                "Anunțul nu a putut fi creat. Încearcă din nou."
             );
         } finally {
             setSubmitLoading(false);
@@ -616,6 +610,8 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                 <form
                     className="create-listing-form"
                     onSubmit={handleSubmit}
+                    onInvalid={localizeInputValidity}
+                    onInput={clearInputValidity}
                 >
 
                     {/* VEHICLE */}
@@ -1315,6 +1311,12 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
 
                                     <div className="create-listing-estimate-error">
                                         {estimateError}
+                                    </div>
+
+                                ) : priceEstimate && !priceEstimate.estimate_available ? (
+
+                                    <div className="create-listing-estimate-placeholder">
+                                        {priceEstimate.comparison.message}
                                     </div>
 
                                 ) : (

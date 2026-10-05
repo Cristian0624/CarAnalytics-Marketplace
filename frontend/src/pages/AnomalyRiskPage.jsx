@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { assessAnomalyRisk } from "../api/anomaly_risk";
 import { getListingOptions } from "../api/listings";
 import { buildRiskPayload, resolveVehicleOption, riskErrorMessage } from "../utils/anomalyRisk";
+import { clearInputValidity, localizeInputValidity } from "../utils/assessmentErrors";
 import AnomalyRiskResults from "../components/AnomalyRiskResults";
 import VehicleSelect from "../components/VehicleSelect";
 import SaveItemButton from "../components/SaveItemButton";
@@ -160,7 +161,7 @@ export default function AnomalyRiskPage() {
           <p>Compară prețul, kilometrajul și configurația cu datele pieței. Află ce merită verificat înainte să cumperi.</p>
         </header>
 
-        <form className="risk-form" onSubmit={submit} aria-busy={loading}>
+        <form className="risk-form" onSubmit={submit} onInvalid={localizeInputValidity} onInput={clearInputValidity} aria-busy={loading}>
           <div className="risk-form-heading"><div><h2>Despre mașină</h2><p>Datele din anunț sunt suficiente pentru a începe.</p></div><span>* Obligatoriu</span></div>
           <fieldset disabled={loading}>
             <legend className="risk-sr-only">Datele ofertei</legend>

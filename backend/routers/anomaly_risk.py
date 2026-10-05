@@ -24,7 +24,7 @@ def get_anomaly_risk_service():
                 _service = AnomalyRiskService()
             except Exception:
                 logger.exception("Failed to initialize anomaly-risk inference")
-                raise HTTPException(503, "Anomaly scoring configuration unavailable.") from None
+                raise HTTPException(503, "Analiza este momentan indisponibilă. Încearcă din nou mai târziu.") from None
     return _service
 
 
@@ -44,4 +44,4 @@ def assess_anomaly_risk(payload: AnomalyRiskRequest, service=Depends(get_anomaly
         return AnomalyRiskResponse(model_version=service.metadata["model_version"], **result)
     except Exception:
         logger.exception("Anomaly-risk inference failed")
-        raise HTTPException(503, "Anomaly assessment unavailable. Check the database and scoring configuration.") from None
+        raise HTTPException(503, "Analiza este momentan indisponibilă. Încearcă din nou mai târziu.") from None

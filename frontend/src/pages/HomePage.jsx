@@ -5,6 +5,7 @@ import "./HomePage.css";
 import { useEffect, useState } from "react";
 import { getListingOptions } from "../api/listings";
 import { estimatePrice } from "../api/price_estimate";
+import { priceEstimateErrorMessage, priceEstimateMileageBounds, priceEstimateYearBounds } from "../utils/priceEstimate";
 import Autocomplete from "../components/Autocomplete";
 import {
   getPredictionBrands,
@@ -166,11 +167,9 @@ function HomePage() {
       drivetrain: estimator.drivetrain,
       body_type: estimator.body_type,
 
-      year_min: Math.max(1886, year - 2),
-      year_max: year + 2,
+      ...priceEstimateYearBounds(year),
 
-      mileage_min: Math.max(0, mileage - 30000),
-      mileage_max: mileage + 30000,
+      ...priceEstimateMileageBounds(),
     };
 
     setEstimateLoading(true);
@@ -181,10 +180,7 @@ function HomePage() {
       const result = await estimatePrice(payload);
       setEstimate(result);
     } catch (error) {
-      setEstimateError(
-        error?.message ||
-        "Nu am putut calcula prețul estimat."
-      );
+      setEstimateError(priceEstimateErrorMessage(error));
     } finally {
       setEstimateLoading(false);
     }

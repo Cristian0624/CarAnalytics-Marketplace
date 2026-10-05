@@ -12,9 +12,8 @@ from price_estimate_schemas import PriceEstimateRequest, PriceEstimateResponse
 
 
 MIN_DIRECT_COMPARABLES = 8
-MIN_ACCEPTABLE_POOL = 5
-MAX_SIMILAR_COMPARABLES = 25
-ENGINE_TOLERANCE = Decimal("0.3")
+MIN_ACCEPTABLE_POOL = 3
+MIN_EFFECTIVE_COMPARABLES = 5
 MIN_BARS, TARGET_BARS, MAX_BARS = 4, 6, 8
 
 # Values checked against DISTINCT fuel_type in listings_cleaned. Unknown future
@@ -34,24 +33,6 @@ class PriceEstimateError(Exception):
         self.detail = detail
 
 
-def normal_fallback_engine_tolerance(engine: Decimal | float) -> Decimal:
-    engine = Decimal(str(engine))
-    for ceiling, tolerance in (("1.6", "0.3"), ("2.0", "0.4"), ("2.5", "0.5"),
-                               ("3.0", "0.6"), ("4.0", "0.8")):
-        if engine <= Decimal(ceiling):
-            return Decimal(tolerance)
-    return Decimal("1.2")
-
-
-def emergency_fallback_engine_tolerance(engine: Decimal | float) -> Decimal:
-    engine = Decimal(str(engine))
-    for ceiling, tolerance in (("1.6", "0.3"), ("2.0", "0.4"), ("2.5", "0.6"),
-                               ("3.0", "0.8"), ("4.0", "1.2")):
-        if engine <= Decimal(ceiling):
-            return Decimal(tolerance)
-    return Decimal("2.0")
-
-
 def get_powertrain_group(fuel_type: str) -> str:
     value = fuel_type.strip().casefold()
     if value == "electricitate":
@@ -60,18 +41,19 @@ def get_powertrain_group(fuel_type: str) -> str:
         return "HYBRID"
     if value in ICE_FUELS:
         return "ICE"
-    raise ValueError(f"Unknown fuel_type: {fuel_type}")
+    raise ValueError("Tipul de combustibil nu este recunoscut. Selectează o opțiune din listă.")
 
 
 def effective_year_range(target: PriceEstimateRequest) -> tuple[int, int]:
     match = re.search(r"\((\d{4})\s*[-–—]\s*(\d{4}|prezent|present)\)", target.generation, re.IGNORECASE)
     if match is None:
-        raise PriceEstimateError(422, "Selected generation has no recognizable production year range")
+        raise PriceEstimateError(422, "Generația selectată nu are un interval de fabricație recunoscut. Selectează o generație din listă.")
     start = int(match[1])
     end = int(match[2]) if match[2].isdigit() else target.year_max
     lower, upper = max(target.year_min, start), min(target.year_max, end)
     if not lower <= target.year <= upper:
-        raise PriceEstimateError(422, "Target year must fall within the selected generation and requested year range")
+        generation_end = match[2] if match[2].isdigit() else "prezent"
+        raise PriceEstimateError(422, f"Anul de fabricație trebuie să corespundă generației selectate ({start}–{generation_end}) și intervalului de ani ales.")
     return lower, upper
 
 
@@ -95,60 +77,103 @@ def drivetrain_score(target: str, candidate: str | None) -> float:
 class Comparable:
     listing: dict
     price: float
-    year: int
-    mileage: int
+    year: int | None
+    mileage: int | None
     engine: Decimal | None
     direct: bool
     weight: float = 0.0
     source: str = "normal_fallback"
 
 
-def relevance_weight(car: Comparable, target: PriceEstimateRequest, years: tuple[int, int], group: str) -> float:
-    # Generation determines the initial direct pool, never fallback scoring.
-    model_score = float(car.listing.get("brand") == target.brand and car.listing.get("model") == target.model)
-    mileage_score = max(0.0, 1.0 - abs(car.mileage - target.mileage) /
-                        max(target.mileage - target.mileage_min, target.mileage_max - target.mileage, 1))
-    year_score = max(0.0, 1.0 - abs(car.year - target.year) /
-                     max(target.year - years[0], years[1] - target.year, 1))
-    engine_score = 1.0 if group == "EV" else max(
-        0.0, 1.0 - float(abs(car.engine - target.engine) / ENGINE_TOLERANCE)
+def proximity_score(value, target, scale):
+    """Smoothly reduce similarity without excluding a distant comparison."""
+    if value is None:
+        return 0.5
+    distance = abs(float(value) - float(target)) / scale
+    return 1.0 / (1.0 + distance * distance)
+
+
+def configuration_score(car: Comparable, target: PriceEstimateRequest, group: str) -> float:
+    matches = []
+    for field in ("fuel_type", "gearbox", "body_type"):
+        value = car.listing.get(field)
+        matches.append(0.5 if value is None else float(value == getattr(target, field)))
+    matches.append(drivetrain_score(target.drivetrain, car.listing.get("drivetrain")))
+    engine_score = 1.0 if group == "EV" else proximity_score(
+        car.engine, target.engine, max(0.3, float(target.engine) * 0.30),
     )
-    gearbox = car.listing.get("gearbox")
-    gearbox_score = 0.5 if gearbox is None else float(gearbox == target.gearbox)
-    return (
-        0.50 * model_score
-        + 0.20 * mileage_score
-        + 0.10 * year_score
-        + 0.10 * drivetrain_score(target.drivetrain, car.listing.get("drivetrain"))
-        + 0.05 * engine_score
-        + 0.05 * gearbox_score
-    )
+    matches.append(engine_score)
+    return mean(matches)
 
 
-def percentile(prices: list[float], fraction: float) -> float:
-    """Linear-interpolated, unweighted percentile for the IQR fences."""
-    position = (len(prices) - 1) * fraction
-    lower, upper = math.floor(position), math.ceil(position)
-    return prices[lower] + (prices[upper] - prices[lower]) * (position - lower)
+def distance_weight(value, target, scale):
+    if value is None:
+        return 0.5
+    # Keep even very distant comparisons positive without numerical underflow.
+    distance = min(abs(float(value) - float(target)) / scale, 100)
+    return math.exp(-distance)
 
 
-def remove_outliers(cars: list[Comparable]) -> list[Comparable]:
-    if len(cars) < 2:
-        return list(cars)
-    prices = sorted(car.price for car in cars)
-    q1, q3 = percentile(prices, 0.25), percentile(prices, 0.75)
-    iqr = q3 - q1
-    return [car for car in cars if q1 - 1.5 * iqr <= car.price <= q3 + 1.5 * iqr]
+def relevance_weight(
+    car: Comparable, target: PriceEstimateRequest, group: str,
+    comparison_mileage: int | None = None,
+) -> float:
+    # No hard exclusions: relevance decreases gradually over three years and
+    # 100,000 km. Configuration changes the weight by at most 5%.
+    mileage = target.mileage if comparison_mileage is None else comparison_mileage
+    year_score = distance_weight(car.year, target.year, 3.0)
+    mileage_score = distance_weight(car.mileage, mileage, 100000)
+    configuration = 0.95 + 0.05 * configuration_score(car, target, group)
+    return year_score * mileage_score * configuration
+
+
+def weight_comparisons(cars: list[Comparable], target: PriceEstimateRequest, group: str):
+    mileages = [car.mileage for car in cars if car.mileage is not None]
+    comparison_mileage = target.mileage
+    if mileages:
+        # Beyond observed mileage, retain the nearest boundary comparison.
+        # Do not invent a depreciation rate or drift back to the group median.
+        comparison_mileage = max(min(mileages), min(target.mileage, max(mileages)))
+    for car in cars:
+        car.weight = relevance_weight(car, target, group, comparison_mileage)
+
+
+def effective_sample_size(cars: list[Comparable]) -> float:
+    """Describe how evenly the comparison weights are distributed."""
+    weights = [car.weight for car in cars]
+    squared_sum = sum(weight * weight for weight in weights)
+    return sum(weights) ** 2 / squared_sum if squared_sum else 0.0
+
+
+def near_engine_count(cars: list[Comparable], target: PriceEstimateRequest, group: str) -> int:
+    if group == "EV":
+        return len(cars)
+    tolerance = max(Decimal("0.3"), target.engine * Decimal("0.30"))
+    return sum(car.engine is not None and abs(car.engine - target.engine) <= tolerance for car in cars)
+
+
+def sufficient_comparisons(cars: list[Comparable]) -> bool:
+    return len(cars) >= MIN_ACCEPTABLE_POOL
 
 
 def weighted_percentile(cars: list[Comparable], fraction: float) -> float:
+    """Interpolate between prices at the centres of their cumulative weights."""
     ordered = sorted(cars, key=lambda car: car.price)
-    threshold = fraction * sum(car.weight for car in ordered)
+    total_weight = sum(car.weight for car in ordered)
     cumulative = 0.0
+    previous_position = 0.0
+    previous_price = ordered[0].price
     for car in ordered:
         cumulative += car.weight
-        if cumulative >= threshold:
-            return car.price
+        position = (cumulative - car.weight / 2) / total_weight
+        if fraction <= position:
+            # Clamp below the first observation; every other segment is linear.
+            if fraction <= previous_position:
+                return previous_price
+            progress = (fraction - previous_position) / (position - previous_position)
+            return previous_price + progress * (car.price - previous_price)
+        previous_position = position
+        previous_price = car.price
     return ordered[-1].price
 
 
@@ -184,10 +209,22 @@ def distribution(cars: list[Comparable]) -> dict:
             "max_price": round(start + (index + 1) * interval, 8),
             "count": len(bucket),
             "percentage": round(len(bucket) / len(cars) * 100, 1),
-            "average_year": round(mean(car.year for car in bucket), 1) if bucket else None,
-            "average_mileage": round(mean(car.mileage for car in bucket), 1) if bucket else None,
+            "average_year": average_feature(bucket, "year"),
+            "average_mileage": average_feature(bucket, "mileage"),
         })
     return {"interval": interval, "bar_count": bar_count, "bars": bars}
+
+
+def average_feature(cars: list[Comparable], field: str) -> float | None:
+    values = [getattr(car, field) for car in cars if getattr(car, field) is not None]
+    return round(mean(values), 1) if values else None
+
+
+def is_close_comparison(car: Comparable, target: PriceEstimateRequest) -> bool:
+    return (
+        car.year is not None and abs(car.year - target.year) <= 2
+        and car.mileage is not None and abs(car.mileage - target.mileage) <= max(60000, target.mileage * 0.30)
+    )
 
 
 class PriceEstimateService:
@@ -200,49 +237,46 @@ class PriceEstimateService:
             response.raise_for_status()
             return response.json()
         except (httpx.HTTPError, ValueError) as exc:
-            raise PriceEstimateError(502, "Internal listings API could not supply comparison data") from exc
+            raise PriceEstimateError(502, "Datele de comparație nu au putut fi încărcate. Încearcă din nou mai târziu.") from exc
 
     @staticmethod
     def _validate_categories(target: PriceEstimateRequest, options: dict, group: str):
+        labels = {"brand": "marca", "model": "modelul", "generation": "generația",
+                  "fuel_type": "combustibilul", "gearbox": "cutia de viteze",
+                  "drivetrain": "tracțiunea", "body_type": "caroseria"}
         for name in ("brand", "model", "generation", "fuel_type", "gearbox", "drivetrain", "body_type"):
             if getattr(target, name) not in options[name]:
-                raise PriceEstimateError(422, f"{name} must be an exact database option for the selected vehicle")
+                raise PriceEstimateError(422, f"Selectează {labels[name]} din opțiunile disponibile pentru mașina aleasă.")
         if group != "EV" and (target.engine is None or target.engine <= 0):
-            raise PriceEstimateError(422, "A positive engine displacement is required for ICE and hybrid vehicles")
-        if target.engine is not None and target.engine not in {Decimal(str(value)) for value in options["engine"]}:
-            raise PriceEstimateError(422, "engine must be an exact database option")
+            raise PriceEstimateError(422, "Capacitatea motorului trebuie să fie mai mare decât zero pentru mașinile cu motor termic sau hibrid.")
+        if group != "EV" and target.engine not in {Decimal(str(value)) for value in options["engine"]}:
+            raise PriceEstimateError(422, "Selectează capacitatea motorului din opțiunile disponibile.")
 
     @staticmethod
-    def _eligible(rows, target, years, group, direct, target_class=None,
-                  engine_tolerance=ENGINE_TOLERANCE, source="normal_fallback"):
+    def _eligible(rows, target, group):
         cars = []
         for row in rows:
-            if row.get("body_type") != target.body_type:
-                continue
-            if not row.get("brand") or not row.get("model"):
-                continue
-            if direct and any(row.get(field) != getattr(target, field) for field in ("brand", "model", "generation")):
-                continue
-            if not direct and row.get("class") != target_class:
+            if any(row.get(field) != getattr(target, field) for field in (
+                "brand", "model", "generation",
+            )):
                 continue
             try:
                 price = float(row["price_eur"])
-                year, mileage = row["year"], row["mileage"]
-                if not math.isfinite(price) or price <= 0 or not isinstance(year, int) or not isinstance(mileage, int):
+                if not math.isfinite(price) or price <= 0:
                     continue
-                if not years[0] <= year <= years[1] or not target.mileage_min <= mileage <= target.mileage_max:
-                    continue
-                if get_powertrain_group(row["fuel_type"]) != group:
-                    continue
-                engine = None if group == "EV" else Decimal(str(row["engine"]))
-                tolerance = ENGINE_TOLERANCE if direct else engine_tolerance
-                if group != "EV" and (not engine.is_finite() or engine <= 0 or abs(engine - target.engine) > tolerance):
-                    continue
-            except (KeyError, TypeError, ValueError, InvalidOperation, AttributeError):
+            except (KeyError, TypeError, ValueError):
                 continue
-            car = Comparable(row, price, year, mileage, engine, direct,
-                             source="direct" if direct else source)
-            car.weight = relevance_weight(car, target, years, group)
+            year = row.get("year") if isinstance(row.get("year"), int) else None
+            mileage = row.get("mileage") if isinstance(row.get("mileage"), int) else None
+            try:
+                engine = Decimal(str(row.get("engine")))
+                if not engine.is_finite() or engine <= 0:
+                    engine = None
+            except (TypeError, ValueError, InvalidOperation):
+                engine = None
+            car = Comparable(row, price, year, mileage, engine, False)
+            car.direct = is_close_comparison(car, target)
+            car.source = "direct" if car.direct else "normal_fallback"
             cars.append(car)
         return cars
 
@@ -267,51 +301,30 @@ class PriceEstimateService:
             result.append(car)
         return result
 
-    async def _fetch_fallback(self, target, years, group, params, target_class, tolerance, source):
-        """Both fallback stages use identical constraints except displacement."""
-        query = {**params, "class": target_class}
-        if group != "EV":
-            query.update(engine_min=str(max(Decimal("0"), target.engine - tolerance)),
-                         engine_max=str(target.engine + tolerance))
-        rows = await self._get("/listings", query)
-        cars = self._eligible(rows, target, years, group, direct=False,
-                              target_class=target_class, engine_tolerance=tolerance, source=source)
-        return cars, len(rows)
-
     @staticmethod
-    def _comparison_state(count, search_mode, engine_range_widened):
+    def _comparison_state(count, close_count, effective_count):
+        limited = (
+            count < MIN_DIRECT_COMPARABLES
+            or close_count < min(3, count)
+            or effective_count < MIN_EFFECTIVE_COMPARABLES
+        )
         if count == 0:
             mode = "no_comparables"
-            message = ("No sufficiently comparable vehicles were found. There is not enough market data "
-                       "to calculate a meaningful price estimate for this configuration.")
+            message = "Nu există anunțuri cu preț disponibil pentru marca, modelul și generația selectate."
         elif count == 1:
             mode = "single_comparable"
-            message = ("Only one sufficiently comparable vehicle was found. Its asking price is shown as a "
-                       "reference, but there is not enough market data to calculate a reliable price estimate.")
+            message = "Există un singur anunț în grupul selectat; sunt necesare minimum 3 pentru estimarea prețului."
         elif count < MIN_ACCEPTABLE_POOL:
             mode = "very_limited"
-            message = (f"Only {count} sufficiently comparable vehicles remain after filtering and price cleanup. "
-                       "The estimate is based on very limited market data and may have high variance.")
+            message = f"Doar {count} anunțuri în grupul selectat; sunt necesare minimum 3 pentru estimarea prețului."
         else:
-            mode = search_mode
-            message = {
-                "direct": "Sufficient direct model comparisons were available.",
-                "normal_fallback": "Compatible fallback comparisons were included because fewer than 8 direct comparisons were available.",
-                "emergency_fallback": (
-                    "Direct and normal fallback data were limited, so a broader engine-size range was used."
-                    if engine_range_widened else
-                    "Direct and normal fallback data were limited, so the final engine search was used."
-                ),
-            }[mode]
-        if engine_range_widened:
-            if count < MIN_ACCEPTABLE_POOL:
-                message += " The final search used a broader engine-size range."
-            message += " Year, mileage, body type, vehicle class, and powertrain constraints remained unchanged."
-        elif search_mode == "emergency_fallback":
-            message += " The final engine search allowed no further displacement relaxation for this engine size."
-        if count >= 2:
-            message += " Estimates reflect asking prices and do not guarantee sale prices or time to sell."
-        return mode, mode not in {"direct", "normal_fallback"}, message
+            mode = "direct" if close_count == count else "normal_fallback"
+            message = (f"Estimare din {count} anunțuri cu aceeași marcă, același model și aceeași generație. "
+                       "Anul și kilometrajul apropiate cântăresc mai mult.")
+            if limited:
+                message += " Date de piață limitate; estimare orientativă."
+            message += " Prețuri cerute, fără garanția vânzării."
+        return mode, limited, message
 
     async def estimate(self, target: PriceEstimateRequest) -> PriceEstimateResponse:
         years = effective_year_range(target)
@@ -324,51 +337,22 @@ class PriceEstimateService:
         })
         self._validate_categories(target, options, group)
         params = {
-            "body_types": target.body_type, "year_min": years[0], "year_max": years[1],
-            "mileage_min": target.mileage_min, "mileage_max": target.mileage_max,
+            "brand": target.brand, "model": target.model, "generation": target.generation,
         }
-        rows = await self._get("/listings", {
-            **params, "brand": target.brand, "model": target.model, "generation": target.generation,
-        })
+        rows = await self._get("/listings", params)
         fetched = len(rows)
-        exact = self._deduplicate(self._eligible(rows, target, years, group, direct=True))
-        direct_count = len(exact)
-        same_model_only = direct_count >= MIN_DIRECT_COMPARABLES
-        pool = exact
-        eligible = direct_count
-        search_mode = "direct"
-        engine_range_widened = False
-        if not same_model_only:
-            classes = options["class"]
-            if len(classes) != 1:
-                raise PriceEstimateError(422, "Selected vehicle must have one unambiguous database class for fallback comparisons")
-            normal_tolerance = None if group == "EV" else normal_fallback_engine_tolerance(target.engine)
-            normal, count = await self._fetch_fallback(
-                target, years, group, params, classes[0], normal_tolerance, "normal_fallback",
-            )
-            fetched += count
-            candidates = self._deduplicate(exact + normal)
-            search_mode = "normal_fallback"
-            # EV displacement is inapplicable: an identical third search adds no evidence.
-            if len(candidates) < MIN_ACCEPTABLE_POOL and group != "EV":
-                emergency_tolerance = emergency_fallback_engine_tolerance(target.engine)
-                emergency, count = await self._fetch_fallback(
-                    target, years, group, params, classes[0], emergency_tolerance, "emergency_fallback",
-                )
-                fetched += count
-                # The first occurrence preserves direct > normal > emergency origin.
-                candidates = self._deduplicate(candidates + emergency)
-                search_mode = "emergency_fallback"
-                engine_range_widened = emergency_tolerance > normal_tolerance
-            similar = [car for car in candidates if not car.direct]
-            eligible = len(candidates)
-            similar.sort(key=lambda car: (-car.weight, car.listing["id"]))
-            pool = exact + similar[:MAX_SIMILAR_COMPARABLES]
-        cleaned = remove_outliers(pool)
-        same_count = sum(car.listing.get("brand") == target.brand and car.listing.get("model") == target.model for car in cleaned)
-        mode, limited, message = self._comparison_state(len(cleaned), search_mode, engine_range_widened)
+        cleaned = self._deduplicate(self._eligible(rows, target, group))
+        weight_comparisons(cleaned, target, group)
+        # Generation variants can legitimately have very different prices.
+        # Weighted percentiles are robust without deleting those variants by IQR.
+        quality_ok = sufficient_comparisons(cleaned)
+        direct_count = sum(car.direct for car in cleaned)
+        effective_count = effective_sample_size(cleaned)
+        mode, limited, message = self._comparison_state(len(cleaned), direct_count, effective_count)
+        observed_years = [car.year for car in cleaned if car.year is not None]
+        observed_mileages = [car.mileage for car in cleaned if car.mileage is not None]
         response = {
-            "estimate_available": len(cleaned) >= 2,
+            "estimate_available": quality_ok,
             "estimate": None,
             "reference_price": cleaned[0].price if len(cleaned) == 1 else None,
             "market_stats": None,
@@ -378,20 +362,24 @@ class PriceEstimateService:
                 "direct_count": sum(car.source == "direct" for car in cleaned),
                 "normal_fallback_added": sum(car.source == "normal_fallback" for car in cleaned),
                 "emergency_fallback_added": sum(car.source == "emergency_fallback" for car in cleaned),
-                "same_model_only": same_model_only, "same_model_count": same_count,
-                "similar_model_count": len(cleaned) - same_count, "total_used": len(cleaned),
-                "fetched": fetched, "eligible": eligible, "direct_comparables_available": direct_count,
-                "outliers_removed": len(pool) - len(cleaned), "message": message,
+                "same_model_only": True, "same_model_count": len(cleaned),
+                "similar_model_count": 0, "total_used": len(cleaned),
+                "effective_sample_size": round(effective_count, 2),
+                "near_engine_count": near_engine_count(cleaned, target, group),
+                "fetched": fetched, "eligible": len(cleaned), "direct_comparables_available": direct_count,
+                "outliers_removed": 0, "message": message,
             },
             "search": {
                 "brand": target.brand, "model": target.model, "generation": target.generation,
                 "target_year": target.year, "target_mileage": target.mileage,
                 "requested_year_min": target.year_min, "requested_year_max": target.year_max,
-                "effective_year_min": years[0], "effective_year_max": years[1],
-                "mileage_min": target.mileage_min, "mileage_max": target.mileage_max,
+                "effective_year_min": min(observed_years) if observed_years else years[0],
+                "effective_year_max": max(observed_years) if observed_years else years[1],
+                "mileage_min": min(observed_mileages) if observed_mileages else 0,
+                "mileage_max": max(observed_mileages) if observed_mileages else 0,
             },
         }
-        if len(cleaned) < 2:
+        if not quality_ok:
             return PriceEstimateResponse.model_validate(response)
 
         prices = [car.price for car in cleaned]
@@ -406,8 +394,8 @@ class PriceEstimateService:
             "market_stats": {
                 "average_price": round(mean(prices), 2), "median_price": median(prices),
                 "lowest_price": min(prices), "highest_price": max(prices),
-                "average_year": round(mean(car.year for car in cleaned), 1),
-                "average_mileage": round(mean(car.mileage for car in cleaned), 1),
+                "average_year": average_feature(cleaned, "year"),
+                "average_mileage": average_feature(cleaned, "mileage"),
             },
             "distribution": distribution(cleaned),
         })

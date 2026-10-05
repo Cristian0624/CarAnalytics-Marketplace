@@ -1,8 +1,8 @@
-import { FIELD_LABELS, extremeAnomalyMessage, hasOverallScore, riskExplanationLines, usesCurrentRiskPolicy } from "../utils/anomalyRisk";
+import { FIELD_LABELS, extremeAnomalyMessage, hasOverallScore, riskExplanationItems, usesCurrentRiskPolicy } from "../utils/anomalyRisk";
 
 const number = (value, digits = 0) => value == null ? "Indisponibil" : new Intl.NumberFormat("ro-RO", { maximumFractionDigits: digits }).format(value);
 const money = (value) => value == null ? "Indisponibil" : `${number(value)} €`;
-const levels = { low: "Scăzut", medium: "Moderat", high: "Ridicat" };
+const levels = { low: "Scăzut", medium: "Moderat", medium_high: "Moderat-ridicat", high: "Ridicat" };
 const confidenceLevels = { low: "Scăzută", medium: "Medie", high: "Ridicată" };
 const supportLabels = { normal: "Suport normal", limited: "Suport limitat", rare: "Grup rar", very_rare: "Foarte puține date" };
 const priceLabels = { normal: "În intervalul observat", unusually_cheap: "Sub intervalul observat", unusually_expensive: "Peste intervalul observat", unknown: "Date insuficiente" };
@@ -10,11 +10,11 @@ const mileageLabels = { normal: "În intervalul observat", unusually_low: "Neobi
 const comparisonLabels = { exact_year: "același an", nearby_years: "ani apropiați", model_generation: "același model și generație, ani diferiți", model: "același model, generații și ani diferiți", unsupported: "fără grup de comparație" };
 const severityLabels = { normal: "Obișnuit", uncommon: "Rar întâlnit", very_rare: "Foarte rar", unsupported: "Date insuficiente", unobserved: "Neobservat", outside_observed_range: "În afara intervalului" };
 
-function ComponentScore({ value, weight, flag }) {
+function ComponentScore({ value, weight, flag, contextual = false }) {
   const message = extremeAnomalyMessage(flag);
   return (
     <>
-      {message && <p className="risk-description" role="note"><strong>{message}</strong></p>}
+      {message && <p className="risk-description" role="note"><strong>{message}</strong>{contextual && " Evaluată împreună cu cealaltă abatere; nu impune singură un scor general extrem."}</p>}
       <div className="risk-component-score">
         <span>Scor anomalie</span>
         <strong>{value == null ? "Indisponibil" : `${number(value, 1)} / 100`}</strong>
@@ -22,6 +22,19 @@ function ComponentScore({ value, weight, flag }) {
       </div>
     </>
   );
+}
+
+function ContributionArrow({ direction, metric }) {
+  const favorable = metric === "Încredere" ? direction === "up" : direction === "down";
+  const tone = direction === "neutral" ? "neutral" : favorable ? "positive" : "negative";
+  const visualDirection = tone === "positive" ? "up" : tone === "negative" ? "down" : "neutral";
+  const label = tone === "positive" ? "efect favorabil" : tone === "negative" ? "efect nefavorabil" : "efect neutru";
+  return <span className={`risk-effect risk-effect-${tone}`}>
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d={visualDirection === "up" ? "M12 19V5m-6 6 6-6 6 6" : visualDirection === "down" ? "M12 5v14m-6-6 6 6 6-6" : "M5 12h14"} />
+    </svg>
+    <span>{metric}<span className="risk-sr-only">: {label}</span></span>
+  </span>;
 }
 
 export default function AnomalyRiskResults({ result, vehicle }) {
@@ -45,12 +58,16 @@ export default function AnomalyRiskResults({ result, vehicle }) {
   }
   const scored = hasOverallScore(result);
   const rare = result.assessment_status === "very_rare";
+  const partial = result.assessment_status === "partial";
   const lowConfidence = result.market_confidence === "low";
   const priceAvailable = price.score != null;
   const rangeStart = Math.min(price.p10, price.actual_price);
   const rangeEnd = Math.max(price.p90, price.actual_price);
   const position = (value) => rangeEnd === rangeStart ? 50 : (value - rangeStart) / (rangeEnd - rangeStart) * 100;
   const weights = result.effective_weights;
+  const contextual = result.scoring_context?.mode === "contextual_weighted"
+    || (result.scoring_context?.mode === "blended" && result.scoring_context?.coherence_strength > 0);
+  const packedRange = position(price.p90) - position(price.p10) < 45;
 
   return (
     <div className="risk-results">
@@ -60,20 +77,20 @@ export default function AnomalyRiskResults({ result, vehicle }) {
         <div className="risk-overview">
           <div className="risk-summary">
             <article className={`risk-overall ${scored ? `risk-level-${result.risk_level}` : "risk-unavailable"}`}>
-              <span>{scored ? "Scor general de anomalie" : "Evaluare generală"}</span>
-              {scored ? <><div className="risk-score-number">{number(result.anomaly_score, 1)}<small>/ 100</small></div><strong>Nivel de anomalie: {levels[result.risk_level]}</strong><p>Un scor mai mare indică o ofertă mai neobișnuită.</p></> : <><h3>Date insuficiente</h3><p>Nu putem produce un scor general fiabil pentru grupul selectat.</p></>}
+              <span>{scored ? "Scor general de anomalie" : partial ? "Evaluare parțială" : "Evaluare generală"}</span>
+              {scored ? <><div className="risk-score-number">{number(result.anomaly_score, 1)}<small>/ 100</small></div><strong>Nivel de anomalie: {levels[result.risk_level]}</strong><p>Un scor mai mare indică o ofertă mai neobișnuită.</p></> : <><h3>{partial ? "Scor general indisponibil" : "Date insuficiente"}</h3><p>{partial ? "Prețul a fost analizat. Kilometrajul introdus nu are suficiente date pentru evaluare, deci nu putem da un verdict general." : "Nu putem produce un scor general fiabil pentru grupul selectat."}</p></>}
             </article>
             <article className="risk-summary-card"><span>Încredere în analiză</span><h3>{confidenceLevels[result.market_confidence]}</h3><p>{number(result.confidence_score, 1)} / 100</p><small>Depinde de datele din grupul selectat, variația prețurilor și câmpurile disponibile.</small></article>
             <article className="risk-summary-card"><span>{supportLabels[result.market_support.support_level]}</span><h3>{number(result.market_support.model_generation_observations)} <small>exemple</small></h3><p>{vehicle.generation ? "Același model și aceeași generație" : "Același model, toate generațiile"} în baza de date la momentul analizei.</p><small>{scored ? `Ajustare pentru raritate: +${number(result.market_support.rarity_penalty, 1)} puncte.` : "Scor general indisponibil."}</small></article>
           </div>
 
-          {(rare || lowConfidence || result.assessment_status === "limited_support") && <div className="risk-caution" role="note"><strong>{rare ? "Prea puține exemple pentru o concluzie." : "Interpretează rezultatul cu prudență."}</strong><p>{rare ? "Grupul selectat are prea puține anunțuri pentru un scor general." : "Datele disponibile limitează încrederea în analiză. Folosește rezultatul ca punct de pornire pentru verificări."}</p></div>}
+          {(rare || partial || lowConfidence || result.assessment_status === "limited_support") && <div className="risk-caution" role="note"><strong>{rare ? "Prea puține exemple pentru o concluzie." : partial ? "Kilometrajul nu a putut fi evaluat." : "Interpretează rezultatul cu prudență."}</strong><p>{rare ? "Grupul selectat are prea puține anunțuri pentru un scor general." : partial ? "Mediana kilometrilor necesită 10 exemple, iar scorul necesită 20. Rezultatul de preț nu confirmă că kilometrajul este obișnuit." : "Datele disponibile limitează încrederea în analiză. Folosește rezultatul ca punct de pornire pentru verificări."}</p></div>}
         </div>
 
         <article className="risk-detail-card risk-price-card">
           <div className="risk-card-heading"><div><span className="risk-eyebrow">Preț</span><h3>{priceLabels[price.direction]}</h3></div></div>
           <p className="risk-description">{number(price.count)} anunțuri cu aceeași marcă și același model{vehicle.generation ? " și aceeași generație" : ", din toate generațiile"}.{price.support_level === "limited" ? " Suport de preț limitat (10–19 anunțuri)." : ""}</p>
-          {priceAvailable ? <><div className="risk-price-chart" role="group" aria-label="Prețul ofertei și intervalul observat">
+          {priceAvailable ? <><div className={`risk-price-chart ${packedRange ? "risk-price-chart-packed" : ""}`} role="group" aria-label="Prețul ofertei și intervalul observat">
             <div className="risk-price-plot">
               <div className="risk-range" style={{ left: `${position(price.p10)}%`, width: `${position(price.p90) - position(price.p10)}%` }} />
               <div className="risk-axis-label risk-label-asking" style={{ left: `${position(price.actual_price)}%` }}><span>Preț cerut</span><strong>{money(price.actual_price)}</strong></div>
@@ -85,14 +102,14 @@ export default function AnomalyRiskResults({ result, vehicle }) {
             </div>
           </div>
           <p className="risk-description">Prețul cerut este {number(Math.abs(price.deviation_from_p50_pct), 1)}% {price.deviation_from_p50_pct < 0 ? "sub" : price.deviation_from_p50_pct > 0 ? "peste" : "față de"} mediana observată. Intervalul P10–P90 cuprinde zona centrală a prețurilor cerute în baza de date, nu garantează prețul de vânzare.</p></> : <p className="risk-description">Sunt necesare cel puțin 10 anunțuri din {vehicle.generation ? "aceeași generație" : "același model"} pentru evaluarea prețului.</p>}
-          <ComponentScore value={price.score} weight={weights.price} flag={price.flag} />
+          <ComponentScore value={price.score} weight={weights.price} flag={price.flag} contextual={contextual} />
         </article>
 
         <div className="risk-detail-grid">
           <article className="risk-detail-card"><span className="risk-eyebrow">Kilometraj</span><h3>{mileage.actual_mileage == null ? "Nespecificat" : mileageLabels[mileage.direction]}</h3>
             <dl className="risk-data-list"><div><dt>În anunț</dt><dd>{mileage.actual_mileage == null ? "Nespecificat" : `${number(mileage.actual_mileage)} km`}</dd></div><div><dt>Mediană observată</dt><dd>{mileage.expected_median_mileage == null ? "Indisponibilă" : `${number(mileage.expected_median_mileage)} km`}</dd></div><div><dt>Exemple disponibile</dt><dd>{mileage.actual_mileage == null ? "Neevaluat" : number(mileage.sample_size)}</dd></div></dl>
             <p className="risk-description">Comparație: {comparisonLabels[mileage.comparison_level]}. Un kilometraj neobișnuit nu dovedește modificarea odometrului.</p>
-            <ComponentScore value={mileage.score} weight={weights.mileage} flag={mileage.flag} />
+            <ComponentScore value={mileage.score} weight={weights.mileage} flag={mileage.flag} contextual={contextual} />
           </article>
           <article className="risk-detail-card"><span className="risk-eyebrow">Configurație</span><h3>Specificațiile ofertei</h3>
             <p className="risk-description">{specs.supported_fields} {specs.supported_fields === 1 ? "câmp evaluat" : "câmpuri evaluate"} pe baza configurațiilor observate.</p>
@@ -107,7 +124,10 @@ export default function AnomalyRiskResults({ result, vehicle }) {
           <svg className="risk-explanation-chevron" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6" /></svg>
         </summary>
         <div className="risk-explanation-content">
-          <ul role="list">{riskExplanationLines(result, vehicle).map((reason) => <li key={reason}>{reason}</li>)}</ul>
+          <ul role="list">{riskExplanationItems(result, vehicle).map(({ text, effect }) => <li key={text}>
+            <ContributionArrow direction={effect?.direction ?? "neutral"} metric={effect?.metric ?? "Context"} />
+            <p>{text}</p>
+          </li>)}</ul>
           {priceAvailable && <p className="risk-explanation-interval">Interval central P25–P75: <strong>{money(price.p25)} – {money(price.p75)}</strong>.</p>}
         </div>
       </details>

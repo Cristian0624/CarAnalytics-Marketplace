@@ -7,7 +7,8 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 Category = Annotated[str, Field(min_length=1, max_length=200)]
 Score = Annotated[float, Field(ge=0, le=100, allow_inf_nan=False)]
 Level = Literal["low", "medium", "high"]
-AssessmentStatus = Literal["full", "limited_support", "very_rare"]
+RiskLevel = Literal["low", "medium", "medium_high", "high"]
+AssessmentStatus = Literal["full", "limited_support", "very_rare", "partial"]
 SupportLevel = Literal["normal", "limited", "rare", "very_rare"]
 
 
@@ -30,7 +31,7 @@ class AnomalyRiskRequest(BaseModel):
     @model_validator(mode="after")
     def validate_year(self):
         if self.year is not None and self.year > date.today().year + 1:
-            raise ValueError("year cannot exceed next calendar year")
+            raise ValueError("Anul de fabricație nu poate depăși anul calendaristic următor.")
         return self
 
 
@@ -66,6 +67,8 @@ class PriceAnomaly(BaseModel):
 
 class MileageAnomaly(BaseModel):
     flag: Literal["extreme_mileage_low", "extreme_mileage_high"] | None = None
+    vehicle_age_years: int | None = Field(default=None, ge=0)
+    age_adjustment_factor: float = Field(default=1.0, ge=0, le=1)
     actual_mileage: float | None
     expected_median_mileage: float | None
     p05: float | None
@@ -113,6 +116,22 @@ class MarketSupport(BaseModel):
     rarity_penalty: float = Field(ge=0, le=10)
 
 
+class ScoringContext(BaseModel):
+    relation: Literal["unavailable", "not_applicable", "consistent_opposite", "inconsistent"]
+    mode: Literal["weighted", "contextual_weighted", "extreme", "blended"]
+    price_ratio: float | None
+    mileage_ratio: float | None
+    balance_deviation: float | None
+    coherence_strength: float = Field(default=0.0, ge=0, le=1)
+    joint_penalty: float = Field(ge=0, le=6)
+    joint_reduction: float = Field(default=0.0, ge=0, le=20)
+    weighted_score: Score | None
+    override_scores: dict[str, float]
+    extreme_score: Score | None = None
+    extreme_strength: float = Field(default=0.0, ge=0, le=1)
+    applied_rarity_penalty: float = Field(default=0.0, ge=0, le=10)
+
+
 class AnomalyRiskResponse(BaseModel):
     currency: Literal["EUR"] = "EUR"
     model_version: str
@@ -122,10 +141,11 @@ class AnomalyRiskResponse(BaseModel):
     message: str | None
     interpretation: str = "Anomaly scores identify unusual listings; they are not fraud probabilities."
     anomaly_score: Score | None
-    risk_level: Level | None
+    risk_level: RiskLevel | None
     market_confidence: Level
     confidence_score: Score
     confidence: Confidence
     components: Components
     effective_weights: dict[str, float]
+    scoring_context: ScoringContext | None = None
     reasons: list[str]
