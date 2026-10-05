@@ -1,25 +1,41 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getAnalyses, deleteAnalysis, updateAnalysis } from "../api/analysis";
+import { useTranslation } from "react-i18next";
+
+import {
+  getAnalyses,
+  deleteAnalysis,
+  updateAnalysis,
+} from "../api/analysis";
+
 import { useAuth } from "../context/AuthContext";
 import { savedPaths } from "../api/saved_items";
 import BackgroundTriangles from "../components/BackgroundTriangles";
+
 import "./SavedItemsPage.css";
 import "./MyListingsPage.css";
 
 function formatPrice(value) {
-  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+  if (
+    value === null ||
+    value === undefined ||
+    Number.isNaN(Number(value))
+  ) {
     return "—";
   }
-  return new Intl.NumberFormat("de-DE", {
-    maximumFractionDigits: 0,
-  }).format(Number(value)) + " €";
+
+  return (
+    new Intl.NumberFormat("de-DE", {
+      maximumFractionDigits: 0,
+    }).format(Number(value)) + " €"
+  );
 }
 
-function formatDate(dateStr) {
+function formatDate(dateStr, language) {
   if (!dateStr) return "";
+
   try {
-    return new Date(dateStr).toLocaleDateString("ro-RO", {
+    return new Date(dateStr).toLocaleDateString(language, {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -30,6 +46,8 @@ function formatDate(dateStr) {
 }
 
 export default function MyListingsPage() {
+  const { t, i18n } = useTranslation();
+
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -54,12 +72,15 @@ export default function MyListingsPage() {
 
       try {
         const data = await getAnalyses();
+
         if (!cancelled) {
           setListings(Array.isArray(data) ? data : []);
         }
       } catch (err) {
         if (!cancelled) {
-          setError(err?.message || "Nu s-au putut încărca anunțurile tale.");
+          setError(
+            err?.message || t("myListings.errors.load")
+          );
         }
       } finally {
         if (!cancelled) {
@@ -73,19 +94,26 @@ export default function MyListingsPage() {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, t]);
 
   async function handleDelete(id) {
     if (busy) return;
+
     setBusy(true);
     setError("");
 
     try {
       await deleteAnalysis(id);
-      setListings((current) => current.filter((item) => item.id !== id));
+
+      setListings((current) =>
+        current.filter((item) => item.id !== id)
+      );
+
       setDeletingId(null);
     } catch (err) {
-      setError(err?.message || "Nu s-a putut șterge anunțul.");
+      setError(
+        err?.message || t("myListings.errors.delete")
+      );
     } finally {
       setBusy(false);
     }
@@ -93,6 +121,7 @@ export default function MyListingsPage() {
 
   async function handleSaveEdit(event) {
     event.preventDefault();
+
     if (!editingItem || busy) return;
 
     setBusy(true);
@@ -100,23 +129,44 @@ export default function MyListingsPage() {
 
     try {
       const payload = {
-        price_eur: editingItem.price_eur ? Number(editingItem.price_eur) : null,
-        mileage: editingItem.mileage ? Number(editingItem.mileage) : null,
-        year: editingItem.year ? Number(editingItem.year) : null,
-        horsepower: editingItem.horsepower ? Number(editingItem.horsepower) : null,
+        price_eur: editingItem.price_eur
+          ? Number(editingItem.price_eur)
+          : null,
+
+        mileage: editingItem.mileage
+          ? Number(editingItem.mileage)
+          : null,
+
+        year: editingItem.year
+          ? Number(editingItem.year)
+          : null,
+
+        horsepower: editingItem.horsepower
+          ? Number(editingItem.horsepower)
+          : null,
+
         fuel_type: editingItem.fuel_type || null,
         gearbox: editingItem.gearbox || null,
         body_type: editingItem.body_type || null,
         state: editingItem.state || null,
       };
 
-      const updated = await updateAnalysis(editingItem.id, payload);
-      setListings((current) =>
-        current.map((item) => (item.id === updated.id ? updated : item))
+      const updated = await updateAnalysis(
+        editingItem.id,
+        payload
       );
+
+      setListings((current) =>
+        current.map((item) =>
+          item.id === updated.id ? updated : item
+        )
+      );
+
       setEditingItem(null);
     } catch (err) {
-      setError(err?.message || "Nu s-au putut salva modificările.");
+      setError(
+        err?.message || t("myListings.errors.save")
+      );
     } finally {
       setBusy(false);
     }
@@ -126,7 +176,9 @@ export default function MyListingsPage() {
     return (
       <main className="saved-page">
         <div className="saved-container">
-          <p role="status">Se încarcă...</p>
+          <p role="status">
+            {t("common.loading")}
+          </p>
         </div>
       </main>
     );
@@ -137,15 +189,31 @@ export default function MyListingsPage() {
       <main className="saved-page">
         <div className="saved-container">
           <header className="saved-heading">
-            <span className="saved-eyebrow">CONTUL MEU</span>
-            <h1>Anunțurile Mele</h1>
-            <p>Autentifică-te pentru a-ți gestiona anunțurile create.</p>
+            <span className="saved-eyebrow">
+              {t("myListings.account")}
+            </span>
+
+            <h1>{t("myListings.title")}</h1>
+
+            <p>
+              {t("myListings.loginRequired")}
+            </p>
           </header>
+
           <div className="saved-empty">
-            <h2>Anunțurile tale, într-un singur loc</h2>
-            <p>Autentifică-te pentru a le accesa.</p>
-            <Link className="saved-primary" to="/login">
-              Autentificare
+            <h2>
+              {t("myListings.allInOnePlace")}
+            </h2>
+
+            <p>
+              {t("myListings.loginToAccess")}
+            </p>
+
+            <Link
+              className="saved-primary"
+              to="/login"
+            >
+              {t("myListings.login")}
             </Link>
           </div>
         </div>
@@ -156,25 +224,53 @@ export default function MyListingsPage() {
   return (
     <main className="saved-page">
       <BackgroundTriangles />
+
       <div className="saved-container">
         <header className="saved-heading">
-          <span className="saved-eyebrow">CONTUL MEU</span>
-          <h1>Anunțurile Mele</h1>
-          <p>Gestionează anunțurile create și publicate de tine în baza de date.</p>
+          <span className="saved-eyebrow">
+            {t("myListings.account")}
+          </span>
+
+          <h1>{t("myListings.title")}</h1>
+
+          <p>
+            {t("myListings.description")}
+          </p>
         </header>
 
-        <nav className="saved-tabs" aria-label="Elemente salvate">
-          <Link to={savedPaths.favourites}>Anunțuri Favorite</Link>
-          <Link to={savedPaths.risks}>Analize Risc Salvate</Link>
-          <Link to={savedPaths.searches}>Filtre Salvate</Link>
-          <Link to="/profile">Profilul Meu</Link>
-          <Link to="/my-listings" aria-current="page">
-            Anunțurile Mele
+        <nav
+          className="saved-tabs"
+          aria-label={t("myListings.tabs.savedItems")}
+        >
+          <Link to={savedPaths.favourites}>
+            {t("myListings.tabs.favourites")}
+          </Link>
+
+          <Link to={savedPaths.risks}>
+            {t("myListings.tabs.risks")}
+          </Link>
+
+          <Link to={savedPaths.searches}>
+            {t("myListings.tabs.searches")}
+          </Link>
+
+          <Link to="/profile">
+            {t("myListings.tabs.profile")}
+          </Link>
+
+          <Link
+            to="/my-listings"
+            aria-current="page"
+          >
+            {t("myListings.tabs.myListings")}
           </Link>
         </nav>
 
         {error && (
-          <p className="saved-error" role="alert">
+          <p
+            className="saved-error"
+            role="alert"
+          >
             {error}
           </p>
         )}
@@ -182,44 +278,68 @@ export default function MyListingsPage() {
         <div className="my-listings-topbar">
           <span className="my-listings-count">
             {listings.length === 1
-              ? "1 anunț publicat"
-              : `${listings.length} anunțuri publicate`}
+              ? t("myListings.count.one")
+              : t("myListings.count.many", {
+                  count: listings.length,
+                })}
           </span>
 
-          <Link to="/create-listing" className="my-listings-add-btn">
-            + Adaugă un Anunț Nou
+          <Link
+            to="/create-listing"
+            className="my-listings-add-btn"
+          >
+            {t("myListings.addNew")}
           </Link>
         </div>
 
         {loading ? (
-          <p role="status">Se încarcă anunțurile tale...</p>
+          <p role="status">
+            {t("myListings.loading")}
+          </p>
         ) : listings.length === 0 ? (
           <div className="saved-empty">
-            <h2>Nu ai niciun anunț publicat încă</h2>
+            <h2>
+              {t("myListings.empty.title")}
+            </h2>
+
             <p>
-              Creează primul tău anunț auto pentru a primi estimări de preț de piață
-              și pentru a-l salva în contul tău.
+              {t("myListings.empty.description")}
             </p>
-            <Link className="saved-primary" to="/create-listing">
-              + Creează un anunț
+
+            <Link
+              className="saved-primary"
+              to="/create-listing"
+            >
+              {t("myListings.empty.create")}
             </Link>
           </div>
         ) : (
           <div className="saved-grid">
             {listings.map((item) => (
-              <article className="saved-card my-listing-card" key={item.id}>
+              <article
+                className="saved-card my-listing-card"
+                key={item.id}
+              >
                 <div>
                   <div className="saved-card-top">
-                    <span className="my-listing-badge">Activ</span>
+                    <span className="my-listing-badge">
+                      {t("myListings.status")}
+                    </span>
+
                     <time dateTime={item.created_at}>
-                      {formatDate(item.created_at)}
+                      {formatDate(
+                        item.created_at,
+                        i18n.language
+                      )}
                     </time>
                   </div>
 
                   <div className="my-listing-header">
                     <h2>
                       {item.brand} {item.model}{" "}
-                      {item.generation ? `· ${item.generation}` : ""}
+                      {item.generation
+                        ? `· ${item.generation}`
+                        : ""}
                     </h2>
                   </div>
 
@@ -230,59 +350,100 @@ export default function MyListingsPage() {
                   <div className="my-listing-specs-grid">
                     {item.year && (
                       <div className="my-listing-spec-item">
-                        <span className="my-listing-spec-label">An</span>
-                        <span className="my-listing-spec-val">{item.year}</span>
-                      </div>
-                    )}
-                    {item.mileage !== null && item.mileage !== undefined && (
-                      <div className="my-listing-spec-item">
-                        <span className="my-listing-spec-label">Rulaj</span>
+                        <span className="my-listing-spec-label">
+                          {t("myListings.specs.year")}
+                        </span>
+
                         <span className="my-listing-spec-val">
-                          {Number(item.mileage).toLocaleString("ro-RO")} km
+                          {item.year}
                         </span>
                       </div>
                     )}
+
+                    {item.mileage !== null &&
+                      item.mileage !== undefined && (
+                        <div className="my-listing-spec-item">
+                          <span className="my-listing-spec-label">
+                            {t("myListings.specs.mileage")}
+                          </span>
+
+                          <span className="my-listing-spec-val">
+                            {Number(
+                              item.mileage
+                            ).toLocaleString(
+                              i18n.language
+                            )}{" "}
+                            km
+                          </span>
+                        </div>
+                      )}
+
                     {item.fuel_type && (
                       <div className="my-listing-spec-item">
-                        <span className="my-listing-spec-label">Combustibil</span>
+                        <span className="my-listing-spec-label">
+                          {t("myListings.specs.fuel")}
+                        </span>
+
                         <span className="my-listing-spec-val">
                           {item.fuel_type}
                         </span>
                       </div>
                     )}
+
                     {item.gearbox && (
                       <div className="my-listing-spec-item">
-                        <span className="my-listing-spec-label">Cutie</span>
-                        <span className="my-listing-spec-val">{item.gearbox}</span>
+                        <span className="my-listing-spec-label">
+                          {t("myListings.specs.gearbox")}
+                        </span>
+
+                        <span className="my-listing-spec-val">
+                          {item.gearbox}
+                        </span>
                       </div>
                     )}
+
                     {item.engine && (
                       <div className="my-listing-spec-item">
-                        <span className="my-listing-spec-label">Motor</span>
+                        <span className="my-listing-spec-label">
+                          {t("myListings.specs.engine")}
+                        </span>
+
                         <span className="my-listing-spec-val">
                           {item.engine} L
                         </span>
                       </div>
                     )}
+
                     {item.horsepower && (
                       <div className="my-listing-spec-item">
-                        <span className="my-listing-spec-label">Putere</span>
+                        <span className="my-listing-spec-label">
+                          {t("myListings.specs.power")}
+                        </span>
+
                         <span className="my-listing-spec-val">
                           {item.horsepower} CP
                         </span>
                       </div>
                     )}
+
                     {item.body_type && (
                       <div className="my-listing-spec-item">
-                        <span className="my-listing-spec-label">Caroserie</span>
+                        <span className="my-listing-spec-label">
+                          {t("myListings.specs.body")}
+                        </span>
+
                         <span className="my-listing-spec-val">
                           {item.body_type}
                         </span>
                       </div>
                     )}
+
                     {item.drivetrain && (
                       <div className="my-listing-spec-item">
-                        <span className="my-listing-spec-label">Tracțiune</span>
+                        <span className="my-listing-spec-label">
+                          {t("myListings.specs.drivetrain")}
+                        </span>
+
                         <span className="my-listing-spec-val">
                           {item.drivetrain}
                         </span>
@@ -292,32 +453,65 @@ export default function MyListingsPage() {
 
                   <div className="my-listing-extra-chips">
                     {item.state && (
-                      <span className="my-listing-chip">Stare: {item.state}</span>
+                      <span className="my-listing-chip">
+                        {t("myListings.chips.condition", {
+                          value: item.state,
+                        })}
+                      </span>
                     )}
+
                     {item.doors && (
-                      <span className="my-listing-chip">{item.doors} uși</span>
+                      <span className="my-listing-chip">
+                        {t("myListings.chips.doors", {
+                          count: item.doors,
+                        })}
+                      </span>
                     )}
+
                     {item.seats && (
-                      <span className="my-listing-chip">{item.seats} locuri</span>
+                      <span className="my-listing-chip">
+                        {t("myListings.chips.seats", {
+                          count: item.seats,
+                        })}
+                      </span>
                     )}
+
                     {item.seller_type && (
                       <span className="my-listing-chip">
-                        Vânzător: {item.seller_type}
+                        {t("myListings.chips.seller", {
+                          value: item.seller_type,
+                        })}
                       </span>
                     )}
+
                     {item.registration_country && (
                       <span className="my-listing-chip">
-                        Înmatriculare: {item.registration_country}
+                        {t(
+                          "myListings.chips.registration",
+                          {
+                            value:
+                              item.registration_country,
+                          }
+                        )}
                       </span>
                     )}
+
                     {(item.class_ || item.class) && (
                       <span className="my-listing-chip">
-                        Clasă: {item.class_ || item.class}
+                        {t("myListings.chips.class", {
+                          value:
+                            item.class_ || item.class,
+                        })}
                       </span>
                     )}
+
                     {item.score && (
                       <span className="my-listing-chip">
-                        Scor: {Number(item.score).toFixed(1)} / 100
+                        {t("myListings.chips.score", {
+                          value: Number(
+                            item.score
+                          ).toFixed(1),
+                        })}
                       </span>
                     )}
                   </div>
@@ -328,10 +522,15 @@ export default function MyListingsPage() {
                     <button
                       type="button"
                       className="saved-secondary"
-                      onClick={() => setEditingItem({ ...item })}
+                      onClick={() =>
+                        setEditingItem({
+                          ...item,
+                        })
+                      }
                     >
-                      Editează
+                      {t("myListings.actions.edit")}
                     </button>
+
                     <button
                       type="button"
                       className="saved-secondary"
@@ -341,50 +540,81 @@ export default function MyListingsPage() {
                             prefill: {
                               brand: item.brand,
                               model: item.model,
-                              generation: item.generation,
+                              generation:
+                                item.generation,
                               year: item.year,
-                              mileage: item.mileage,
-                              price: item.price_eur,
-                              fuel_type: item.fuel_type,
-                              gearbox: item.gearbox,
-                              drivetrain: item.drivetrain,
-                              body_type: item.body_type,
-                              engine: item.engine,
+                              mileage:
+                                item.mileage,
+                              price:
+                                item.price_eur,
+                              fuel_type:
+                                item.fuel_type,
+                              gearbox:
+                                item.gearbox,
+                              drivetrain:
+                                item.drivetrain,
+                              body_type:
+                                item.body_type,
+                              engine:
+                                item.engine,
                             },
                           },
                         })
                       }
                     >
-                      Analiză Risc
+                      {t(
+                        "myListings.actions.riskAnalysis"
+                      )}
                     </button>
+
                     <button
                       type="button"
                       className="saved-delete"
-                      onClick={() => setDeletingId(item.id)}
+                      onClick={() =>
+                        setDeletingId(item.id)
+                      }
                     >
-                      Șterge
+                      {t("myListings.actions.delete")}
                     </button>
                   </div>
 
                   {deletingId === item.id && (
                     <div className="saved-confirm">
-                      <p>Sigur dorești să ștergi acest anunț?</p>
+                      <p>
+                        {t(
+                          "myListings.actions.confirmDelete"
+                        )}
+                      </p>
+
                       <div className="saved-actions">
                         <button
                           type="button"
                           className="saved-delete"
                           disabled={busy}
-                          onClick={() => handleDelete(item.id)}
+                          onClick={() =>
+                            handleDelete(item.id)
+                          }
                         >
-                          {busy ? "Se șterge…" : "Da, șterge"}
+                          {busy
+                            ? t(
+                                "myListings.actions.deleting"
+                              )
+                            : t(
+                                "myListings.actions.deleteYes"
+                              )}
                         </button>
+
                         <button
                           type="button"
                           className="saved-secondary"
                           disabled={busy}
-                          onClick={() => setDeletingId(null)}
+                          onClick={() =>
+                            setDeletingId(null)
+                          }
                         >
-                          Anulează
+                          {t(
+                            "myListings.actions.cancel"
+                          )}
                         </button>
                       </div>
                     </div>
@@ -399,23 +629,35 @@ export default function MyListingsPage() {
           <div className="my-listing-edit-modal">
             <div className="my-listing-edit-dialog">
               <h2>
-                Editează anunțul: {editingItem.brand} {editingItem.model}
+                {t("myListings.edit.title", {
+                  brand: editingItem.brand,
+                  model: editingItem.model,
+                })}
               </h2>
-              <p>Actualizează detaliile vehiculului tău.</p>
+
+              <p>
+                {t("myListings.edit.description")}
+              </p>
 
               <form onSubmit={handleSaveEdit}>
                 <div className="my-listing-edit-grid">
                   <div className="my-listing-edit-field">
-                    <label htmlFor="edit-price">Preț (€)</label>
+                    <label htmlFor="edit-price">
+                      {t("myListings.edit.price")}
+                    </label>
+
                     <input
                       id="edit-price"
                       type="number"
                       min="0"
-                      value={editingItem.price_eur ?? ""}
+                      value={
+                        editingItem.price_eur ?? ""
+                      }
                       onChange={(e) =>
                         setEditingItem({
                           ...editingItem,
-                          price_eur: e.target.value,
+                          price_eur:
+                            e.target.value,
                         })
                       }
                       required
@@ -423,16 +665,22 @@ export default function MyListingsPage() {
                   </div>
 
                   <div className="my-listing-edit-field">
-                    <label htmlFor="edit-mileage">Kilometraj (km)</label>
+                    <label htmlFor="edit-mileage">
+                      {t("myListings.edit.mileage")}
+                    </label>
+
                     <input
                       id="edit-mileage"
                       type="number"
                       min="0"
-                      value={editingItem.mileage ?? ""}
+                      value={
+                        editingItem.mileage ?? ""
+                      }
                       onChange={(e) =>
                         setEditingItem({
                           ...editingItem,
-                          mileage: e.target.value,
+                          mileage:
+                            e.target.value,
                         })
                       }
                       required
@@ -440,12 +688,17 @@ export default function MyListingsPage() {
                   </div>
 
                   <div className="my-listing-edit-field">
-                    <label htmlFor="edit-year">An fabricație</label>
+                    <label htmlFor="edit-year">
+                      {t("myListings.edit.year")}
+                    </label>
+
                     <input
                       id="edit-year"
                       type="number"
                       min="1886"
-                      value={editingItem.year ?? ""}
+                      value={
+                        editingItem.year ?? ""
+                      }
                       onChange={(e) =>
                         setEditingItem({
                           ...editingItem,
@@ -457,71 +710,100 @@ export default function MyListingsPage() {
                   </div>
 
                   <div className="my-listing-edit-field">
-                    <label htmlFor="edit-hp">Putere (CP)</label>
+                    <label htmlFor="edit-hp">
+                      {t("myListings.edit.power")}
+                    </label>
+
                     <input
                       id="edit-hp"
                       type="number"
                       min="0"
-                      value={editingItem.horsepower ?? ""}
+                      value={
+                        editingItem.horsepower ?? ""
+                      }
                       onChange={(e) =>
                         setEditingItem({
                           ...editingItem,
-                          horsepower: e.target.value,
+                          horsepower:
+                            e.target.value,
                         })
                       }
                     />
                   </div>
 
                   <div className="my-listing-edit-field">
-                    <label htmlFor="edit-fuel">Combustibil</label>
+                    <label htmlFor="edit-fuel">
+                      {t("myListings.edit.fuel")}
+                    </label>
+
                     <input
                       id="edit-fuel"
                       type="text"
-                      value={editingItem.fuel_type ?? ""}
+                      value={
+                        editingItem.fuel_type ?? ""
+                      }
                       onChange={(e) =>
                         setEditingItem({
                           ...editingItem,
-                          fuel_type: e.target.value,
+                          fuel_type:
+                            e.target.value,
                         })
                       }
                     />
                   </div>
 
                   <div className="my-listing-edit-field">
-                    <label htmlFor="edit-gearbox">Cutie de viteze</label>
+                    <label htmlFor="edit-gearbox">
+                      {t("myListings.edit.gearbox")}
+                    </label>
+
                     <input
                       id="edit-gearbox"
                       type="text"
-                      value={editingItem.gearbox ?? ""}
+                      value={
+                        editingItem.gearbox ?? ""
+                      }
                       onChange={(e) =>
                         setEditingItem({
                           ...editingItem,
-                          gearbox: e.target.value,
+                          gearbox:
+                            e.target.value,
                         })
                       }
                     />
                   </div>
 
                   <div className="my-listing-edit-field">
-                    <label htmlFor="edit-body">Caroserie</label>
+                    <label htmlFor="edit-body">
+                      {t("myListings.edit.body")}
+                    </label>
+
                     <input
                       id="edit-body"
                       type="text"
-                      value={editingItem.body_type ?? ""}
+                      value={
+                        editingItem.body_type ?? ""
+                      }
                       onChange={(e) =>
                         setEditingItem({
                           ...editingItem,
-                          body_type: e.target.value,
+                          body_type:
+                            e.target.value,
                         })
                       }
                     />
                   </div>
 
                   <div className="my-listing-edit-field">
-                    <label htmlFor="edit-state">Stare</label>
+                    <label htmlFor="edit-state">
+                      {t("myListings.edit.condition")}
+                    </label>
+
                     <select
                       id="edit-state"
-                      value={editingItem.state ?? "Used"}
+                      value={
+                        editingItem.state ?? "Used"
+                      }
                       onChange={(e) =>
                         setEditingItem({
                           ...editingItem,
@@ -529,8 +811,13 @@ export default function MyListingsPage() {
                         })
                       }
                     >
-                      <option value="Used">Second-Hand (Used)</option>
-                      <option value="New">Nou</option>
+                      <option value="Used">
+                        {t("myListings.edit.used")}
+                      </option>
+
+                      <option value="New">
+                        {t("myListings.edit.new")}
+                      </option>
                     </select>
                   </div>
                 </div>
@@ -541,15 +828,26 @@ export default function MyListingsPage() {
                     className="saved-primary"
                     disabled={busy}
                   >
-                    {busy ? "Se salvează…" : "Salvează modificările"}
+                    {busy
+                      ? t(
+                          "myListings.actions.saving"
+                        )
+                      : t(
+                          "myListings.actions.saveChanges"
+                        )}
                   </button>
+
                   <button
                     type="button"
                     className="saved-secondary"
                     disabled={busy}
-                    onClick={() => setEditingItem(null)}
+                    onClick={() =>
+                      setEditingItem(null)
+                    }
                   >
-                    Anulează
+                    {t(
+                      "myListings.actions.cancel"
+                    )}
                   </button>
                 </div>
               </form>

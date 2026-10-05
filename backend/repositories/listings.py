@@ -1,4 +1,4 @@
-from sqlalchemy import Select, func, select
+from sqlalchemy import Select, func, select, or_
 from sqlalchemy.orm import Session
 
 from models import Listing
@@ -20,9 +20,39 @@ class ListingsRepository:
 
     def filtered_statement(self, filters) -> Select:
         statement = select(Listing)
+        
+        if filters.brand:
+            statement = statement.where(Listing.brand.in_(filters.brand))
+            
+            if filters.model:
+                subq_brands = select(Listing.brand).where(Listing.model.in_(filters.model)).scalar_subquery()
+                statement = statement.where(
+                    or_(
+                        Listing.model.in_(filters.model),
+                        Listing.brand.not_in(subq_brands)
+                    )
+                )
+                
+                if filters.generation:
+                    subq_models = select(Listing.model).where(Listing.generation.in_(filters.generation)).scalar_subquery()
+                    statement = statement.where(
+                        or_(
+                            Listing.generation.in_(filters.generation),
+                            Listing.model.not_in(subq_models)
+                        )
+                    )
+        elif filters.model:
+            statement = statement.where(Listing.model.in_(filters.model))
+            if filters.generation:
+                subq_models = select(Listing.model).where(Listing.generation.in_(filters.generation)).scalar_subquery()
+                statement = statement.where(
+                    or_(
+                        Listing.generation.in_(filters.generation),
+                        Listing.model.not_in(subq_models)
+                    )
+                )
+
         multi_value_columns = {
-            "brand": Listing.brand,
-            "generation": Listing.generation,
             "fuel_type": Listing.fuel_type,
             "gearbox": Listing.gearbox,
             "body_types": Listing.body_type,
@@ -36,9 +66,6 @@ class ListingsRepository:
             values = getattr(filters, name)
             if values:
                 statement = statement.where(column.in_(values))
-
-        if filters.model:
-            statement = statement.where(Listing.model.in_(filters.model))
 
         ranges = {
             "price": (Listing.price_eur, filters.price_min, filters.price_max),

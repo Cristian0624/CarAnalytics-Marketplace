@@ -1,4 +1,5 @@
 import { assessmentValidationMessage } from "./assessmentErrors.js";
+import { assessmentNumber, translateAssessment } from "./assessmentI18n.js";
 
 export const FIELD_LABELS = {
   brand: "Marcă", model: "Model", generation: "Generație", price: "Preț cerut",
@@ -60,149 +61,167 @@ export function usesCurrentRiskPolicy(result) {
     && result.components.price_anomaly.source === "database";
 }
 
-export function extremeAnomalyMessage(flag) {
-  const messages = {
-    extreme_price_low: "Alertă: preț mult sub mediana grupului.",
-    extreme_price_high: "Alertă: preț mult peste mediana grupului.",
-    extreme_mileage_low: "Alertă: kilometraj mult sub mediana grupului.",
-    extreme_mileage_high: "Alertă: kilometraj mult peste mediana grupului.",
-  };
-  return messages[flag] ?? null;
+
+export function getFieldLabel(t, field) {
+  const key = { fuel_type: "fuel", body_type: "body" }[field] ?? field;
+  return FIELD_LABELS[field]
+    ? translateAssessment(t, `anomalyRiskResults.fields.${key}`)
+    : field;
 }
 
-export function riskExplanationItems(result, vehicle) {
+export function extremeAnomalyMessage(flag, t) {
+  const key = {
+    extreme_price_low: "priceLow", extreme_price_high: "priceHigh",
+    extreme_mileage_low: "mileageLow", extreme_mileage_high: "mileageHigh",
+  }[flag];
+  return key ? translateAssessment(t, `anomalyRiskResults.extremeSignals.${key}`) : null;
+}
+
+export function riskExplanationItems(result, vehicle, t) {
   const price = result.components.price_anomaly;
   const mileage = result.components.mileage_anomaly;
   const specs = result.components.specification_anomaly;
-  const format = (value, digits = 0) => new Intl.NumberFormat("ro-RO", { maximumFractionDigits: digits }).format(value);
+  const format = (value, digits = 0) => assessmentNumber(t, value, digits);
+  const tr = (key, values) => translateAssessment(t, `anomalyRiskResults.explanations.${key}`, values);
   const lines = [];
   const add = (text, effect = null) => lines.push({ text, effect });
-  add(`Grupul analizat: ${format(result.market_support.model_generation_observations)} anunțuri cu aceeași marcă și același model${vehicle.generation ? " și aceeași generație. Nu sunt incluse alte generații." : ", din toate generațiile, deoarece generația nu a fost specificată."}`, { metric: "Încredere", direction: result.market_support.model_generation_observations >= 16 ? "up" : "down" });
+  add(tr("analyzedGroup", {
+    count: format(result.market_support.model_generation_observations),
+    group: tr(vehicle.generation ? "selectedGeneration" : "unspecifiedGeneration"),
+  }), { metric: "Încredere", direction: result.market_support.model_generation_observations >= 16 ? "up" : "down" });
   const context = result.scoring_context;
   if (["anomaly-risk-v2.12-unified-scores", "anomaly-risk-v2.13-adaptive-context", "anomaly-risk-v2.14-mileage-price-reduction", "anomaly-risk-v2.15-risk-bands", "anomaly-risk-v2.16-joint-contributions", "anomaly-risk-v2.17-smooth-extremes", "anomaly-risk-v2.18-young-mileage"].includes(result.scoring_policy_version)) {
     if (context?.relation === "consistent_opposite" && (context.coherence_strength ?? 1) > 0) {
-      const pairing = context.price_ratio < 1 ? "Prețul mai mic însoțește kilometrajul mai mare" : "Prețul mai mare însoțește kilometrajul mai mic";
+      const pairing = tr(context.price_ratio < 1 ? "cheaperHigher" : "dearerLower");
       const reduction = context.joint_reduction ?? 0;
       const netReduction = reduction - context.joint_penalty;
-      add(context.mode === "blended"
-        ? `${pairing}. Compensarea este doar parțială și nu anulează abaterile mari; ponderile aplicate sunt afișate la fiecare componentă.`
-        : reduction > 0
-        ? `${pairing}. Kilometrajul explică parțial prețul mai mic: −${format(reduction, 1)} puncte, cu +${format(context.joint_penalty, 1)} puncte de precauție.`
-        : `${pairing}. Abaterile moderate se echilibrează parțial: ponderi normale, fără declanșare automată de scor extrem; +${format(context.joint_penalty, 1)} puncte de precauție.`,
-      { metric: "Anomalie", direction: context.mode === "blended" ? "down" : netReduction > 0 ? "down" : netReduction < 0 ? "up" : "neutral" });
+      add(tr(context.mode === "blended" ? "blendedPair" : reduction > 0 ? "reducedPair" : "balancedPair", {
+        pairing, reduction: format(reduction, 1), penalty: format(context.joint_penalty, 1),
+      }), { metric: "Anomalie", direction: context.mode === "blended" ? "down" : netReduction > 0 ? "down" : netReduction < 0 ? "up" : "neutral" });
     } else if (context?.relation === "inconsistent") {
       const pairing = context.price_ratio > 1 && context.mileage_ratio > 1
-        ? "Prețul și kilometrajul sunt ambele ridicate; kilometrajul mare nu compensează prețul ridicat."
-        : context.price_ratio < 1 && context.mileage_ratio < 1
-          ? "Prețul și kilometrajul sunt ambele scăzute; cele două abateri nu se compensează."
-          : "Prețul și kilometrajul au abateri opuse, dar prea dezechilibrate sau extreme pentru compensare.";
-      add(pairing, { metric: "Anomalie", direction: "up" });
+        ? "bothHigh"
+        : context.price_ratio < 1 && context.mileage_ratio < 1 ? "bothLow" : "unbalanced";
+      add(tr(pairing), { metric: "Anomalie", direction: "up" });
     }
     if (context?.mode === "blended") {
-      add("Contribuția abaterilor mari crește progresiv în funcție de distanța față de mediană și de numărul de anunțuri comparabile. Ponderile aplicate sunt afișate la fiecare componentă.",
-        { metric: "Anomalie", direction: "up" });
+      add(tr("blended"), { metric: "Anomalie", direction: "up" });
     } else if (context?.mode === "extreme") {
       const names = Object.keys(context.override_scores);
       const includesSecondary = ["anomaly-risk-v2.16-joint-contributions", "anomaly-risk-v2.17-smooth-extremes", "anomaly-risk-v2.18-young-mileage"].includes(result.scoring_policy_version)
         && result.effective_weights?.price > 0 && result.effective_weights?.mileage > 0;
       add(includesSecondary && names.length === 1
-        ? `Semnalul extrem de ${names[0] === "price" ? "preț" : "kilometraj"} contează integral, iar abaterea de ${names[0] === "price" ? "kilometraj" : "preț"} adaugă 5% din scorul său, maximum 100 în total.`
-        : names.length === 2
-        ? "Ambele semnale extreme contează: scorul mai mare plus 5% din celălalt, maximum 100."
-        : `Scorul extrem de ${names[0] === "price" ? "preț" : "kilometraj"} determină scorul general, fără ponderare.`,
+        ? tr("secondary", { primary: tr(names[0] === "price" ? "price" : "mileage"), secondary: tr(names[0] === "price" ? "mileage" : "price") })
+        : names.length === 2 ? tr("bothExtreme")
+        : tr("oneExtreme", { trigger: tr(names[0] === "price" ? "price" : "mileage") }),
       { metric: "Anomalie", direction: "up" });
     }
   }
   if (result.scoring_policy_version === "anomaly-risk-v2.8-extreme-override" && (price.flag || mileage.flag)) {
-    add("Scorul general este dat direct de cea mai puternică anomalie extremă de preț sau kilometraj, fără media ponderată sau ajustarea pentru raritate. Semnalul necesită minimum 25 de valori comparabile, un scor de minimum 80 și o abatere de peste 45% față de mediană.");
+    add(tr("extremeOverride"));
   }
   if (result.scoring_policy_version === "anomaly-risk-v2.9-median-override" && (price.flag || mileage.flag)) {
-    const trigger = result.effective_weights?.mileage === 1 ? "kilometraj" : "preț";
-    add(`Abaterea de ${trigger} de peste 45% față de mediană, susținută de minimum 25 de valori comparabile, impune un scor general de cel puțin 80/100, fără media ponderată sau ajustarea pentru raritate. Scorul componentei nu trebuie să atingă 80 pentru activarea acestei reguli.`);
+    add(tr("medianOverride", { trigger: tr(result.effective_weights?.mileage === 1 ? "mileage" : "price") }));
   }
   if (result.scoring_policy_version === "anomaly-risk-v2.10-gradual-override" && (price.flag || mileage.flag)) {
-    const trigger = result.effective_weights?.mileage === 1 ? "kilometraj" : "preț";
-    add(`Abaterea de ${trigger} de peste 45% față de mediană, susținută de minimum 25 de valori comparabile, determină direct scorul general, fără media ponderată sau ajustarea pentru raritate. Scorul crește gradual de la 80 la pragul de 45% până la 100 pentru o abatere de 100% sau mai mare. Dacă ambele semnale se califică, se folosește scorul mai mare. Scorurile componentelor rămân calculate separat din percentile.`);
+    add(tr("gradualOverride", { trigger: tr(result.effective_weights?.mileage === 1 ? "mileage" : "price") }));
   }
   if (price.score != null) {
-    add(`Intervalul observat P10–P90 are o lățime de ${format(result.confidence.p10_p90_width)} € (${format(result.confidence.relative_interval_width * 100, 1)}% din mediană), pe baza a ${format(price.count)} anunțuri cu aceeași marcă și același model${vehicle.generation ? " și aceeași generație" : " din toate generațiile"}. Anul, kilometrajul și configurația nu filtrează acest grup.`);
+    add(tr("priceRange", {
+      width: format(result.confidence.p10_p90_width),
+      percentage: format(result.confidence.relative_interval_width * 100, 1),
+      count: format(price.count),
+      group: translateAssessment(t, vehicle.generation ? "assessment.sameGeneration" : "assessment.allGenerations"),
+    }));
   } else {
-    add(`Prețul nu a fost evaluat: ${format(price.count ?? 0)} anunțuri comparabile, față de minimum 10 necesare. ${vehicle.generation ? "Nu se folosesc alte generații sau modele." : "Comparația include toate generațiile aceluiași model."}`);
+    add(tr("priceNotEvaluated", {
+      count: format(price.count ?? 0),
+      group: tr(vehicle.generation ? "noOtherGenerations" : "includeGenerations"),
+    }));
   }
   if (result.assessment_status === "very_rare") {
-    add("Există prea puține anunțuri în grupul selectat pentru un scor general.");
+    add(tr("veryRare"));
   } else if (result.assessment_status === "limited_support") {
-    add("Exemplele disponibile sunt limitate. Interpretează scorul în contextul încrederii afișate.");
+    add(tr("limitedSupport"));
   }
   const centralPrice = price.direction === "normal" && price.actual_price >= price.p25 && price.actual_price <= price.p75;
   const smoothPolicy = ["anomaly-risk-v2.17-smooth-extremes", "anomaly-risk-v2.18-young-mileage"].includes(result.scoring_policy_version);
   const priceEscalating = smoothPolicy && context?.override_scores?.price != null;
   const mileageEscalating = smoothPolicy && context?.override_scores?.mileage != null;
   const priceExplanation = {
-    unusually_cheap: "Prețul cerut este sub percentila 10 a prețurilor observate (P10).",
-    unusually_expensive: "Prețul cerut depășește percentila 90 a prețurilor observate (P90).",
-    normal: centralPrice
-      ? "Prețul cerut este aproape de zona centrală observată a pieței."
-      : "Prețul cerut este în intervalul P10–P90, dar în afara zonei centrale P25–P75.",
+    unusually_cheap: tr("priceCheap"), unusually_expensive: tr("priceExpensive"),
+    normal: tr(centralPrice ? "priceCentral" : "priceOutsideCentral"),
   };
   if (price.score != null) {
-    const text = price.flag
-      ? extremeAnomalyMessage(price.flag)
-      : priceEscalating ? "Prețul cerut are o abatere mare față de mediana grupului; contribuția sa crește progresiv."
-      : priceExplanation[price.direction];
+    const text = price.flag ? extremeAnomalyMessage(price.flag, t)
+      : priceEscalating ? tr("priceEscalating") : priceExplanation[price.direction];
     add(text, { metric: "Anomalie", direction: !price.flag && !priceEscalating && centralPrice ? "down" : price.score > 0 ? "up" : "neutral" });
   }
   if (mileage.score == null) {
     if (vehicle.mileage == null) {
-      add("Kilometrajul nu a fost introdus, deci nu a fost evaluat.");
+      add(tr("mileageMissing"));
     } else {
-      add(`Kilometraj: ${format(mileage.sample_size ?? 0)} anunțuri cu kilometraj disponibil în grupul selectat. Mediana necesită minimum 10, iar scorul minimum 20.${mileage.expected_median_mileage != null ? " Mediana este disponibilă, dar scorul nu." : ""}`);
+      add(tr("mileageNotScored", {
+        count: format(mileage.sample_size ?? 0),
+        medianAvailable: mileage.expected_median_mileage != null ? tr("medianAvailable") : "",
+      }));
     }
   } else {
-    const mileageText = { unusually_low: "Kilometrajul este neobișnuit de mic", unusually_high: "Kilometrajul este neobișnuit de mare", normal: "Kilometrajul se află în intervalul observat" };
+    const mileageText = { unusually_low: tr("mileageLow"), unusually_high: tr("mileageHigh"), normal: tr("mileageNormal") };
     const youngMileage = (mileage.age_adjustment_factor ?? 1) < 1;
     const text = youngMileage
-      ? `Kilometrajul mic este evaluat mai permisiv pentru o mașină de aproximativ ${format(mileage.vehicle_age_years)} ${mileage.vehicle_age_years === 1 ? "an" : "ani"}. Comparația folosește`
-      : mileage.flag
-      ? `${extremeAnomalyMessage(mileage.flag)} Comparația folosește`
-      : mileageEscalating ? "Kilometrajul are o abatere mare față de mediană; contribuția sa crește progresiv. Comparația folosește"
-      : `${mileageText[mileage.direction]} față de`;
-    add(`${text} ${format(mileage.sample_size)} anunțuri cu kilometraj disponibil în grupul selectat.${["model", "model_generation"].includes(mileage.comparison_level) ? " Anul de fabricație nu restrânge grupul." : ""}`, { metric: "Anomalie", direction: !mileage.flag && !mileageEscalating && mileage.direction === "normal" ? "down" : mileage.score > 0 ? "up" : "neutral" });
+      ? tr("youngMileage", { age: format(mileage.vehicle_age_years), years: tr(mileage.vehicle_age_years === 1 ? "year" : "years") })
+      : mileage.flag ? tr("flaggedMileage", { message: extremeAnomalyMessage(mileage.flag, t) })
+      : mileageEscalating ? tr("mileageEscalating")
+      : tr("mileageCompared", { description: mileageText[mileage.direction] });
+    add(tr("mileageResult", {
+      description: text, count: format(mileage.sample_size),
+      yearNotRestricting: ["model", "model_generation"].includes(mileage.comparison_level) ? tr("yearNotRestricting") : "",
+    }), { metric: "Anomalie", direction: !mileage.flag && !mileageEscalating && mileage.direction === "normal" ? "down" : mileage.score > 0 ? "up" : "neutral" });
   }
-  add("Configurație: fiecare câmp introdus necesită minimum 25 de valori disponibile în același grup. Valorile lipsă nu participă la calculul acelui câmp.");
-  const missing = Object.entries(FIELD_LABELS).filter(([key]) => key !== "price" && vehicle[key] == null).map(([, label]) => label);
-  if (missing.length) add(`Câmpuri necompletate: ${missing.join(", ")}. Acestea pot reduce încrederea în rezultat.`, { metric: "Încredere", direction: "down" });
+  add(tr("configuration"));
+  const missing = Object.keys(FIELD_LABELS).filter((key) => key !== "price" && vehicle[key] == null).map((key) => getFieldLabel(t, key));
+  if (missing.length) add(tr("missingFields", { fields: missing.join(", ") }), { metric: "Încredere", direction: "down" });
   const severityExplanations = {
-    unobserved: `nu apare în exemplele observate pentru ${vehicle.generation ? "acest model și această generație" : "acest model"}`,
-    outside_observed_range: `este în afara intervalului observat pentru ${vehicle.generation ? "această generație" : "acest model"}`,
-    uncommon: "este rar întâlnit în exemplele disponibile",
-    very_rare: "este foarte rar întâlnit în exemplele disponibile",
+    unobserved: tr("severity.unobserved", { group: tr(vehicle.generation ? "thisModelGeneration" : "thisModel") }),
+    outside_observed_range: tr("severity.outsideRange", { group: tr(vehicle.generation ? "thisGeneration" : "thisModel") }),
+    uncommon: tr("severity.uncommon"), very_rare: tr("severity.veryRare"),
   };
   for (const signal of specs.signals) {
     if (signal.value != null && severityExplanations[signal.severity]) {
-      add(`${FIELD_LABELS[signal.field] ?? signal.field} (${signal.value}) ${severityExplanations[signal.severity]}.`, { metric: "Anomalie", direction: "up" });
+      add(tr("signal", {
+        field: getFieldLabel(t, signal.field),
+        value: translateVehicleValue(t, signal.field, signal.value),
+        explanation: severityExplanations[signal.severity],
+      }), { metric: "Anomalie", direction: "up" });
     }
   }
   if (hasOverallScore(result) && result.market_support.rarity_penalty) {
-    add(`Scorul general include o ajustare de ${format(result.market_support.rarity_penalty, 1)} puncte pentru numărul redus de anunțuri din grupul selectat.`, { metric: "Anomalie", direction: "up" });
+    add(tr("rarityAdjustment", { points: format(result.market_support.rarity_penalty, 1) }), { metric: "Anomalie", direction: "up" });
   }
   return lines;
 }
 
-export function riskExplanationLines(result, vehicle) {
-  return riskExplanationItems(result, vehicle).map((item) => item.text);
+export function translateVehicleValue(t, field, value) {
+  if (!t || !["fuel_type", "gearbox", "drivetrain", "body_type"].includes(field)) return String(value);
+  return t(`risk.options.${field}.${value}`, { defaultValue: String(value) });
 }
 
-export function riskErrorMessage(error) {
-  if (error.name === "TimeoutError") return "Analiza durează prea mult. Încearcă din nou în câteva momente.";
-  if (error.status === 503) return "Analiza este momentan indisponibilă. Încearcă din nou mai târziu.";
+export function riskExplanationLines(result, vehicle, t) {
+  return riskExplanationItems(result, vehicle, t).map((item) => item.text);
+}
+
+export function riskErrorMessage(error, t) {
+  const tr = (key, values) => translateAssessment(t, `anomalyRiskResults.errors.${key}`, values);
+  if (error.name === "TimeoutError") return tr("timeout");
+  if (error.status === 503) return tr("unavailable");
   if (error.status === 422) {
-    const validationMessage = assessmentValidationMessage(error.detail);
+    const validationMessage = assessmentValidationMessage(error.detail, t);
     if (validationMessage) return validationMessage;
     const fields = [...new Set((Array.isArray(error.detail) ? error.detail : [])
-      .map((item) => FIELD_LABELS[item.loc?.[1]]).filter(Boolean))];
-    return fields.length ? `Verifică aceste câmpuri: ${fields.join(", ")}.` : "Verifică datele introduse și încearcă din nou.";
+      .map((item) => item.loc?.[1]).filter((field) => FIELD_LABELS[field]).map((field) => getFieldLabel(t, field)))];
+    return fields.length ? tr("fields", { fields: fields.join(", ") }) : tr("invalidData");
   }
-  if (error instanceof TypeError) return "Nu putem contacta serverul. Verifică conexiunea și încearcă din nou.";
-  return "Analiza nu a putut fi finalizată. Încearcă din nou.";
+  if (error instanceof TypeError) return tr("connection");
+  return tr("generic");
 }

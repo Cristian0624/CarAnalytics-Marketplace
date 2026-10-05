@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import "./AuthButton.css";
 
 function AuthButton() {
+  const { t } = useTranslation();
   const { user, loading, logout } = useAuth();
   
   const [isOpen, setIsOpen] = useState(false);
@@ -64,7 +66,7 @@ function AuthButton() {
 
       {loading ? (
         <button className="auth-button" disabled>
-          <span className="auth-button__content">Cont</span>
+          <span className="auth-button__content">{t("authButton.account")}</span>
           <Blobs />
         </button>
       ) : user ? (
@@ -86,7 +88,7 @@ function AuthButton() {
               <circle cx="12" cy="8" r="4" />
               <path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8" />
             </svg>
-            Cont
+            {t("authButton.account")}
             <span className={isOpen ? "chevron chevron-open" : "chevron"}>▼</span>
           </span>
           <Blobs />
@@ -98,29 +100,78 @@ function AuthButton() {
           {user ? (
             <>
               <div className="auth-dropdown-header">{user.email}</div>
-              <Link to="/profile" className="auth-dropdown-item" onClick={() => setIsOpen(false)}>
-                Profilul Meu
+
+              <Link
+                to="/profile"
+                className="auth-dropdown-item"
+                onClick={() => setIsOpen(false)}
+              >
+                {t("authButton.profile")}
               </Link>
-              <Link to="/my-listings" className="auth-dropdown-item" onClick={() => setIsOpen(false)}>
-                Anunțurile Mele
+
+              <Link
+                to="/my-listings"
+                className="auth-dropdown-item"
+                onClick={() => setIsOpen(false)}
+              >
+                {t("authButton.myListings")}
               </Link>
-              <Link to="/create-listing" className="auth-dropdown-item" onClick={() => setIsOpen(false)}>
-                Creează Anunț
+
+              <Link
+                to="/create-listing"
+                className="auth-dropdown-item"
+                onClick={() => setIsOpen(false)}
+              >
+                {t("authButton.createListing")}
               </Link>
-              <Link to="/favourites" className="auth-dropdown-item" onClick={() => setIsOpen(false)}>Anunțuri Favorite</Link>
-              <Link to="/saved-risk-assessments" className="auth-dropdown-item" onClick={() => setIsOpen(false)}>Analize Risc Salvate</Link>
-              <Link to="/saved-searches" className="auth-dropdown-item" onClick={() => setIsOpen(false)}>Filtre Salvate</Link>
-              <button className="auth-dropdown-item auth-logout" onClick={handleDeconectare}>
-                Deconectare
+
+              <Link
+                to="/favourites"
+                className="auth-dropdown-item"
+                onClick={() => setIsOpen(false)}
+              >
+                {t("authButton.favourites")}
+              </Link>
+
+              <Link
+                to="/saved-risk-assessments"
+                className="auth-dropdown-item"
+                onClick={() => setIsOpen(false)}
+              >
+                {t("authButton.savedRisks")}
+              </Link>
+
+              <Link
+                to="/saved-searches"
+                className="auth-dropdown-item"
+                onClick={() => setIsOpen(false)}
+              >
+                {t("authButton.savedSearches")}
+              </Link>
+
+              <button
+                className="auth-dropdown-item auth-logout"
+                onClick={handleDeconectare}
+              >
+                {t("authButton.logout")}
               </button>
             </>
           ) : (
             <>
-              <Link to="/login" className="auth-dropdown-item" onClick={() => setIsOpen(false)}>
-                Autentificare
+              <Link
+                to="/login"
+                className="auth-dropdown-item"
+                onClick={() => setIsOpen(false)}
+              >
+                {t("authButton.login")}
               </Link>
-              <Link to="/register" className="auth-dropdown-item" onClick={() => setIsOpen(false)}>
-                Înregistrare
+
+              <Link
+                to="/register"
+                className="auth-dropdown-item"
+                onClick={() => setIsOpen(false)}
+              >
+                {t("authButton.register")}
               </Link>
             </>
           )}

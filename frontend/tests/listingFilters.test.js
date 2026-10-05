@@ -28,12 +28,23 @@ test("model requires brand and generation requires both; brand and multiple clas
   assert.equal(listingFilterError({ brandText: "Volkswagen", modelText: "Golf", generationText: "VII" }), "");
 });
 
-test("changing brand or model clears dependent selections, while class search retains brand", () => {
+test("the vehicle tree can commit all three selections without losing another selected model", () => {
   const form = { ...emptyListingFilters(), brandText: "Volkswagen", modelText: "Golf", generationText: "VII" };
-  assert.equal(updateListingFilter(form, "brandText", "Toyota").modelText, "");
-  assert.equal(updateListingFilter(form, "brandText", "Toyota").generationText, "");
-  assert.equal(updateListingFilter(form, "modelText", "Polo").generationText, "");
-  assert.equal(updateListingFilter(form, "modelText", "Golf").generationText, "VII");
+  // main's VehicleTree owns dependent selections and commits all three fields.
+  // The generic updater must not clear selections belonging to another branch.
+  let next = updateListingFilter(form, "brandText", "Volkswagen, Toyota");
+  next = updateListingFilter(next, "modelText", "Golf, Yaris");
+  next = updateListingFilter(next, "generationText", "VII, I (1999 - 2005)");
+  assert.deepEqual(listingFiltersToApi(next), {
+    brand: ["Volkswagen", "Toyota"], model: ["Golf", "Yaris"],
+    generation: ["VII", "I (1999 - 2005)"],
+  });
+  next = updateListingFilter(next, "brandText", "Toyota");
+  next = updateListingFilter(next, "modelText", "Yaris");
+  next = updateListingFilter(next, "generationText", "I (1999 - 2005)");
+  assert.deepEqual(listingFiltersToApi(next), {
+    brand: ["Toyota"], model: ["Yaris"], generation: ["I (1999 - 2005)"],
+  });
   assert.equal(updateListingFilter({ ...form, modelText: "", generationText: "" }, "class", ["C"]).brandText, "Volkswagen");
 });
 
