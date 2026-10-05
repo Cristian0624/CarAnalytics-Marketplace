@@ -1,40 +1,26 @@
-import React from "react";
-import { withTranslation } from "react-i18next";
-
-class ErrorBoundary extends React.Component {
+import React from 'react';
+export class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
+    this.state = { hasError: false, error: null, info: null };
   }
-
   static getDerivedStateFromError(error) {
-    return { hasError: true };
+    return { hasError: true, error };
   }
-
-  componentDidCatch(error, errorInfo) {
-    this.setState({ error, errorInfo });
-    console.error("ErrorBoundary caught an error", error, errorInfo);
+  componentDidCatch(error, info) {
+    console.error("ErrorBoundary caught an error", error, info);
+    this.setState({ info });
   }
-
   render() {
-    const { t } = this.props;
-
     if (this.state.hasError) {
       return (
-        <div style={{ padding: "20px", color: "red", background: "#f8d7da" }}>
-          <h2>{t("errorBoundary.title")}</h2>
-
-          <details style={{ whiteSpace: "pre-wrap" }}>
-            {this.state.error && this.state.error.toString()}
-            <br />
-            {this.state.errorInfo && this.state.errorInfo.componentStack}
-          </details>
+        <div style={{ padding: '20px', background: 'red', color: 'white', zIndex: 9999, position: 'relative' }}>
+          <h1>Something went wrong.</h1>
+          <pre>{this.state.error?.toString()}</pre>
+          <pre>{this.state.info?.componentStack}</pre>
         </div>
       );
     }
-
     return this.props.children;
   }
 }
-
-export default withTranslation()(ErrorBoundary);

@@ -270,8 +270,46 @@ function CarCard({
               <div className="car-expanded-content">
                 {showFavourite && <FavouriteButton car={currentCar} />}
                 
-                <button className={`comparator-button ${isCompared ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); isCompared ? removeCar(currentCar.id) : addCar(currentCar); }} title={isCompared ? "Elimină din comparare" : "Adaugă în comparare"}>
-                  <span>{isCompared ? "Comparat" : "Compară"}</span>
+                <button
+                  className={`comparator-button ${isCompared ? "active" : ""}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    isCompared ? removeCar(currentCar.id) : addCar(currentCar);
+                  }}
+                  title={
+                    isCompared
+                      ? t("comparatorPage.removeFromComparison")
+                      : t("comparatorPage.addToComparison")
+                  }
+                >
+                  <svg
+                    className="comparator-button-icon"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    {isCompared ? (
+                      <polyline points="20 6 9 17 4 12" />
+                    ) : (
+                      <>
+                        <path d="M17 2l4 4-4 4" />
+                        <path d="M3 6h18" />
+                        <path d="M7 22l-4-4 4-4" />
+                        <path d="M21 18H3" />
+                      </>
+                    )}
+                  </svg>
+                  <span>
+                    {isCompared
+                      ? t("comparatorPage.compared")
+                      : t("comparatorPage.compare")}
+                  </span>
                 </button>
 
                 <button
@@ -754,3 +792,4 @@ function CarCard({
 }
 
 export default CarCard;
+

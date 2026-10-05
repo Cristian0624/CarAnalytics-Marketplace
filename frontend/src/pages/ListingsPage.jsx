@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { searchListingsPaginated } from "../api/listings";
@@ -80,7 +80,7 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
     setError("");
 
     const validationError = listingFilterError(
-      listingFiltersToForm(query.filters)
+      listingFiltersToForm(query.filters), t
     );
 
     if (validationError) {
@@ -133,7 +133,7 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
   useEffect(() => {
     let current = true;
 
-    const validationError = listingFilterError(filters);
+    const validationError = listingFilterError(filters, t);
 
     if (validationError) {
       setFilterCount(0);
@@ -185,7 +185,7 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
 
     setFilters(values);
 
-    const validationError = listingFilterError(values);
+    const validationError = listingFilterError(values, t);
 
     if (validationError) {
       setError(validationError);
@@ -493,7 +493,7 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
             state={{ savedFilters: query.filters, savedPage: query.page }} 
             className="comparator-banner-btn"
           >
-            {t("comparator.view", { count: comparedCars.length, defaultValue: `Deschide comparare (${comparedCars.length}/3 mașini)` })}
+            {t("comparatorPage.openComparison", { count: comparedCars.length })}
           </Link>
         </div>
 

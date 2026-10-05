@@ -1,1165 +1,1123 @@
 {
-    "common": {
-      "home": "Home",
-      "listings": "Listings",
-      "recommendations": "Recommendations",
-      "profile": "Profile",
-      "login": "Login",
-      "register": "Register",
-      "logout": "Logout",
-      "save": "Save",
-      "cancel": "Cancel",
-      "delete": "Delete",
-      "edit": "Edit",
-      "search": "Search",
-      "loading": "Loading...",
-      "back": "Back",
-      "next": "Next",
-      "previous": "Previous",
-      "viewListings": "View listings"
-    },
-  
-    "language": {
-      "ro": "Română",
-      "en": "English",
-      "ru": "Русский"
-    },
-  
-    "header": {
+  "common": {
+    "home": "Home",
+    "listings": "Listings",
+    "recommendations": "Recommendations",
+    "profile": "Profile",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "loading": "Loading...",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "viewListings": "View listings"
+  },
+  "language": {
+    "ro": "Română",
+    "en": "English",
+    "ru": "Русский"
+  },
+  "header": {
     "home": "Home",
     "listings": "Marketplace",
     "riskAnalysis": "Risk Analysis",
     "profile": "My Profile",
     "login": "Login",
     "register": "Register"
-    },
-  
-    "estimator": {
-      "title": "Estimate car price",
-      "brand": "Brand",
-      "model": "Model",
-      "generation": "Generation",
-      "year": "Year",
-      "mileage": "Mileage",
-      "fuel": "Fuel",
-      "engine": "Engine",
-      "gearbox": "Gearbox",
-      "drivetrain": "Drivetrain",
-      "body": "Body type",
-      "estimate": "Estimate price"
-    },
-
-    
-        "risk": {
-          "title": "Look beyond the price.",
-          "description": "Compare the price, mileage, and configuration with market data. Find out what is worth checking before you buy.",
-          "aboutCar": "About the car",
-          "formDescription": "The information from the listing is enough to get started.",
-          "required": "Required",
-          "offerData": "Offer details",
-      
-          "brand": "Brand",
-          "model": "Model",
-          "generation": "Generation",
-          "price": "Asking price (€)",
-          "year": "Year of manufacture",
-          "mileage": "Mileage (km)",
-          "engine": "Engine (liters)",
-          "fuel": "Fuel",
-          "gearbox": "Transmission",
-          "drivetrain": "Drivetrain",
-          "bodyType": "Body type",
-      
-          "unspecified": "Not specified",
-      
-          "placeholders": {
-            "price": "E.g. 12000",
-            "year": "E.g. 2016",
-            "mileage": "E.g. 150000",
-            "engine": "E.g. 2.0"
-          },
-      
-          "formNote": "Provide as many details as possible for a more relevant analysis. For an electric car, the engine can be 0 or left empty.",
-      
-          "analyzing": "Analyzing offer…",
-          "analyze": "Analyze offer",
-          "reset": "Reset",
-          "saveAnalysis": "Save analysis",
-      
-          "loading": "We are comparing the offer with listings in the database.",
-      
-          "whatYouLearn": "What you will learn",
-      
-          "preview": {
-            "priceContext": {
-              "title": "Price in context",
-              "description": "Observed prices in the database and the position of the offer within the selected group."
-            },
-            "detailsToCheck": {
-              "title": "Details to check",
-              "description": "Mileage and unusual configurations compared with similar cars."
-            },
-            "confidence": {
-              "title": "How much to trust it",
-              "description": "How many examples support the analysis and when the available data is insufficient."
-            }
-          },
-      
-          "disclaimer": "The scores identify unusual offers, not the probability of fraud. The analysis does not replace checking the vehicle history and inspecting the car.",
-      
-          "errors": {
-            "selectBrandModel": "Choose the brand and model from the available lists.",
-            "selectGeneration": "Choose the generation from the list or leave it empty."
-          },
-      
-          "options": {
-            "fuel_type": {
-              "Benzină": "Petrol",
-              "Diesel": "Diesel",
-              "Electricitate": "Electric",
-              "Hybrid": "Hybrid",
-              "Gaz": "Gas",
-              "Gaz / Benzină (propan)": "LPG / Petrol (propane)",
-              "Gaz / Benzină (metan)": "CNG / Petrol (methane)",
-              "Plug-in Hybrid (benzină)": "Plug-in Hybrid (petrol)",
-              "Plug-in Hybrid (diesel)": "Plug-in Hybrid (diesel)",
-              "Mild Hybrid (benzină)": "Mild Hybrid (petrol)",
-              "Mild Hybrid (diesel)": "Mild Hybrid (diesel)"
-            },
-            "gearbox": {
-              "Mecanică": "Manual",
-              "Automată": "Automatic",
-              "Automat-Tiptronic": "Automatic-Tiptronic",
-              "Robotizată": "Automated Manual",
-              "Variator": "CVT"
-            },
-            "drivetrain": {
-              "Din față": "Front-wheel drive",
-              "Din spate": "Rear-wheel drive",
-              "4x4": "4x4",
-              "4x2": "4x2"
-            },
-            "body_type": {
-              "Sedan": "Sedan",
-              "Hatchback": "Hatchback",
-              "Universal": "Station Wagon",
-              "Combi": "Estate",
-              "SUV": "SUV",
-              "Crossover": "Crossover",
-              "Coupe": "Coupe",
-              "Cabriolet": "Convertible",
-              "Roadster": "Roadster",
-              "Pickup": "Pickup",
-              "Minivan": "Minivan",
-              "Microvan": "Microvan",
-              "Furgon": "Van",
-              "Camionetă": "Truck",
-              "Microautobus": "Minibus",
-              "Platformă deschisă": "Flatbed"
-            }
-          }
-        },
-
-        "createListing": {
-  "loading": "Loading...",
-
-  "backToListings": "Back to listings",
-  "title": "Create a listing",
-  "description": "Enter the vehicle details and see the estimated market price before saving the listing.",
-
-  "success": "The listing was created successfully.",
-
-  "vehicle": {
-    "title": "Vehicle",
-    "description": "Select the vehicle brand, model, and generation."
   },
-
-  "technical": {
-    "title": "Technical information",
-    "description": "Add the main technical characteristics of the vehicle."
-  },
-
-  "seller": {
-    "title": "Seller information",
-    "description": "Information about the seller and the vehicle registration.",
-    "private": "Private seller",
-    "dealer": "Car dealer"
-  },
-
-  "price": {
-    "title": "Price",
-    "description": "Enter the asking price for the vehicle.",
-    "marketRecommended": "Recommended market price",
-    "calculating": "Calculating recommendation...",
-    "normalRange": "Normal price range",
-    "completeRequired": "Complete the required vehicle information to see the recommended market price."
-  },
-
-  "fields": {
+  "estimator": {
+    "title": "Estimate car price",
     "brand": "Brand",
     "model": "Model",
     "generation": "Generation",
     "year": "Year",
-    "mileage": "Mileage (km)",
-    "fuelType": "Fuel type",
+    "mileage": "Mileage",
+    "fuel": "Fuel",
     "engine": "Engine",
+    "gearbox": "Gearbox",
+    "drivetrain": "Drivetrain",
+    "body": "Body type",
+    "estimate": "Estimate price"
+  },
+  "risk": {
+    "title": "Look beyond the price.",
+    "description": "Compare the price, mileage, and configuration with market data. Find out what is worth checking before you buy.",
+    "aboutCar": "About the car",
+    "formDescription": "The information from the listing is enough to get started.",
+    "required": "Required",
+    "offerData": "Offer details",
+    "brand": "Brand",
+    "model": "Model",
+    "generation": "Generation",
+    "price": "Asking price (€)",
+    "year": "Year of manufacture",
+    "mileage": "Mileage (km)",
+    "engine": "Engine (liters)",
+    "fuel": "Fuel",
     "gearbox": "Transmission",
     "drivetrain": "Drivetrain",
     "bodyType": "Body type",
-    "horsepower": "Horsepower",
-    "doors": "Number of doors",
-    "seats": "Number of seats",
-    "state": "Condition",
-    "sellerType": "Seller type",
-    "registrationCountry": "Registration country",
-    "vehicleClass": "Vehicle class",
-    "askingPrice": "Asking price (€)"
+    "unspecified": "Not specified",
+    "placeholders": {
+      "price": "E.g. 12000",
+      "year": "E.g. 2016",
+      "mileage": "E.g. 150000",
+      "engine": "E.g. 2.0"
+    },
+    "formNote": "Provide as many details as possible for a more relevant analysis. For an electric car, the engine can be 0 or left empty.",
+    "analyzing": "Analyzing offer…",
+    "analyze": "Analyze offer",
+    "reset": "Reset",
+    "saveAnalysis": "Save analysis",
+    "loading": "We are comparing the offer with listings in the database.",
+    "whatYouLearn": "What you will learn",
+    "preview": {
+      "priceContext": {
+        "title": "Price in context",
+        "description": "Observed prices in the database and the position of the offer within the selected group."
+      },
+      "detailsToCheck": {
+        "title": "Details to check",
+        "description": "Mileage and unusual configurations compared with similar cars."
+      },
+      "confidence": {
+        "title": "How much to trust it",
+        "description": "How many examples support the analysis and when the available data is insufficient."
+      }
+    },
+    "disclaimer": "The scores identify unusual offers, not the probability of fraud. The analysis does not replace checking the vehicle history and inspecting the car.",
+    "errors": {
+      "selectBrandModel": "Choose the brand and model from the available lists.",
+      "selectGeneration": "Choose the generation from the list or leave it empty."
+    },
+    "options": {
+      "fuel_type": {
+        "Benzină": "Petrol",
+        "Diesel": "Diesel",
+        "Electricitate": "Electric",
+        "Hybrid": "Hybrid",
+        "Gaz": "Gas",
+        "Gaz / Benzină (propan)": "LPG / Petrol (propane)",
+        "Gaz / Benzină (metan)": "CNG / Petrol (methane)",
+        "Plug-in Hybrid (benzină)": "Plug-in Hybrid (petrol)",
+        "Plug-in Hybrid (diesel)": "Plug-in Hybrid (diesel)",
+        "Mild Hybrid (benzină)": "Mild Hybrid (petrol)",
+        "Mild Hybrid (diesel)": "Mild Hybrid (diesel)"
+      },
+      "gearbox": {
+        "Mecanică": "Manual",
+        "Automată": "Automatic",
+        "Automat-Tiptronic": "Automatic-Tiptronic",
+        "Robotizată": "Automated Manual",
+        "Variator": "CVT"
+      },
+      "drivetrain": {
+        "Din față": "Front-wheel drive",
+        "Din spate": "Rear-wheel drive",
+        "4x4": "4x4",
+        "4x2": "4x2"
+      },
+      "body_type": {
+        "Sedan": "Sedan",
+        "Hatchback": "Hatchback",
+        "Universal": "Station Wagon",
+        "Combi": "Estate",
+        "SUV": "SUV",
+        "Crossover": "Crossover",
+        "Coupe": "Coupe",
+        "Cabriolet": "Convertible",
+        "Roadster": "Roadster",
+        "Pickup": "Pickup",
+        "Minivan": "Minivan",
+        "Microvan": "Microvan",
+        "Furgon": "Van",
+        "Camionetă": "Truck",
+        "Microautobus": "Minibus",
+        "Platformă deschisă": "Flatbed"
+      }
+    }
   },
-
-  "placeholders": {
-    "brand": "e.g. BMW",
-    "model": "e.g. 3 Series",
-    "generation": "e.g. G20",
-    "year": "e.g. 2020",
-    "mileage": "e.g. 85000",
-    "horsepower": "e.g. 150",
-    "doors": "e.g. 4",
-    "seats": "e.g. 5",
-    "selectFuel": "Select fuel type",
-    "selectEngine": "Select engine",
-    "selectGearbox": "Select transmission",
-    "selectDrivetrain": "Select drivetrain",
-    "selectBodyType": "Select body type",
-    "selectSeller": "Select seller type",
-    "selectCountry": "Select country",
-    "selectClass": "Select class",
-    "price": "Enter price"
-  },
-
-  "state": {
-    "used": "Used",
-    "new": "New",
-    "damaged": "Needs repairs"
-  },
-
-  "countries": {
-    "moldova": "Moldova",
-    "germany": "Germany",
-    "romania": "Romania",
-    "france": "France",
-    "italy": "Italy",
-    "other": "Other"
-  },
-
-  "validation": {
-    "brand": "Brand is required.",
-    "model": "Model is required.",
-    "generation": "Generation is required.",
-    "year": "Year is required.",
-    "mileage": "Mileage is required.",
-    "fuel": "Fuel type is required.",
-    "gearbox": "Transmission is required.",
-    "bodyType": "Body type is required.",
-    "drivetrain": "Drivetrain is required.",
-    "price": "Asking price is required.",
-    "yearNumber": "Year must be a valid number.",
-    "mileageNumber": "Mileage must be a valid number.",
-    "priceNumber": "Price must be a valid number."
-  },
-
-  "errors": {
-    "loadOptions": "Vehicle options could not be loaded.",
-    "priceEstimate": "The recommended price could not be calculated.",
-    "createListing": "The listing could not be created."
-  },
-
-  "cancel": "Cancel",
-  "creating": "Creating...",
-  "createButton": "Create a listing"
-},
-
-"home": {
-  "hero": {
-    "welcome": "Welcome back, {{name}}",
-    "loggedInTitle": "The market is waiting. Keep hunting.",
-    "loggedInSubtitle": "Your favorite listings are saved, and our algorithm has already evaluated the new offers appearing on the market.",
-    "guestTitle": "Find Out the Real Value of Any Car Instantly.",
-    "guestSubtitle": "Stop overpaying for used cars. Our algorithm analyzes thousands of market data points to accurately evaluate every listing.",
-    "browseMarket": "Browse the Market",
-    "myListings": "My Listings",
-    "registerFree": "Sign Up for Free",
-    "estimateRisk": "Estimate an Offer's Risk"
-  },
-
-  "estimator": {
-    "badge": "MARKET ANALYSIS",
-    "title": "How much is your car worth?",
-    "description": "Enter the vehicle characteristics and instantly find the estimated price based on comparable listings on the market.",
-
+  "createListing": {
+    "loading": "Loading...",
+    "backToListings": "Back to listings",
+    "title": "Create a listing",
+    "description": "Enter the vehicle details and see the estimated market price before saving the listing.",
+    "success": "The listing was created successfully.",
+    "vehicle": {
+      "title": "Vehicle",
+      "description": "Select the vehicle brand, model, and generation."
+    },
+    "technical": {
+      "title": "Technical information",
+      "description": "Add the main technical characteristics of the vehicle."
+    },
+    "seller": {
+      "title": "Seller information",
+      "description": "Information about the seller and the vehicle registration.",
+      "private": "Private seller",
+      "dealer": "Car dealer"
+    },
+    "price": {
+      "title": "Price",
+      "description": "Enter the asking price for the vehicle.",
+      "marketRecommended": "Recommended market price",
+      "calculating": "Calculating recommendation...",
+      "normalRange": "Normal price range",
+      "completeRequired": "Complete the required vehicle information to see the recommended market price."
+    },
     "fields": {
       "brand": "Brand",
       "model": "Model",
       "generation": "Generation",
       "year": "Year",
       "mileage": "Mileage (km)",
-      "fuel": "Fuel",
+      "fuelType": "Fuel type",
       "engine": "Engine",
-      "gearbox": "Gearbox",
+      "gearbox": "Transmission",
       "drivetrain": "Drivetrain",
-      "body": "Body Type"
+      "bodyType": "Body type",
+      "horsepower": "Horsepower",
+      "doors": "Number of doors",
+      "seats": "Number of seats",
+      "state": "Condition",
+      "sellerType": "Seller type",
+      "registrationCountry": "Registration country",
+      "vehicleClass": "Vehicle class",
+      "askingPrice": "Asking price (€)"
     },
-
     "placeholders": {
       "brand": "e.g. BMW",
       "model": "e.g. 3 Series",
       "generation": "e.g. G20",
       "year": "e.g. 2020",
-      "mileage": "e.g. 85000"
+      "mileage": "e.g. 85000",
+      "horsepower": "e.g. 150",
+      "doors": "e.g. 4",
+      "seats": "e.g. 5",
+      "selectFuel": "Select fuel type",
+      "selectEngine": "Select engine",
+      "selectGearbox": "Select transmission",
+      "selectDrivetrain": "Select drivetrain",
+      "selectBodyType": "Select body type",
+      "selectSeller": "Select seller type",
+      "selectCountry": "Select country",
+      "selectClass": "Select class",
+      "price": "Enter price"
     },
-
-    "select": "Select",
-
-    "actions": {
-      "estimate": "Estimate Price",
-      "calculating": "Calculating..."
+    "state": {
+      "used": "Used",
+      "new": "New",
+      "damaged": "Needs repairs"
     },
-
+    "countries": {
+      "moldova": "Moldova",
+      "germany": "Germany",
+      "romania": "Romania",
+      "france": "France",
+      "italy": "Italy",
+      "other": "Other"
+    },
+    "validation": {
+      "brand": "Brand is required.",
+      "model": "Model is required.",
+      "generation": "Generation is required.",
+      "year": "Year is required.",
+      "mileage": "Mileage is required.",
+      "fuel": "Fuel type is required.",
+      "gearbox": "Transmission is required.",
+      "bodyType": "Body type is required.",
+      "drivetrain": "Drivetrain is required.",
+      "price": "Asking price is required.",
+      "yearNumber": "Year must be a valid number.",
+      "mileageNumber": "Mileage must be a valid number.",
+      "priceNumber": "Price must be a valid number."
+    },
     "errors": {
-      "options": "The estimator options could not be loaded.",
-      "required": "Complete all required fields to calculate the price.",
-      "estimate": "We could not calculate the estimated price."
+      "loadOptions": "Vehicle options could not be loaded.",
+      "priceEstimate": "The recommended price could not be calculated.",
+      "createListing": "The listing could not be created."
     },
-
-    "result": {
-      "marketPrice": "ESTIMATED MARKET PRICE",
-      "quickSale": "Quick Sale",
-      "normalPrice": "Normal Price",
-      "higherAsking": "Higher Asking Price",
-      "noDataTitle": "There is not enough market data.",
-      "noDataDescription": "Not enough comparable listings were found for this configuration."
-    }
-  },
-
-  "features": {
-    "title": "Unmatched Market Intelligence",
-
-    "algorithmicScore": {
-      "title": "Algorithmic Offer Score",
-      "description": "Every car is mathematically evaluated up to a maximum of 80 points, based on precise depreciation, real market medians, and hidden anomalies."
-    },
-
-    "fraudDetection": {
-      "title": "Fraud and Scam Detection",
-      "description": "Our algorithm instantly detects hidden indicators such as former taxis, altered mileage, and missing documents."
-    },
-
-    "dynamicPriceTargets": {
-      "title": "Dynamic Price Targets",
-      "description": "Tell us what score you want (Fair, Good, Excellent), and we will calculate the exact price you should negotiate."
-    },
-
-    "priceRecommendations": {
-      "title": "Listing Price Recommendations",
-      "description": "Sellers can use our algorithm to get the perfect price recommendation when adding a new listing."
-    }
-  },
-
-  "whyUs": {
-    "title": "Why Choose CarAnalytics?",
-
-    "dataDriven": {
-      "title": "Data-Driven",
-      "alt": "Data-Driven icon",
-      "description": "We do not rely on subjective opinions. Pure mathematics and market medians determine the score."
-    },
-
-    "impartial": {
-      "title": "Impartial",
-      "alt": "Impartial icon",
-      "description": "Sellers cannot manipulate the algorithm. You get the raw, unfiltered truth about the offer."
-    },
-
-    "realTime": {
-      "title": "Real-Time",
-      "alt": "Real-Time icon",
-      "description": "As the market changes, our data changes with it."
-    },
-
-    "saveMoney": {
-      "title": "Save Money",
-      "alt": "Save Money icon",
-      "description": "Never overpay for a high-mileage car again."
-    }
-  },
-
-  "reviews": {
-    "title": "Community Reviews",
-    "description": "We are building a new community of smart car buyers. Be the first to leave a review of our platform!",
-    "write": "Write a Review",
-    "comingSoon": "The review form will be available soon!"
-  },
-
-  "faq": {
-    "title": "Frequently Asked Questions",
-
-    "algorithmicScore": {
-      "question": "How does the Algorithmic Score work?",
-      "answer": "We group cars by Brand, Model, Generation, Year, and Engine Capacity to calculate true median prices and baseline mileage."
-    },
-
-    "scams": {
-      "question": "How do you detect scams?",
-      "answer": "Our algorithm penalizes listings with impossible mileage-to-age ratios, hidden keywords, or prices that are statistically too good to be true."
-    },
-
-    "free": {
-      "question": "Is it free?",
-      "answer": "Yes, browsing the market and viewing algorithm scores are completely free for all buyers."
-    }
-  },
-
-  "cta": {
-    "title": "Ready to find the perfect car?",
-    "description": "Join thousands of smart buyers who use data to beat the market.",
-    "button": "Start Searching Now"
-  },
-
-  "footer": {
-    "about": "About Us",
-    "features": "Features",
-    "pricing": "Pricing",
-    "terms": "Terms and Conditions",
-    "privacy": "Privacy Policy"
-  }
-},
-
-"listings": {
-  "sort": {
-    "label": "Sort:",
-    "random": "Random",
-    "scoreHighLow": "Score: high → low",
-    "scoreLowHigh": "Score: low → high",
-    "priceLowHigh": "Price: low → high",
-    "priceHighLow": "Price: high → low",
-    "yearNewOld": "Year: newest → oldest",
-    "yearOldNew": "Year: oldest → newest",
-    "mileageLowHigh": "Mileage: low → high",
-    "mileageHighLow": "Mileage: high → low"
-  },
-  "saveFilters": "Save filters",
-  "mySearch": "My search",
-  "loading": "Loading cars...",
-  "errorRetry": "Try again",
-  "empty": {
-    "title": "No cars found",
-    "description": "Try different filters."
-  },
-  "pagination": {
-    "ariaLabel": "Listing pagination",
-    "previous": "Previous",
-    "next": "Next",
-    "page": "Page {{current}} of {{total}}"
-  },
-  "errors": {
-    "load": "We could not load the listings."
-  }
-},
-
-"login": {
-  "title": "Login",
-  "email": "Email address",
-  "password": "Password",
-  "submit": "Login",
-  "error": "Login failed.",
-  "noAccount": "Don't have an account?",
-  "createAccount": "Create an account"
-},
-
-"myListings": {
-  "account": "MY ACCOUNT",
-  "title": "My Listings",
-  "description": "Manage the listings you created and published in the database.",
-  "loginRequired": "Log in to manage your created listings.",
-  "allInOnePlace": "Your listings, all in one place",
-  "loginToAccess": "Log in to access them.",
-  "login": "Login",
-  "tabs": {
-    "savedItems": "Saved Items",
-    "favourites": "Favorite Listings",
-    "risks": "Saved Risk Analyses",
-    "searches": "Saved Filters",
-    "profile": "My Profile",
-    "myListings": "My Listings"
-  },
-  "count": {
-    "one": "1 published listing",
-    "many": "{{count}} published listings"
-  },
-  "addNew": "+ Add a New Listing",
-  "loading": "Loading your listings...",
-  "empty": {
-    "title": "You don't have any published listings yet",
-    "description": "Create your first car listing to receive market price estimates and save it to your account.",
-    "create": "+ Create a listing"
-  },
-  "status": "Active",
-  "specs": {
-    "year": "Year",
-    "mileage": "Mileage",
-    "fuel": "Fuel",
-    "gearbox": "Gearbox",
-    "engine": "Engine",
-    "power": "Power",
-    "body": "Body",
-    "drivetrain": "Drivetrain"
-  },
-  "chips": {
-    "condition": "Condition: {{value}}",
-    "doors": "{{count}} doors",
-    "seats": "{{count}} seats",
-    "seller": "Seller: {{value}}",
-    "registration": "Registration: {{value}}",
-    "class": "Class: {{value}}",
-    "score": "Score: {{value}} / 100"
-  },
-  "actions": {
-    "edit": "Edit",
-    "riskAnalysis": "Risk Analysis",
-    "delete": "Delete",
-    "confirmDelete": "Are you sure you want to delete this listing?",
-    "deleteYes": "Yes, delete",
     "cancel": "Cancel",
-    "deleting": "Deleting…",
-    "saving": "Saving…",
-    "saveChanges": "Save changes"
+    "creating": "Creating...",
+    "createButton": "Create a listing"
   },
-  "edit": {
-    "title": "Edit listing: {{brand}} {{model}}",
-    "description": "Update your vehicle details.",
-    "price": "Price (€)",
-    "mileage": "Mileage (km)",
-    "year": "Model year",
-    "power": "Power (HP)",
-    "fuel": "Fuel",
-    "gearbox": "Gearbox",
-    "body": "Body type",
-    "condition": "Condition",
-    "used": "Second-Hand (Used)",
-    "new": "New"
-  },
-  "errors": {
-    "load": "Your listings could not be loaded.",
-    "delete": "The listing could not be deleted.",
-    "save": "The changes could not be saved."
-  }
-},
-
-"profile": {
-  "account": "MY ACCOUNT",
-  "title": "My Profile",
-  "description": "Your account information and security options.",
-  "loginRequired": "Log in to access your profile.",
-  "login": "Login",
-  "tabs": {
-    "savedItems": "Saved Items",
-    "favourites": "Favorite Listings",
-    "risks": "Saved Risk Analyses",
-    "searches": "Saved Filters",
-    "profile": "My Profile",
-    "myListings": "My Listings"
-  },
-  "accountInfo": "ACCOUNT INFORMATION",
-  "fields": {
-    "name": "Name",
-    "email": "Email",
-    "phone": "Phone",
-    "userType": "User type"
-  },
-  "sellerTypes": {
-    "private": "Private seller",
-    "dealer": "Dealer",
-    "privateDescription": "I am selling as a private individual",
-    "dealerDescription": "I represent a car dealer"
-  },
-  "actions": {
-    "edit": "Edit profile",
-    "changePassword": "Change password",
-    "logout": "Log out",
-    "save": "Save changes",
-    "saving": "Saving...",
-    "cancel": "Cancel",
-    "change": "Change password",
-    "changing": "Changing..."
-  },
-  "edit": {
-    "title": "Edit profile"
-  },
-  "password": {
-    "title": "Change password",
-    "current": "Current password",
-    "new": "New password"
-  },
-  "messages": {
-    "profileUpdated": "Profile has been updated.",
-    "profileSaveError": "The changes could not be saved.",
-    "passwordChangeError": "The password could not be changed."
-  }
-},
-
-"recommendations": {
-  "loading": "Loading cars...",
-  "errorTitle": "Something went wrong",
-  "error": "We could not load the cars.",
-  "retry": "Try again",
-  "back": "Back to marketplace",
-  "title": "Recommended Cars",
-  "subtitle": "Select a car to discover similar listings.",
-  "info": {
-    "title": "How do recommendations work?",
-    "description": "We choose similar cars based on price, mileage, and vehicle class."
-  },
-  "empty": {
-    "title": "No cars found",
-    "description": "There are currently no listings available."
-  },
-  "results": {
-    "label": "RECOMMENDATIONS",
-    "title": "Similar Cars",
-    "description": "Listings selected based on the characteristics of this car.",
-    "searching": "Searching...",
-    "loading": "Searching for similar cars...",
-    "empty": "No similar cars found."
-  },
-  "controls": {
-    "showFewer": "Show fewer",
-    "showMore": "Show more",
-    "count": "Showing {{visible}} of {{total}}"
-  },
-  "cars": {
-    "loading": "Loading...",
-    "showMore": "Show more cars",
-    "showFewer": "Show fewer cars",
-    "count": "Showing {{count}} cars"
-  }
-},
-
-"register": {
-  "title": "Register",
-  "name": "Name",
-  "email": "Email",
-  "password": "Password",
-  "submit": "Register",
-  "hasAccount": "Already have an account?",
-  "login": "Log in",
-  "error": "Registration failed."
-},
-
-"savedItems": {
-  "account": "MY ACCOUNT",
-  "titles": {
-    "favourites": "Favorite Listings",
-    "risks": "Saved Risk Analyses",
-    "searches": "Saved Filters",
-    "profile": "My Profile",
-    "myListings": "My Listings"
-  },
-  "descriptions": {
-    "favourites": "Offers you want to keep close at hand.",
-    "risks": "Return to your analyses and the results from when they were saved.",
-    "searches": "Your search criteria, ready to use on the current market.",
-    "profile": "Your account information and security options.",
-    "myListings": "Manage the listings you created and published."
-  },
-  "tabs": {
-    "ariaLabel": "Saved items"
-  },
-  "loading": "Loading...",
-  "loginRequired": {
-    "title": "Your saved items, all in one place",
-    "description": "Log in to access them.",
-    "login": "Log in"
-  },
-  "summary": {
-    "unspecifiedPrice": "Price not specified",
-    "insufficientScoreData": "Insufficient data for score",
-    "anomalyScore": "Anomaly score: {{score}} / 100",
-    "logoAlt": "Logo"
-  },
-  "badges": {
-    "favourite": "★ FAVORITE",
-    "risk": "ANALYSIS",
-    "search": "SEARCH"
-  },
-  "actions": {
-    "open": "Open",
-    "viewListings": "View listings",
-    "viewCurrentListings": "View current listings",
-    "edit": "Edit",
-    "rename": "Rename",
-    "delete": "Delete",
-    "retry": "Try again",
-    "cancel": "Cancel",
-    "deleteConfirm": "Yes, delete",
-    "deleting": "Deleting…",
-    "reanalyze": "Reanalyze",
-    "reanalyzing": "Reanalyzing…",
-    "save": "Save changes",
-    "saving": "Saving…"
-  },
-  "deleteConfirm": "Remove this item from your account?",
-  "pagination": {
-    "ariaLabel": "Saved items pagination",
-    "previous": "Previous",
-    "next": "Next"
-  },
-  "empty": {
-    "title": "You haven't saved anything here yet",
-    "risks": {
-      "description": "Analyze an offer and save the result.",
-      "action": "Analyze an offer"
+  "home": {
+    "hero": {
+      "welcome": "Welcome back, {{name}}",
+      "loggedInTitle": "The market is waiting. Keep hunting.",
+      "loggedInSubtitle": "Your favorite listings are saved, and our algorithm has already evaluated the new offers appearing on the market.",
+      "guestTitle": "Find Out the Real Value of Any Car Instantly.",
+      "guestSubtitle": "Stop overpaying for used cars. Our algorithm analyzes thousands of market data points to accurately evaluate every listing.",
+      "browseMarket": "Browse the Market",
+      "myListings": "My Listings",
+      "registerFree": "Sign Up for Free",
+      "estimateRisk": "Estimate an Offer's Risk"
     },
-    "searches": {
-      "description": "Apply filters in the marketplace, then save the search."
+    "estimator": {
+      "badge": "MARKET ANALYSIS",
+      "title": "How much is your car worth?",
+      "description": "Enter the vehicle characteristics and instantly find the estimated price based on comparable listings on the market.",
+      "fields": {
+        "brand": "Brand",
+        "model": "Model",
+        "generation": "Generation",
+        "year": "Year",
+        "mileage": "Mileage (km)",
+        "fuel": "Fuel",
+        "engine": "Engine",
+        "gearbox": "Gearbox",
+        "drivetrain": "Drivetrain",
+        "body": "Body Type"
+      },
+      "placeholders": {
+        "brand": "e.g. BMW",
+        "model": "e.g. 3 Series",
+        "generation": "e.g. G20",
+        "year": "e.g. 2020",
+        "mileage": "e.g. 85000"
+      },
+      "select": "Select",
+      "actions": {
+        "estimate": "Estimate Price",
+        "calculating": "Calculating..."
+      },
+      "errors": {
+        "options": "The estimator options could not be loaded.",
+        "required": "Complete all required fields to calculate the price.",
+        "estimate": "We could not calculate the estimated price."
+      },
+      "result": {
+        "marketPrice": "ESTIMATED MARKET PRICE",
+        "quickSale": "Quick Sale",
+        "normalPrice": "Normal Price",
+        "higherAsking": "Higher Asking Price",
+        "noDataTitle": "There is not enough market data.",
+        "noDataDescription": "Not enough comparable listings were found for this configuration."
+      }
     },
-    "favourites": {
-      "description": "Open a listing from the marketplace and press the star."
+    "features": {
+      "title": "Unmatched Market Intelligence",
+      "algorithmicScore": {
+        "title": "Algorithmic Offer Score",
+        "description": "Every car is mathematically evaluated up to a maximum of 80 points, based on precise depreciation, real market medians, and hidden anomalies."
+      },
+      "fraudDetection": {
+        "title": "Fraud and Scam Detection",
+        "description": "Our algorithm instantly detects hidden indicators such as former taxis, altered mileage, and missing documents."
+      },
+      "dynamicPriceTargets": {
+        "title": "Dynamic Price Targets",
+        "description": "Tell us what score you want (Fair, Good, Excellent), and we will calculate the exact price you should negotiate."
+      },
+      "priceRecommendations": {
+        "title": "Listing Price Recommendations",
+        "description": "Sellers can use our algorithm to get the perfect price recommendation when adding a new listing."
+      }
     },
-    "browseMarket": "Browse the marketplace"
+    "whyUs": {
+      "title": "Why Choose CarAnalytics?",
+      "dataDriven": {
+        "title": "Data-Driven",
+        "alt": "Data-Driven icon",
+        "description": "We do not rely on subjective opinions. Pure mathematics and market medians determine the score."
+      },
+      "impartial": {
+        "title": "Impartial",
+        "alt": "Impartial icon",
+        "description": "Sellers cannot manipulate the algorithm. You get the raw, unfiltered truth about the offer."
+      },
+      "realTime": {
+        "title": "Real-Time",
+        "alt": "Real-Time icon",
+        "description": "As the market changes, our data changes with it."
+      },
+      "saveMoney": {
+        "title": "Save Money",
+        "alt": "Save Money icon",
+        "description": "Never overpay for a high-mileage car again."
+      }
+    },
+    "reviews": {
+      "title": "Community Reviews",
+      "description": "We are building a new community of smart car buyers. Be the first to leave a review of our platform!",
+      "write": "Write a Review",
+      "comingSoon": "The review form will be available soon!"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "algorithmicScore": {
+        "question": "How does the Algorithmic Score work?",
+        "answer": "We group cars by Brand, Model, Generation, Year, and Engine Capacity to calculate true median prices and baseline mileage."
+      },
+      "scams": {
+        "question": "How do you detect scams?",
+        "answer": "Our algorithm penalizes listings with impossible mileage-to-age ratios, hidden keywords, or prices that are statistically too good to be true."
+      },
+      "free": {
+        "question": "Is it free?",
+        "answer": "Yes, browsing the market and viewing algorithm scores are completely free for all buyers."
+      }
+    },
+    "cta": {
+      "title": "Ready to find the perfect car?",
+      "description": "Join thousands of smart buyers who use data to beat the market.",
+      "button": "Start Searching Now"
+    },
+    "footer": {
+      "about": "About Us",
+      "features": "Features",
+      "pricing": "Pricing",
+      "terms": "Terms and Conditions",
+      "privacy": "Privacy Policy"
+    }
   },
-  "detail": {
-    "back": "← All saved items",
-    "savedAt": "Saved at {{date}}",
-    "savedCriteria": "Saved criteria",
-    "searchDescription": "Listings are updated when you open the search.",
-    "riskNotice": "This is the saved result. Reanalyzing creates a new analysis and keeps the original one.",
-    "favouriteAvailable": "The listing is still in the database. Below you can see the current data.",
-    "favouriteUnavailable": "The listing is no longer in the database. Below you can see the data saved with it.",
-    "notes": "Notes: {{notes}}"
+  "listings": {
+    "sort": {
+      "label": "Sort:",
+      "random": "Random",
+      "scoreHighLow": "Score: high → low",
+      "scoreLowHigh": "Score: low → high",
+      "priceLowHigh": "Price: low → high",
+      "priceHighLow": "Price: high → low",
+      "yearNewOld": "Year: newest → oldest",
+      "yearOldNew": "Year: oldest → newest",
+      "mileageLowHigh": "Mileage: low → high",
+      "mileageHighLow": "Mileage: high → low"
+    },
+    "saveFilters": "Save filters",
+    "mySearch": "My search",
+    "loading": "Loading cars...",
+    "errorRetry": "Try again",
+    "empty": {
+      "title": "No cars found",
+      "description": "Try different filters."
+    },
+    "pagination": {
+      "ariaLabel": "Listing pagination",
+      "previous": "Previous",
+      "next": "Next",
+      "page": "Page {{current}} of {{total}}"
+    },
+    "errors": {
+      "load": "We could not load the listings."
+    }
   },
-  "editor": {
-    "favouriteTitle": "Listing notes",
-    "riskTitle": "Rename analysis",
-    "searchTitle": "Edit saved filters",
-    "notes": "Notes",
-    "name": "Name",
-    "nameRequired": "Enter a name."
+  "login": {
+    "title": "Login",
+    "email": "Email address",
+    "password": "Password",
+    "submit": "Login",
+    "error": "Login failed.",
+    "noAccount": "Don't have an account?",
+    "createAccount": "Create an account"
   },
-  "filters": {
-    "saveChanges": "Save changes"
-  }
-},
-
-"errorBoundary": {
-  "title": "Something went wrong."
-},
-
-"anomalyRiskResults": {
-  "unavailable": "Unavailable",
-  "levels": {
-    "low": "Low",
-    "medium": "Moderate",
-    "high": "High"
-  },
-  "confidenceLevels": {
-    "low": "Low",
-    "medium": "Medium",
-    "high": "High"
-  },
-  "supportLabels": {
-    "normal": "Normal support",
-    "limited": "Limited support",
-    "rare": "Rare group",
-    "very_rare": "Very little data"
-  },
-  "priceLabels": {
-    "normal": "Within the observed range",
-    "unusually_cheap": "Below the observed range",
-    "unusually_expensive": "Above the observed range",
-    "unknown": "Insufficient data"
-  },
-  "mileageLabels": {
-    "normal": "Within the observed range",
-    "unusually_low": "Unusually low",
-    "unusually_high": "Unusually high",
-    "unknown": "Insufficient data"
-  },
-  "comparisonLabels": {
-    "exact_year": "the same year",
-    "nearby_years": "nearby years",
-    "model_generation": "the same model and generation, different years",
-    "model": "the same model, different generations and years",
-    "unsupported": "no comparison group"
-  },
-  "severityLabels": {
-    "normal": "Typical",
-    "uncommon": "Rare",
-    "very_rare": "Very rare",
-    "unsupported": "Insufficient data",
-    "unobserved": "Unobserved",
-    "outside_observed_range": "Outside the observed range"
-  },
-  "componentScore": {
-    "score": "Anomaly score",
-    "weight": "Score weight",
-    "unavailable": "Unavailable"
-  },
-  "historical": {
-    "title": "Historical analysis",
-    "description": "This result was calculated using an earlier strategy. The values are preserved as they were saved; the current rule explanations do not apply to it. Use Reanalyze for a current evaluation.",
-    "overallScore": "Saved overall score",
-    "priceScore": "Saved price score",
-    "mileageScore": "Saved mileage score",
-    "specificationScore": "Saved specification score",
-    "savedRange": "Saved P10–P90 range",
-    "policy": "Rules at save time"
-  },
-  "header": {
-    "askingPrice": "Asking price"
-  },
-  "generationNote": "The generation was not specified. The analysis uses all listings for this model; add the generation for a more precise comparison.",
-  "overview": {
-    "overallScore": "Overall anomaly score",
-    "overallEvaluation": "Overall evaluation",
-    "anomalyLevel": "Anomaly level",
-    "higherScore": "A higher score indicates a more unusual offer.",
-    "insufficientData": "Insufficient data",
-    "insufficientScore": "We cannot produce a reliable overall score for the selected group.",
-    "analysisConfidence": "Analysis confidence",
-    "confidenceDescription": "Depends on the data in the selected group, price variation, and available fields.",
-    "examples": "examples",
-    "sameModelGeneration": "The same model and generation",
-    "allGenerations": "The same model, all generations",
-    "databaseAtAnalysis": "in the database at the time of analysis.",
-    "rarityAdjustment": "Rarity adjustment: +{{points}} points.",
-    "overallScoreUnavailable": "Overall score unavailable."
-  },
-  "caution": {
-    "fewExamplesTitle": "Too few examples for a conclusion.",
-    "cautionTitle": "Interpret the result with caution.",
-    "fewExamplesDescription": "The selected group has too few listings for an overall score.",
-    "cautionDescription": "The available data limits confidence in the analysis. Use the result as a starting point for further checks."
-  },
-  "price": {
-    "label": "Price",
-    "description": "{{count}} listings with the same brand and model{{generation}}, {{allGenerations}}.",
-    "generation": " and the same generation",
-    "allGenerations": "from all generations",
-    "limitedSupport": " Limited price support (10–19 listings).",
-    "chartAriaLabel": "Offer price and observed range",
-    "asking": "Asking price",
-    "median": "Median (P50)",
-    "percentile10": "10th percentile (P10)",
-    "percentile90": "90th percentile (P90)",
-    "deviation": "The asking price is {{percent}}% {{direction}} the observed median. The P10–P90 range covers the central area of asking prices in the database and does not guarantee the selling price.",
-    "below": "below",
-    "above": "above",
-    "equal": "from",
-    "insufficient": "At least 10 listings from {{group}} are required for price evaluation.",
-    "sameGeneration": "the same generation",
-    "sameModel": "the same model"
-  },
-  "mileage": {
-    "label": "Mileage",
-    "unspecified": "Unspecified",
-    "inListing": "In listing",
-    "observedMedian": "Observed median",
-    "examplesAvailable": "Available examples",
-    "unavailable": "Unavailable",
-    "notEvaluated": "Not evaluated",
-    "comparison": "Comparison",
-    "warning": "Unusual mileage does not prove odometer tampering."
-  },
-  "specification": {
-    "label": "Configuration",
-    "title": "Offer specifications",
-    "fieldEvaluated": "field evaluated",
-    "fieldsEvaluated": "fields evaluated",
-    "unspecified": "Unspecified",
-    "insufficientData": "Insufficient data",
-    "toCheck": "To check"
-  },
-  "explanation": {
-    "title": "Explanations and additional details",
-    "centralRange": "Central P25–P75 range"
-  }
-},
-
-    "fields": {
-      "brand": "Brand",
-      "model": "Model",
-      "generation": "Generation",
-      "price": "Asking price",
+  "myListings": {
+    "account": "MY ACCOUNT",
+    "title": "My Listings",
+    "description": "Manage the listings you created and published in the database.",
+    "loginRequired": "Log in to manage your created listings.",
+    "allInOnePlace": "Your listings, all in one place",
+    "loginToAccess": "Log in to access them.",
+    "login": "Login",
+    "tabs": {
+      "savedItems": "Saved Items",
+      "favourites": "Favorite Listings",
+      "risks": "Saved Risk Analyses",
+      "searches": "Saved Filters",
+      "profile": "My Profile",
+      "myListings": "My Listings",
+      "comparisons": "Saved Comparisons"
+    },
+    "count": {
+      "one": "1 published listing",
+      "many": "{{count}} published listings"
+    },
+    "addNew": "+ Add a New Listing",
+    "loading": "Loading your listings...",
+    "empty": {
+      "title": "You don't have any published listings yet",
+      "description": "Create your first car listing to receive market price estimates and save it to your account.",
+      "create": "+ Create a listing"
+    },
+    "status": "Active",
+    "specs": {
       "year": "Year",
       "mileage": "Mileage",
-      "engine": "Engine",
       "fuel": "Fuel",
       "gearbox": "Gearbox",
-      "drivetrain": "Drivetrain",
-      "body": "Body"
+      "engine": "Engine",
+      "power": "Power",
+      "body": "Body",
+      "drivetrain": "Drivetrain"
     },
-
-    "extremeSignals": {
-      "priceLow": "Alert: price is far below the group median.",
-      "priceHigh": "Alert: price is far above the group median.",
-      "mileageLow": "Alert: mileage is far below the group median.",
-      "mileageHigh": "Alert: mileage is far above the group median."
+    "chips": {
+      "condition": "Condition: {{value}}",
+      "doors": "{{count}} doors",
+      "seats": "{{count}} seats",
+      "seller": "Seller: {{value}}",
+      "registration": "Registration: {{value}}",
+      "class": "Class: {{value}}",
+      "score": "Score: {{value}} / 100"
     },
-    "explanations": {
-      "sameModelGeneration": "the same brand, model, and generation",
-      "allGenerations": "the same brand and model, across all generations",
-      "analyzedGroup": "Analyzed group: {{count}} listings with {{group}}.",
-      "extremeOverride": "The overall score is determined directly by the strongest extreme price or mileage anomaly, without weighted averaging or the rarity adjustment. The signal requires at least 25 comparable values, a score of at least 80, and a deviation of more than 45% from the median.",
-      "medianOverride": "A {{trigger}} deviation of more than 45% from the median, supported by at least 25 comparable values, requires an overall score of at least 80/100, without weighted averaging or the rarity adjustment. The component score does not need to reach 80 to activate this rule.",
-      "gradualOverride": "A {{trigger}} deviation of more than 45% from the median, supported by at least 25 comparable values, directly determines the overall score, without weighted averaging or the rarity adjustment. The score gradually increases from 80 at the 45% threshold to 100 for a deviation of 100% or more. If both signals qualify, the higher score is used. Component scores remain calculated separately from percentiles.",
-      "price": "price",
-      "mileage": "mileage",
-      "priceRange": "The observed P10–P90 range has a width of {{width}} € ({{percentage}}% of the median), based on {{count}} listings with {{group}}. Year, mileage, and configuration do not filter this group.",
-      "priceNotEvaluated": "Price was not evaluated: {{count}} comparable listings, compared with the minimum 10 required. The comparison is limited to {{group}}.",
-      "noOtherGenerations": "the same generation; other generations or models are not used",
-      "veryRare": "There are too few listings in the selected group for an overall score.",
-      "limitedSupport": "The available examples are limited. Interpret the score in the context of the displayed confidence level.",
-      "priceCheap": "The asking price is below the 10th percentile of observed prices (P10).",
-      "priceExpensive": "The asking price exceeds the 90th percentile of observed prices (P90).",
-      "priceCentral": "The asking price is close to the observed central market range.",
-      "priceOutsideCentral": "The asking price is within the P10–P90 range but outside the central P25–P75 range.",
-      "mileageMissing": "Mileage was not entered, so it was not evaluated.",
-      "mileageNotScored": "Mileage: {{count}} listings with available mileage in the selected group. The median requires at least 10, while the score requires at least 20.{{medianAvailable}}",
-      "medianAvailable": " The median is available, but the score is not.",
-      "mileageLow": "Mileage is unusually low",
-      "mileageHigh": "Mileage is unusually high",
-      "mileageNormal": "Mileage is within the observed range",
-      "mileageResult": "{{description}} compared with {{count}} listings with available mileage in the selected group.{{yearNotRestricting}}",
-      "yearNotRestricting": " The manufacturing year does not restrict the group.",
-      "configuration": "Configuration: each entered field requires at least 25 available values in the same group. Missing values do not participate in the calculation for that field.",
-      "missingFields": "Missing fields: {{fields}}. These may reduce confidence in the result.",
-      "thisModelGeneration": "this model and generation",
-      "thisModel": "this model",
-      "thisGeneration": "this generation",
-      "severity": {
-        "unobserved": "does not appear in the observed examples for {{group}}",
-        "outsideRange": "is outside the observed range for {{group}}",
-        "uncommon": "is rarely found in the available examples",
-        "veryRare": "is very rarely found in the available examples"
-      },
-      "signal": "{{field}} ({{value}}) {{explanation}}.",
-      "rarityAdjustment": "The overall score includes an adjustment of {{points}} points due to the limited number of listings in the selected group."
+    "actions": {
+      "edit": "Edit",
+      "riskAnalysis": "Risk Analysis",
+      "delete": "Delete",
+      "confirmDelete": "Are you sure you want to delete this listing?",
+      "deleteYes": "Yes, delete",
+      "cancel": "Cancel",
+      "deleting": "Deleting…",
+      "saving": "Saving…",
+      "saveChanges": "Save changes"
+    },
+    "edit": {
+      "title": "Edit listing: {{brand}} {{model}}",
+      "description": "Update your vehicle details.",
+      "price": "Price (€)",
+      "mileage": "Mileage (km)",
+      "year": "Model year",
+      "power": "Power (HP)",
+      "fuel": "Fuel",
+      "gearbox": "Gearbox",
+      "body": "Body type",
+      "condition": "Condition",
+      "used": "Second-Hand (Used)",
+      "new": "New"
     },
     "errors": {
-      "timeout": "The analysis is taking too long. Try again in a few moments.",
-      "unavailable": "The analysis is currently unavailable. Try again later.",
-      "fields": "Check these fields: {{fields}}.",
-      "invalidData": "Check the entered data and try again.",
-      "connection": "We cannot contact the server. Check your connection and try again.",
-      "generic": "The analysis could not be completed. Try again."
+      "load": "Your listings could not be loaded.",
+      "delete": "The listing could not be deleted.",
+      "save": "The changes could not be saved."
+    }
+  },
+  "profile": {
+    "account": "MY ACCOUNT",
+    "title": "My Profile",
+    "description": "Your account information and security options.",
+    "loginRequired": "Log in to access your profile.",
+    "login": "Login",
+    "tabs": {
+      "savedItems": "Saved Items",
+      "favourites": "Favorite Listings",
+      "risks": "Saved Risk Analyses",
+      "searches": "Saved Filters",
+      "profile": "My Profile",
+      "myListings": "My Listings",
+      "comparisons": "Saved Comparisons"
     },
-
-    "listingFilters": {
-  "labels": {
+    "accountInfo": "ACCOUNT INFORMATION",
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "userType": "User type"
+    },
+    "sellerTypes": {
+      "private": "Private seller",
+      "dealer": "Dealer",
+      "privateDescription": "I am selling as a private individual",
+      "dealerDescription": "I represent a car dealer"
+    },
+    "actions": {
+      "edit": "Edit profile",
+      "changePassword": "Change password",
+      "logout": "Log out",
+      "save": "Save changes",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "change": "Change password",
+      "changing": "Changing..."
+    },
+    "edit": {
+      "title": "Edit profile"
+    },
+    "password": {
+      "title": "Change password",
+      "current": "Current password",
+      "new": "New password"
+    },
+    "messages": {
+      "profileUpdated": "Profile has been updated.",
+      "profileSaveError": "The changes could not be saved.",
+      "passwordChangeError": "The password could not be changed."
+    }
+  },
+  "recommendations": {
+    "loading": "Loading cars...",
+    "errorTitle": "Something went wrong",
+    "error": "We could not load the cars.",
+    "retry": "Try again",
+    "back": "Back to marketplace",
+    "title": "Recommended Cars",
+    "subtitle": "Select a car to discover similar listings.",
+    "info": {
+      "title": "How do recommendations work?",
+      "description": "We choose similar cars based on price, mileage, and vehicle class."
+    },
+    "empty": {
+      "title": "No cars found",
+      "description": "There are currently no listings available."
+    },
+    "results": {
+      "label": "RECOMMENDATIONS",
+      "title": "Similar Cars",
+      "description": "Listings selected based on the characteristics of this car.",
+      "searching": "Searching...",
+      "loading": "Searching for similar cars...",
+      "empty": "No similar cars found."
+    },
+    "controls": {
+      "showFewer": "Show fewer",
+      "showMore": "Show more",
+      "count": "Showing {{visible}} of {{total}}"
+    },
+    "cars": {
+      "loading": "Loading...",
+      "showMore": "Show more cars",
+      "showFewer": "Show fewer cars",
+      "count": "Showing {{count}} cars"
+    }
+  },
+  "register": {
+    "title": "Register",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Register",
+    "hasAccount": "Already have an account?",
+    "login": "Log in",
+    "error": "Registration failed."
+  },
+  "savedItems": {
+    "account": "MY ACCOUNT",
+    "titles": {
+      "favourites": "Favorite Listings",
+      "risks": "Saved Risk Analyses",
+      "searches": "Saved Filters",
+      "profile": "My Profile",
+      "myListings": "My Listings",
+      "comparisons": "Saved Comparisons"
+    },
+    "descriptions": {
+      "favourites": "Offers you want to keep close at hand.",
+      "risks": "Return to your analyses and the results from when they were saved.",
+      "searches": "Your search criteria, ready to use on the current market.",
+      "profile": "Your account information and security options.",
+      "myListings": "Manage the listings you created and published.",
+      "comparisons": "Cars you selected for comparison."
+    },
+    "tabs": {
+      "ariaLabel": "Saved items"
+    },
+    "loading": "Loading...",
+    "loginRequired": {
+      "title": "Your saved items, all in one place",
+      "description": "Log in to access them.",
+      "login": "Log in"
+    },
+    "summary": {
+      "unspecifiedPrice": "Price not specified",
+      "insufficientScoreData": "Insufficient data for score",
+      "anomalyScore": "Anomaly score: {{score}} / 100",
+      "logoAlt": "Logo",
+      "compareCount": "Compare {{count}} cars"
+    },
+    "badges": {
+      "favourite": "★ FAVORITE",
+      "risk": "ANALYSIS",
+      "search": "SEARCH",
+      "comparison": "COMPARISON"
+    },
+    "actions": {
+      "open": "Open",
+      "viewListings": "View listings",
+      "viewCurrentListings": "View current listings",
+      "edit": "Edit",
+      "rename": "Rename",
+      "delete": "Delete",
+      "retry": "Try again",
+      "cancel": "Cancel",
+      "deleteConfirm": "Yes, delete",
+      "deleting": "Deleting…",
+      "reanalyze": "Reanalyze",
+      "reanalyzing": "Reanalyzing…",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "openComparison": "Open comparison"
+    },
+    "deleteConfirm": "Remove this item from your account?",
+    "pagination": {
+      "ariaLabel": "Saved items pagination",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "empty": {
+      "title": "You haven't saved anything here yet",
+      "risks": {
+        "description": "Analyze an offer and save the result.",
+        "action": "Analyze an offer"
+      },
+      "searches": {
+        "description": "Apply filters in the marketplace, then save the search."
+      },
+      "favourites": {
+        "description": "Open a listing from the marketplace and press the star."
+      },
+      "browseMarket": "Browse the marketplace",
+      "comparisons": {
+        "description": "Compare cars and save them."
+      }
+    },
+    "detail": {
+      "back": "← All saved items",
+      "savedAt": "Saved at {{date}}",
+      "savedCriteria": "Saved criteria",
+      "searchDescription": "Listings are updated when you open the search.",
+      "riskNotice": "This is the saved result. Reanalyzing creates a new analysis and keeps the original one.",
+      "favouriteAvailable": "The listing is still in the database. Below you can see the current data.",
+      "favouriteUnavailable": "The listing is no longer in the database. Below you can see the data saved with it.",
+      "notes": "Notes: {{notes}}",
+      "savedComparison": "Saved comparison",
+      "comparisonInstruction": "Click the button above to resume the detailed comparison."
+    },
+    "editor": {
+      "favouriteTitle": "Listing notes",
+      "riskTitle": "Rename analysis",
+      "searchTitle": "Edit saved filters",
+      "notes": "Notes",
+      "name": "Name",
+      "nameRequired": "Enter a name.",
+      "comparisonTitle": "Rename comparison"
+    },
+    "filters": {
+      "saveChanges": "Save changes"
+    }
+  },
+  "errorBoundary": {
+    "title": "Something went wrong."
+  },
+  "anomalyRiskResults": {
+    "unavailable": "Unavailable",
+    "levels": {
+      "low": "Low",
+      "medium": "Moderate",
+      "high": "High"
+    },
+    "confidenceLevels": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "supportLabels": {
+      "normal": "Normal support",
+      "limited": "Limited support",
+      "rare": "Rare group",
+      "very_rare": "Very little data"
+    },
+    "priceLabels": {
+      "normal": "Within the observed range",
+      "unusually_cheap": "Below the observed range",
+      "unusually_expensive": "Above the observed range",
+      "unknown": "Insufficient data"
+    },
+    "mileageLabels": {
+      "normal": "Within the observed range",
+      "unusually_low": "Unusually low",
+      "unusually_high": "Unusually high",
+      "unknown": "Insufficient data"
+    },
+    "comparisonLabels": {
+      "exact_year": "the same year",
+      "nearby_years": "nearby years",
+      "model_generation": "the same model and generation, different years",
+      "model": "the same model, different generations and years",
+      "unsupported": "no comparison group"
+    },
+    "severityLabels": {
+      "normal": "Typical",
+      "uncommon": "Rare",
+      "very_rare": "Very rare",
+      "unsupported": "Insufficient data",
+      "unobserved": "Unobserved",
+      "outside_observed_range": "Outside the observed range"
+    },
+    "componentScore": {
+      "score": "Anomaly score",
+      "weight": "Score weight",
+      "unavailable": "Unavailable"
+    },
+    "historical": {
+      "title": "Historical analysis",
+      "description": "This result was calculated using an earlier strategy. The values are preserved as they were saved; the current rule explanations do not apply to it. Use Reanalyze for a current evaluation.",
+      "overallScore": "Saved overall score",
+      "priceScore": "Saved price score",
+      "mileageScore": "Saved mileage score",
+      "specificationScore": "Saved specification score",
+      "savedRange": "Saved P10–P90 range",
+      "policy": "Rules at save time"
+    },
+    "header": {
+      "askingPrice": "Asking price"
+    },
+    "generationNote": "The generation was not specified. The analysis uses all listings for this model; add the generation for a more precise comparison.",
+    "overview": {
+      "overallScore": "Overall anomaly score",
+      "overallEvaluation": "Overall evaluation",
+      "anomalyLevel": "Anomaly level",
+      "higherScore": "A higher score indicates a more unusual offer.",
+      "insufficientData": "Insufficient data",
+      "insufficientScore": "We cannot produce a reliable overall score for the selected group.",
+      "analysisConfidence": "Analysis confidence",
+      "confidenceDescription": "Depends on the data in the selected group, price variation, and available fields.",
+      "examples": "examples",
+      "sameModelGeneration": "The same model and generation",
+      "allGenerations": "The same model, all generations",
+      "databaseAtAnalysis": "in the database at the time of analysis.",
+      "rarityAdjustment": "Rarity adjustment: +{{points}} points.",
+      "overallScoreUnavailable": "Overall score unavailable."
+    },
+    "caution": {
+      "fewExamplesTitle": "Too few examples for a conclusion.",
+      "cautionTitle": "Interpret the result with caution.",
+      "fewExamplesDescription": "The selected group has too few listings for an overall score.",
+      "cautionDescription": "The available data limits confidence in the analysis. Use the result as a starting point for further checks."
+    },
+    "price": {
+      "label": "Price",
+      "description": "{{count}} listings with the same brand and model{{generation}}, {{allGenerations}}.",
+      "generation": " and the same generation",
+      "allGenerations": "from all generations",
+      "limitedSupport": " Limited price support (10–19 listings).",
+      "chartAriaLabel": "Offer price and observed range",
+      "asking": "Asking price",
+      "median": "Median (P50)",
+      "percentile10": "10th percentile (P10)",
+      "percentile90": "90th percentile (P90)",
+      "deviation": "The asking price is {{percent}}% {{direction}} the observed median. The P10–P90 range covers the central area of asking prices in the database and does not guarantee the selling price.",
+      "below": "below",
+      "above": "above",
+      "equal": "from",
+      "insufficient": "At least 10 listings from {{group}} are required for price evaluation.",
+      "sameGeneration": "the same generation",
+      "sameModel": "the same model"
+    },
+    "mileage": {
+      "label": "Mileage",
+      "unspecified": "Unspecified",
+      "inListing": "In listing",
+      "observedMedian": "Observed median",
+      "examplesAvailable": "Available examples",
+      "unavailable": "Unavailable",
+      "notEvaluated": "Not evaluated",
+      "comparison": "Comparison",
+      "warning": "Unusual mileage does not prove odometer tampering."
+    },
+    "specification": {
+      "label": "Configuration",
+      "title": "Offer specifications",
+      "fieldEvaluated": "field evaluated",
+      "fieldsEvaluated": "fields evaluated",
+      "unspecified": "Unspecified",
+      "insufficientData": "Insufficient data",
+      "toCheck": "To check"
+    },
+    "explanation": {
+      "title": "Explanations and additional details",
+      "centralRange": "Central P25–P75 range"
+    }
+  },
+  "fields": {
     "brand": "Brand",
     "model": "Model",
     "generation": "Generation",
-    "price": "Price (€)",
-    "mileage": "Mileage",
+    "price": "Asking price",
     "year": "Year",
+    "mileage": "Mileage",
     "engine": "Engine",
+    "fuel": "Fuel",
+    "gearbox": "Gearbox",
+    "drivetrain": "Drivetrain",
+    "body": "Body"
+  },
+  "extremeSignals": {
+    "priceLow": "Alert: price is far below the group median.",
+    "priceHigh": "Alert: price is far above the group median.",
+    "mileageLow": "Alert: mileage is far below the group median.",
+    "mileageHigh": "Alert: mileage is far above the group median."
+  },
+  "explanations": {
+    "sameModelGeneration": "the same brand, model, and generation",
+    "allGenerations": "the same brand and model, across all generations",
+    "analyzedGroup": "Analyzed group: {{count}} listings with {{group}}.",
+    "extremeOverride": "The overall score is determined directly by the strongest extreme price or mileage anomaly, without weighted averaging or the rarity adjustment. The signal requires at least 25 comparable values, a score of at least 80, and a deviation of more than 45% from the median.",
+    "medianOverride": "A {{trigger}} deviation of more than 45% from the median, supported by at least 25 comparable values, requires an overall score of at least 80/100, without weighted averaging or the rarity adjustment. The component score does not need to reach 80 to activate this rule.",
+    "gradualOverride": "A {{trigger}} deviation of more than 45% from the median, supported by at least 25 comparable values, directly determines the overall score, without weighted averaging or the rarity adjustment. The score gradually increases from 80 at the 45% threshold to 100 for a deviation of 100% or more. If both signals qualify, the higher score is used. Component scores remain calculated separately from percentiles.",
+    "price": "price",
+    "mileage": "mileage",
+    "priceRange": "The observed P10–P90 range has a width of {{width}} € ({{percentage}}% of the median), based on {{count}} listings with {{group}}. Year, mileage, and configuration do not filter this group.",
+    "priceNotEvaluated": "Price was not evaluated: {{count}} comparable listings, compared with the minimum 10 required. The comparison is limited to {{group}}.",
+    "noOtherGenerations": "the same generation; other generations or models are not used",
+    "veryRare": "There are too few listings in the selected group for an overall score.",
+    "limitedSupport": "The available examples are limited. Interpret the score in the context of the displayed confidence level.",
+    "priceCheap": "The asking price is below the 10th percentile of observed prices (P10).",
+    "priceExpensive": "The asking price exceeds the 90th percentile of observed prices (P90).",
+    "priceCentral": "The asking price is close to the observed central market range.",
+    "priceOutsideCentral": "The asking price is within the P10–P90 range but outside the central P25–P75 range.",
+    "mileageMissing": "Mileage was not entered, so it was not evaluated.",
+    "mileageNotScored": "Mileage: {{count}} listings with available mileage in the selected group. The median requires at least 10, while the score requires at least 20.{{medianAvailable}}",
+    "medianAvailable": " The median is available, but the score is not.",
+    "mileageLow": "Mileage is unusually low",
+    "mileageHigh": "Mileage is unusually high",
+    "mileageNormal": "Mileage is within the observed range",
+    "mileageResult": "{{description}} compared with {{count}} listings with available mileage in the selected group.{{yearNotRestricting}}",
+    "yearNotRestricting": " The manufacturing year does not restrict the group.",
+    "configuration": "Configuration: each entered field requires at least 25 available values in the same group. Missing values do not participate in the calculation for that field.",
+    "missingFields": "Missing fields: {{fields}}. These may reduce confidence in the result.",
+    "thisModelGeneration": "this model and generation",
+    "thisModel": "this model",
+    "thisGeneration": "this generation",
+    "severity": {
+      "unobserved": "does not appear in the observed examples for {{group}}",
+      "outsideRange": "is outside the observed range for {{group}}",
+      "uncommon": "is rarely found in the available examples",
+      "veryRare": "is very rarely found in the available examples"
+    },
+    "signal": "{{field}} ({{value}}) {{explanation}}.",
+    "rarityAdjustment": "The overall score includes an adjustment of {{points}} points due to the limited number of listings in the selected group."
+  },
+  "errors": {
+    "timeout": "The analysis is taking too long. Try again in a few moments.",
+    "unavailable": "The analysis is currently unavailable. Try again later.",
+    "fields": "Check these fields: {{fields}}.",
+    "invalidData": "Check the entered data and try again.",
+    "connection": "We cannot contact the server. Check your connection and try again.",
+    "generic": "The analysis could not be completed. Try again."
+  },
+  "listingFilters": {
+    "labels": {
+      "brand": "Brand",
+      "model": "Model",
+      "generation": "Generation",
+      "price": "Price (€)",
+      "mileage": "Mileage",
+      "year": "Year",
+      "engine": "Engine",
+      "horsepower": "Horsepower",
+      "doors": "Doors",
+      "seats": "Seats",
+      "score": "Score",
+      "fuel": "Fuel",
+      "gearbox": "Gearbox",
+      "body": "Body",
+      "state": "Condition",
+      "drivetrain": "Drivetrain",
+      "seller": "Seller",
+      "registration": "Registration",
+      "class": "Class"
+    },
+    "any": "any",
+    "allListings": "All listings",
+    "sort": {
+      "label": "Sort",
+      "price": "price",
+      "score": "score",
+      "year": "year",
+      "mileage": "mileage",
+      "descending": "descending",
+      "ascending": "ascending"
+    },
+    "errors": {
+      "modelOrClass": "Choose either a model or vehicle class(es).",
+      "brandBeforeModel": "Choose the brand before the model.",
+      "modelBeforeGeneration": "Choose the brand and model before the generation."
+    }
+  },
+  "savedItemsJS": {
+    "errors": {
+      "sessionExpired": "Your session has expired. Log in to continue.",
+      "notAvailable": "The item is no longer available.",
+      "alreadyFavourite": "The listing is already in your favorites.",
+      "invalidValues": "Check the entered values and selected ranges.",
+      "serviceUnavailable": "The service is currently unavailable. Try again.",
+      "generic": "We couldn't complete the operation. Check your connection and try again."
+    }
+  },
+  "authButton": {
+    "account": "Account",
+    "profile": "My Profile",
+    "myListings": "My Listings",
+    "createListing": "Create Listing",
+    "favourites": "Favorite Listings",
+    "savedRisks": "Saved Risk Analyses",
+    "savedSearches": "Saved Filters",
+    "logout": "Log out",
+    "login": "Log in",
+    "register": "Register",
+    "comparisons": "Saved Comparisons"
+  },
+  "autocomplete": {
+    "loadError": "The options could not be loaded. Try again.",
+    "loading": "Loading options…",
+    "searching": "Searching for matches…",
+    "noResults": "No options found."
+  },
+  "carCard": {
+    "accountScore": "SCORE",
+    "price": "PRICE",
+    "generalData": "GENERAL DATA",
+    "performance": "PERFORMANCE",
+    "conditionDetails": "CONDITION & DETAILS",
+    "configuration": "CONFIGURATION",
+    "description": "DESCRIPTION",
+    "brand": "Brand",
+    "model": "Model",
+    "body": "Body",
+    "registration": "Registration",
+    "horsepower": "Horsepower",
+    "horsepowerUnit": "HP",
+    "gearbox": "Gearbox",
+    "drivetrain": "Drivetrain",
+    "fuel": "Fuel",
+    "year": "Year",
+    "mileage": "Mileage",
+    "mileageUnit": "km",
+    "condition": "Condition",
+    "engine": "Engine",
+    "doors": "Doors",
+    "seats": "Seats",
+    "openOriginalListing": "Open listing",
+    "openOriginalListingTitle": "Open the original listing on 999.md",
+    "close": "Close",
+    "recommendations": "Recommendations",
+    "riskAnalysis": "Risk Analysis",
+    "loading": "Loading...",
+    "recommendationsTitle": "Recommended Cars",
+    "collapse": "Collapse",
+    "showLess": "Show less",
+    "showMore": "Show more",
+    "noRecommendations": "No recommendations were found for this car.",
+    "errors": {
+      "recommendations": "Could not load recommendations.",
+      "risk": "Could not load the risk analysis."
+    }
+  },
+  "favouriteButton": {
+    "remove": "Remove from favorites",
+    "add": "Add to favorites",
+    "loginToSave": "Log in to save"
+  },
+  "listing-Filters": {
+    "advanced": "Advanced filters",
+    "brand": "Brand",
+    "price": "Price",
+    "year": "Year",
+    "mileage": "Mileage",
+    "fuel": "Fuel",
+    "body": "Body",
+    "gearbox": "Gearbox",
+    "moreFilters": "More filters",
+    "fewerFilters": "Fewer filters",
+    "drivetrain": "Drivetrain",
+    "state": "Condition",
+    "seller": "Seller",
+    "registrationCountry": "Registration country",
+    "carClass": "Car class",
+    "engine": "Engine capacity (L)",
     "horsepower": "Horsepower",
     "doors": "Doors",
     "seats": "Seats",
     "score": "Score",
-    "fuel": "Fuel",
+    "present": "Present",
+    "noLimit": "No limit",
+    "counting": "Counting…",
+    "listingsCount": "{{count}} listings",
+    "clearAll": "Clear all",
+    "reset": "Reset filters",
+    "remove": "Remove {{value}}",
+    "dialogLabel": "Advanced filters",
+    "minimum": "{{label}} minimum",
+    "maximum": "{{label}} maximum",
+    "min": "Min",
+    "max": "Max",
+    "classDisabledHint": "Remove the model to choose car classes.",
+    "errors": {
+      "modelAndClass": "Choose either a model or car class(es).",
+      "modelNeedsBrand": "Choose the brand before the model.",
+      "generationNeedsBrandModel": "Choose the brand and model before the generation."
+    }
+  },
+  "marketplaceVehicleFields": {
+    "brand": "Brand",
+    "model": "Model",
+    "generation": "Generation",
+    "choose": "Choose {{label}}",
+    "modelNeedsBrand": "Choose the brand first.",
+    "modelNeedsClassesRemoved": "Remove the classes to choose a model.",
+    "generationNeedsBrandModel": "Choose the brand and model first.",
+    "generationNeedsClassesRemoved": "Remove the classes and choose the brand and model first.",
+    "retry": "Retry loading"
+  },
+  "passwordInput": {
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
+  },
+  "saveItemButton": {
+    "saved": "Saved ✓",
+    "name": "Name",
+    "saving": "Saving…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "loginToSave": "Log in to save to your account.",
+    "login": "Log in",
+    "close": "Close"
+  },
+  "vehicleSelect": {
+    "choosePrevious": "Choose the previous field",
+    "choose": "Choose {{label}}",
+    "loadError": "The options could not be loaded.",
+    "loading": "Loading options…",
+    "searching": "Searching for matches…",
+    "noResults": "No options found.",
+    "disabledHint": "Choose the previous field first.",
+    "hint": "Choose from the list or search by name."
+  },
+  "vehicleTree": {
+    "searchBrand": "Search brand",
+    "loading": "Loading…",
+    "loadError": "Could not load the list.",
+    "classesHint": "Remove the classes to choose a model."
+  },
+  "comparatorPage": {
+    "title": "Comparison",
+    "titleCount": "Comparison ({{count}}/3)",
+    "emptyTitle": "You have no cars in comparison",
+    "emptyDescription": "Compare up to 3 cars simultaneously! Add your favorite vehicles from the market to analyze their specifications, price, and risk evaluation in detail, so you can make the best choice.",
+    "findCars": "Find cars on the market",
+    "backToMarket": "< Back to market",
+    "saveComparison": "Save comparison",
+    "specs": "Specifications",
+    "price": "Price",
+    "overallScore": "Overall Score",
+    "anomalyScore": "Overall anomaly score (Risk Analysis)",
+    "year": "Year",
+    "mileage": "Mileage",
+    "engine": "Engine",
     "gearbox": "Gearbox",
-    "body": "Body",
-    "state": "Condition",
     "drivetrain": "Drivetrain",
-    "seller": "Seller",
-    "registration": "Registration",
-    "class": "Class"
-  },
-  "any": "any",
-  "allListings": "All listings",
-  "sort": {
-    "label": "Sort",
-    "price": "price",
-    "score": "score",
-    "year": "year",
-    "mileage": "mileage",
-    "descending": "descending",
-    "ascending": "ascending"
-  },
-  "errors": {
-    "modelOrClass": "Choose either a model or vehicle class(es).",
-    "brandBeforeModel": "Choose the brand before the model.",
-    "modelBeforeGeneration": "Choose the brand and model before the generation."
+    "body": "Body type",
+    "carClass": "Class",
+    "country": "Registration country",
+    "unavailable": "Unavailable",
+    "compare": "Compare",
+    "compared": "Compared",
+    "addToComparison": "Add to comparison",
+    "removeFromComparison": "Remove from comparison",
+    "openComparison": "Open comparison ({{count}}/3 cars)"
   }
-},
-
-"savedItemsJS": {
-  "errors": {
-    "sessionExpired": "Your session has expired. Log in to continue.",
-    "notAvailable": "The item is no longer available.",
-    "alreadyFavourite": "The listing is already in your favorites.",
-    "invalidValues": "Check the entered values and selected ranges.",
-    "serviceUnavailable": "The service is currently unavailable. Try again.",
-    "generic": "We couldn't complete the operation. Check your connection and try again."
-  }
-},
-
-"authButton": {
-  "account": "Account",
-  "profile": "My Profile",
-  "myListings": "My Listings",
-  "createListing": "Create Listing",
-  "favourites": "Favorite Listings",
-  "savedRisks": "Saved Risk Analyses",
-  "savedSearches": "Saved Filters",
-  "logout": "Log out",
-  "login": "Log in",
-  "register": "Register"
-},
-
-"autocomplete": {
-  "loadError": "The options could not be loaded. Try again.",
-  "loading": "Loading options…",
-  "searching": "Searching for matches…",
-  "noResults": "No options found."
-},
-
-"carCard": {
-  "accountScore": "SCORE",
-  "price": "PRICE",
-  "generalData": "GENERAL DATA",
-  "performance": "PERFORMANCE",
-  "conditionDetails": "CONDITION & DETAILS",
-  "configuration": "CONFIGURATION",
-  "description": "DESCRIPTION",
-  "brand": "Brand",
-  "model": "Model",
-  "body": "Body",
-  "registration": "Registration",
-  "horsepower": "Horsepower",
-  "horsepowerUnit": "HP",
-  "gearbox": "Gearbox",
-  "drivetrain": "Drivetrain",
-  "fuel": "Fuel",
-  "year": "Year",
-  "mileage": "Mileage",
-  "mileageUnit": "km",
-  "condition": "Condition",
-  "engine": "Engine",
-  "doors": "Doors",
-  "seats": "Seats",
-  "openOriginalListing": "Open listing",
-  "openOriginalListingTitle": "Open the original listing on 999.md",
-  "close": "Close",
-  "recommendations": "Recommendations",
-  "riskAnalysis": "Risk Analysis",
-  "loading": "Loading...",
-  "recommendationsTitle": "Recommended Cars",
-  "collapse": "Collapse",
-  "showLess": "Show less",
-  "showMore": "Show more",
-  "noRecommendations": "No recommendations were found for this car.",
-  "errors": {
-    "recommendations": "Could not load recommendations.",
-    "risk": "Could not load the risk analysis."
-  }
-},
-
-"favouriteButton": {
-  "remove": "Remove from favorites",
-  "add": "Add to favorites",
-  "loginToSave": "Log in to save"
-},
-
-"listing-Filters": {
-  "advanced": "Advanced filters",
-  "brand": "Brand",
-  "price": "Price",
-  "year": "Year",
-  "mileage": "Mileage",
-  "fuel": "Fuel",
-  "body": "Body",
-  "gearbox": "Gearbox",
-  "moreFilters": "More filters",
-  "fewerFilters": "Fewer filters",
-  "drivetrain": "Drivetrain",
-  "state": "Condition",
-  "seller": "Seller",
-  "registrationCountry": "Registration country",
-  "carClass": "Car class",
-  "engine": "Engine capacity (L)",
-  "horsepower": "Horsepower",
-  "doors": "Doors",
-  "seats": "Seats",
-  "score": "Score",
-  "present": "Present",
-  "noLimit": "No limit",
-  "counting": "Counting…",
-  "listingsCount": "{{count}} listings",
-  "clearAll": "Clear all",
-  "reset": "Reset filters",
-  "remove": "Remove {{value}}",
-  "dialogLabel": "Advanced filters",
-  "minimum": "{{label}} minimum",
-  "maximum": "{{label}} maximum",
-  "min": "Min",
-  "max": "Max",
-  "classDisabledHint": "Remove the model to choose car classes.",
-  "errors": {
-    "modelAndClass": "Choose either a model or car class(es).",
-    "modelNeedsBrand": "Choose the brand before the model.",
-    "generationNeedsBrandModel": "Choose the brand and model before the generation."
-  }
-},
-
-"marketplaceVehicleFields": {
-  "brand": "Brand",
-  "model": "Model",
-  "generation": "Generation",
-  "choose": "Choose {{label}}",
-  "modelNeedsBrand": "Choose the brand first.",
-  "modelNeedsClassesRemoved": "Remove the classes to choose a model.",
-  "generationNeedsBrandModel": "Choose the brand and model first.",
-  "generationNeedsClassesRemoved": "Remove the classes and choose the brand and model first.",
-  "retry": "Retry loading"
-},
-
-"passwordInput": {
-  "showPassword": "Show password",
-  "hidePassword": "Hide password"
-},
-
-"saveItemButton": {
-  "saved": "Saved ✓",
-  "name": "Name",
-  "saving": "Saving…",
-  "save": "Save",
-  "cancel": "Cancel",
-  "loginToSave": "Log in to save to your account.",
-  "login": "Log in",
-  "close": "Close"
-},
-
-"vehicleSelect": {
-  "choosePrevious": "Choose the previous field",
-  "choose": "Choose {{label}}",
-  "loadError": "The options could not be loaded.",
-  "loading": "Loading options…",
-  "searching": "Searching for matches…",
-  "noResults": "No options found.",
-  "disabledHint": "Choose the previous field first.",
-  "hint": "Choose from the list or search by name."
-},
-
-"vehicleTree": {
-  "searchBrand": "Search brand",
-  "loading": "Loading…",
-  "loadError": "Could not load the list.",
-  "classesHint": "Remove the classes to choose a model."
 }
-
-  }
-
-
-
-  

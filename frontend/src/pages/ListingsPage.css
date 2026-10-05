@@ -178,7 +178,7 @@
 
 .comparator-action-row {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   margin-bottom: 24px;
 }
 
@@ -186,19 +186,19 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 40px;
-  padding: 0 20px;
-  border-radius: 8px;
-  background: var(--brand-teal, #14B8A6);
+  padding: 10px 18px;
+  background: var(--brand-charcoal, #0f172a);
   color: #ffffff;
-  font-size: 15px;
+  border-radius: 8px;
   font-weight: 600;
   text-decoration: none;
-  box-shadow: 0 2px 6px rgba(20, 184, 166, 0.25);
-  transition: background 0.15s ease, transform 0.15s ease;
+  font-size: 14px;
+  border: 1px solid var(--brand-charcoal, #0f172a);
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .comparator-banner-btn:hover {
-  background: #0F8A7D;
-  transform: translateY(-1px);
+  background: #1e293b;
+  border-color: #1e293b;
 }

@@ -123,13 +123,13 @@ function ItemSummary({ kind, item }) {
   const { t } = useTranslation();
 
   if (kind === "comparisons") {
-    return <p style={{color: '#64748B'}}>Compară {item.filters?.cars?.length || 0} mașini</p>;
+    return <p style={{color: '#64748B'}}>{t("savedItems.summary.compareCount", { count: item.filters?.cars?.length || 0 })}</p>;
   }
 
   if (kind === "searches") {
     return (
       <ul className="saved-filter-tags">
-        {describeFilters(item.filters).map((text) => (
+        {describeFilters(item.filters, t).map((text) => (
           <li key={text}>{text}</li>
         ))}
       </ul>
@@ -328,7 +328,7 @@ function SavedCollection({ kind }) {
                       : kind === "risks"
                         ? t("savedItems.badges.risk")
                         : kind === "comparisons"
-                          ? "COMPARARE"
+                          ? t("savedItems.badges.comparison")
                           : t("savedItems.badges.search")}
                   </span>
 
@@ -457,7 +457,7 @@ function SavedCollection({ kind }) {
                         navigate("/comparator");
                       }}
                     >
-                      Deschide compararea
+                      {t("savedItems.actions.openComparison")}
                     </button>
                   )}
 
@@ -580,7 +580,7 @@ function SavedCollection({ kind }) {
                       "savedItems.empty.searches.description"
                     )
                   : kind === "comparisons"
-                    ? "Compară mașini și salvează-le."
+                    ? t("savedItems.empty.comparisons.description")
                     : t(
                         "savedItems.empty.favourites.description"
                       )}
@@ -768,7 +768,7 @@ function SavedDetail({ kind, id }) {
                     navigate("/comparator");
                   }}
                 >
-                  Deschide compararea
+                  {t("savedItems.actions.openComparison")}
                 </button>
               )}
 
@@ -813,9 +813,9 @@ function SavedDetail({ kind, id }) {
 
           {kind === "comparisons" && (
             <section className="saved-card">
-              <h2>Comparare salvată</h2>
+              <h2>{t("savedItems.detail.savedComparison")}</h2>
               <ItemSummary kind={kind} item={item} />
-              <p>Apasă butonul de mai sus pentru a relua comparația detaliată.</p>
+              <p>{t("savedItems.detail.comparisonInstruction")}</p>
             </section>
           )}
 
@@ -923,10 +923,10 @@ function SavedEditor({
 
     if (
       kind === "searches" &&
-      listingFilterError(filters)
+      listingFilterError(filters, t)
     ) {
       setError(
-        listingFilterError(filters)
+        listingFilterError(filters, t)
       );
       return;
     }
@@ -984,7 +984,7 @@ function SavedEditor({
                   "savedItems.editor.riskTitle"
                 )
               : kind === "comparisons"
-                ? "Redenumește compararea"
+                ? t("savedItems.editor.comparisonTitle")
                 : t(
                     "savedItems.editor.searchTitle"
                   )}

@@ -1,5 +1,6 @@
-import { useLocation, Link } from "react-router-dom";
+﻿import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useComparator } from "../context/ComparatorContext";
 import { getLogoFileName, getScoreClass } from "../utils/carCard";
 import SaveItemButton from "../components/SaveItemButton";
@@ -21,8 +22,10 @@ function formatValue(value) {
 }
 
 export default function ComparatorPage() {
+  const { t } = useTranslation();
   const { comparedCars, removeCar } = useComparator();
   const location = useLocation();
+  const navigate = useNavigate();
   const savedFilters = location.state?.savedFilters || {};
   const savedPage = location.state?.savedPage || 1;
 
@@ -66,17 +69,15 @@ export default function ComparatorPage() {
     return (
       <main className="comparator-page">
         <div className="comparator-header">
-          <h1>Comparare</h1>
-          <Link to="/listings" state={{ savedFilters, savedPage, keepFiltersClosed: true }} className="back-to-market-btn">
-            ← Înapoi la piață
-          </Link>
+          <h1>{t("comparatorPage.title")}</h1>
+          <button onClick={() => navigate(-1)} className="back-to-market-btn">
+            ← {t("comparatorPage.backToMarket")}</button>
         </div>
         <div className="comparator-empty">
-          <h2>Nu ai nicio mașină în comparare</h2>
-          <p>Compară până la 3 mașini simultan! Adaugă vehiculele preferate din piață pentru a le analiza detaliat specificațiile, prețul și evaluarea de risc, astfel încât să faci cea mai bună alegere.</p>
-          <Link to="/listings" state={{ savedFilters, savedPage, keepFiltersClosed: true }} className="back-to-market-btn">
-            Găsește mașini pe piață
-          </Link>
+          <h2>{t("comparatorPage.emptyTitle")}</h2>
+          <p>{t("comparatorPage.emptyDescription")}</p>
+          <button onClick={() => navigate(-1)} className="back-to-market-btn">
+            {t("comparatorPage.findCars")}</button>
         </div>
       </main>
     );
@@ -108,17 +109,16 @@ export default function ComparatorPage() {
   return (
     <main className="comparator-page" style={{ "--car-count": comparedCars.length }}>
       <div className="comparator-header">
-        <h1>Comparare ({comparedCars.length}/3)</h1>
+        <h1>{t("comparatorPage.titleCount", { count: comparedCars.length })}</h1>
         <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
           <SaveItemButton 
-            label="Salvează compararea" 
+            label={t("comparatorPage.saveComparison")} 
             defaultName={comparedCars.map(c => c.brand).join(" vs ")}
             path="/saved-searches" 
             onSave={(name) => createSaved("searches", { name, filters: { is_comparison: true, cars: comparedCars } })} 
           />
-          <Link to="/listings" state={{ savedFilters, savedPage, keepFiltersClosed: true }} className="back-to-market-btn">
-            ← Înapoi la piață
-          </Link>
+          <button onClick={() => navigate(-1)} className="back-to-market-btn">
+            ← {t("comparatorPage.backToMarket")}</button>
         </div>
       </div>
 
@@ -126,10 +126,10 @@ export default function ComparatorPage() {
         <table className="comparator-table">
           <thead>
             <tr>
-              <th>Specificații</th>
+              <th>{t("comparatorPage.specs")}</th>
               {comparedCars.map(car => (
                 <th key={car.id} className="car-header-cell">
-                  <button className="remove-car-btn" onClick={() => removeCar(car.id)} title="Elimină din comparare">✕</button>
+                  <button className="remove-car-btn" onClick={() => removeCar(car.id)} title={t("comparatorPage.removeFromComparison")}>✕</button>
                   <img src={`/logos/${getLogoFileName(car.brand)}`} alt={car.brand} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }} />
                   <h3>{formatValue(car.brand)} {formatValue(car.model)}</h3>
                   <p>{formatValue(car.generation)}</p>
@@ -139,7 +139,7 @@ export default function ComparatorPage() {
           </thead>
           <tbody>
             <tr>
-              <th>Scor General</th>
+              <th>{t("comparatorPage.overallScore")}</th>
               {comparedCars.map(car => {
                 const score = Number(car.score);
                 return (
@@ -153,7 +153,7 @@ export default function ComparatorPage() {
               })}
             </tr>
             <tr>
-              <th>Scor Anomalie (Risc)</th>
+              <th>{t("comparatorPage.anomalyScore")}</th>
               {comparedCars.map(car => {
                 const res = anomalyScores[car.id];
                 if (res === undefined) {
@@ -168,7 +168,7 @@ export default function ComparatorPage() {
                 if (!res || res.anomaly_score == null) {
                   return (
                     <td key={car.id} className="score-cell">
-                      <span style={{ color: "var(--brand-muted)", fontSize: "14px" }}>Indisponibil</span>
+                      <span style={{ color: "var(--brand-muted)", fontSize: "14px" }}>{t("comparatorPage.unavailable")}</span>
                     </td>
                   );
                 }
@@ -184,7 +184,7 @@ export default function ComparatorPage() {
               })}
             </tr>
             <tr>
-              <th>Preț</th>
+              <th>{t("comparatorPage.price")}</th>
               {comparedCars.map(car => (
                 <td key={car.id}>
                   <div className={Number(car.price_eur) === bestPrice ? "best-value" : ""}>
@@ -194,7 +194,7 @@ export default function ComparatorPage() {
               ))}
             </tr>
             <tr>
-              <th>An Fabricație</th>
+              <th>{t("comparatorPage.year")}</th>
               {comparedCars.map(car => (
                 <td key={car.id}>
                   <div className={Number(car.year) === bestYear ? "best-value" : ""}>
@@ -204,7 +204,7 @@ export default function ComparatorPage() {
               ))}
             </tr>
             <tr>
-              <th>Kilometraj</th>
+              <th>{t("comparatorPage.mileage")}</th>
               {comparedCars.map(car => (
                 <td key={car.id}>
                   <div className={Number(car.mileage) === bestMileage ? "best-value" : ""}>
@@ -214,37 +214,37 @@ export default function ComparatorPage() {
               ))}
             </tr>
             <tr>
-              <th>Motor</th>
+              <th>{t("comparatorPage.engine")}</th>
               {comparedCars.map(car => (
                 <td key={car.id}>{formatValue(car.engine_size)} {formatValue(car.fuel_type)}</td>
               ))}
             </tr>
             <tr>
-              <th>Cutie de viteze</th>
+              <th>{t("comparatorPage.gearbox")}</th>
               {comparedCars.map(car => (
                 <td key={car.id}>{formatValue(car.gearbox)}</td>
               ))}
             </tr>
             <tr>
-              <th>Tracțiune</th>
+              <th>{t("comparatorPage.drivetrain")}</th>
               {comparedCars.map(car => (
                 <td key={car.id}>{formatValue(car.drivetrain)}</td>
               ))}
             </tr>
             <tr>
-              <th>Caroserie</th>
+              <th>{t("comparatorPage.body")}</th>
               {comparedCars.map(car => (
                 <td key={car.id}>{formatValue(car.body_type)}</td>
               ))}
             </tr>
             <tr>
-              <th>Clasa</th>
+              <th>{t("comparatorPage.carClass")}</th>
               {comparedCars.map(car => (
                 <td key={car.id}>{formatValue(car.class_)}</td>
               ))}
             </tr>
             <tr>
-              <th>Tara înmatriculării</th>
+              <th>{t("comparatorPage.country")}</th>
               {comparedCars.map(car => (
                 <td key={car.id}>{formatValue(car.registration_country)}</td>
               ))}
@@ -255,3 +255,6 @@ export default function ComparatorPage() {
     </main>
   );
 }
+
+
+

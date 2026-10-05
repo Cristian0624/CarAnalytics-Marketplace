@@ -4,8 +4,13 @@ export const ComparatorContext = createContext(null);
 
 export function ComparatorProvider({ children }) {
   const [comparedCars, setComparedCars] = useState(() => {
-    const saved = localStorage.getItem("comparedCars");
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem("comparedCars");
+      const parsed = saved ? JSON.parse(saved) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
   });
 
   useEffect(() => {

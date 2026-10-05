@@ -141,13 +141,7 @@ function AuthButton() {
                 {t("authButton.savedRisks")}
               </Link>
 
-              <Link
-                to="/saved-searches"
-                className="auth-dropdown-item"
-                onClick={() => setIsOpen(false)}
-              >
-                {t("authButton.savedSearches")}
-              </Link>
+              <Link to="/saved-searches" className="auth-dropdown-item" onClick={() => setIsOpen(false)}>{t("authButton.savedSearches")}</Link><Link to="/saved-comparisons" className="auth-dropdown-item" onClick={() => setIsOpen(false)}>{t("authButton.comparisons", { defaultValue: "Comparari Salvate" })}</Link>
 
               <button
                 className="auth-dropdown-item auth-logout"

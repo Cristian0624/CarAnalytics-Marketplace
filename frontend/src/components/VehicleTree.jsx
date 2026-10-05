@@ -225,7 +225,8 @@ export default function VehicleTree({
                     checked={brandOn}
                     partial={brandPartial}
                     onCheck={() => {
-                      if (brandOn) {
+                      if (selBrands.includes(b)) {
+                        // Uncheck brand completely
                         const newBrands = selBrands.filter(x => x !== b);
                         const newModels = selModels.filter(mx => modelToBrand[mx] !== b && !bModelsKnown.includes(mx));
                         const newGens = selGens.filter(gx => {
@@ -234,6 +235,7 @@ export default function VehicleTree({
                         });
                         commit(newBrands, newModels, newGens);
                       } else {
+                        // Check brand completely
                         const newModels = selModels.filter(mx => modelToBrand[mx] !== b && !bModelsKnown.includes(mx));
                         const newGens = selGens.filter(gx => {
                           const mx = genToModel[gx];
@@ -243,9 +245,7 @@ export default function VehicleTree({
                       }
                     }}
                     onToggle={() => {
-                      setOpenBrand(
-                        isOpen ? null : b
-                      );
+                      setOpenBrand(isOpen ? null : b);
                       setOpenModel(null);
                     }}
                   />
@@ -269,27 +269,20 @@ export default function VehicleTree({
                               <Row level={1} label={m} open={mOpen} expandable disabled={lockModels}
                                 checked={isVisuallyOn} partial={mPartial}
                                 onCheck={() => {
-                                  if (isVisuallyOn || brandOn) {
+                                  if (selModels.includes(m) && mSelGens.length === 0) {
+                                    // It was fully checked explicitly. Uncheck it.
                                     let newBrands = [...selBrands];
                                     let newModels = selModels.filter(x => x !== m);
                                     let newGens = selGens.filter(gx => !(mGensKnown.includes(gx) || genToModel[gx] === m));
                                     
-                                    if (brandOn) {
+                                    // If this was the last model, remove the brand too
+                                    const otherModels = newModels.filter(mx => bModelsKnown.includes(mx) || modelToBrand[mx] === b);
+                                    if (otherModels.length === 0) {
                                       newBrands = newBrands.filter(x => x !== b);
-                                      newModels = newModels.filter(x => modelToBrand[x] !== b && !bModelsKnown.includes(x));
-                                      newGens = newGens.filter(gx => {
-                                        const mx = genToModel[gx];
-                                        return mx ? (modelToBrand[mx] !== b && !bModelsKnown.includes(mx)) : true;
-                                      });
-                                    } else {
-                                      if (bSelModels.length === 1) {
-                                        newBrands = newBrands.filter(x => x !== b);
-                                      }
                                     }
                                     commit(newBrands, newModels, newGens);
                                   } else {
-                                    // Make model fully checked. Make brand partial (i.e. added to selBrands).
-                                    // We also clear any specific generations for this model, because it becomes fully checked.
+                                    // Check model fully. Clear its specific generations. Add brand if missing.
                                     let newGens = selGens.filter(gx => !(mGensKnown.includes(gx) || genToModel[gx] === m));
                                     commit(withItem(selBrands, b), withItem(selModels, m), newGens);
                                   }
@@ -306,31 +299,37 @@ export default function VehicleTree({
                                       checked={gOn}
                                       onCheck={() => {
                                         if (gOn) {
-                                          let newBrands = [...selBrands];
-                                          let newModels = [...selModels];
-                                          let newGens = selGens.filter(x => x !== g);
-
-                                          if (brandOn) {
-                                            newBrands = newBrands.filter(x => x !== b);
-                                            newModels = newModels.filter(x => modelToBrand[x] !== b && !bModelsKnown.includes(x));
-                                            newGens = newGens.filter(gx => {
-                                              const mx = genToModel[gx];
-                                              return mx ? (modelToBrand[mx] !== b && !bModelsKnown.includes(mx)) : true;
+                                          if (isVisuallyOn) {
+                                            // The model was fully checked, now we are unchecking ONE generation.
+                                            // So we must check all OTHER known generations explicitly.
+                                            let newGens = [...selGens];
+                                            mGensKnown.forEach(gx => {
+                                              if (gx !== g && !newGens.includes(gx)) newGens.push(gx);
                                             });
-                                          } else if (isVisuallyOn) {
-                                            newModels = newModels.filter(x => x !== m);
-                                            newGens = newGens.filter(gx => !(mGensKnown.includes(gx) || genToModel[gx] === m));
+                                            // Ensure brand and model are explicitly selected
+                                            commit(withItem(selBrands, b), withItem(selModels, m), newGens);
                                           } else {
-                                            if (mSelGens.length === 1) {
+                                            // Normal uncheck of a generation
+                                            let newGens = selGens.filter(x => x !== g);
+                                            let newModels = [...selModels];
+                                            let newBrands = [...selBrands];
+                                            
+                                            // If it was the last generation, also remove the model
+                                            const otherGens = newGens.filter(gx => mGensKnown.includes(gx) || genToModel[gx] === m);
+                                            if (otherGens.length === 0) {
                                               newModels = newModels.filter(x => x !== m);
-                                              if (bSelModels.length === 1) {
+                                              
+                                              // And if it was the last model, remove the brand
+                                              const otherModels = newModels.filter(mx => bModelsKnown.includes(mx) || modelToBrand[mx] === b);
+                                              if (otherModels.length === 0) {
                                                 newBrands = newBrands.filter(x => x !== b);
                                               }
                                             }
+                                            
+                                            commit(newBrands, newModels, newGens);
                                           }
-                                          commit(newBrands, newModels, newGens);
                                         } else {
-                                          // Check generation explicitly. Add model and brand to parents so they become partial.
+                                          // Check generation explicitly.
                                           commit(withItem(selBrands, b), withItem(selModels, m), withItem(selGens, g));
                                         }
                                       }} />

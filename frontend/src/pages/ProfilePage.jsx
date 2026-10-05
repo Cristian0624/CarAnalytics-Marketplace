@@ -168,7 +168,7 @@ export default function ProfilePage() {
           </Link>
 
           <Link to="/saved-comparisons">
-            Comparări Salvate
+            {t("profile.tabs.comparisons", { defaultValue: "Comparări Salvate" })}
           </Link>
 
           <Link
