@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+
 import { useAuth } from "../context/AuthContext";
 import { apiRequest } from "../api/api";
 import BackgroundTriangles from "../components/BackgroundTriangles";
-import "./SavedItemsPage.css";
 import PasswordInput from "../components/PasswordInput";
+
+import "./SavedItemsPage.css";
 
 const savedPaths = {
   favourites: "/favourites",
@@ -14,18 +17,25 @@ const savedPaths = {
 };
 
 export default function ProfilePage() {
+  const { t } = useTranslation();
+
   const { user, logout, checkAuth } = useAuth();
   const navigate = useNavigate();
 
   const [editing, setEditing] = useState(false);
-  const [changingPassword, setChangingPassword] = useState(false);
+  const [changingPassword, setChangingPassword] =
+    useState(false);
 
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
   const [phone, setPhone] = useState(user?.phone || "");
-  const [sellerType, setSellerType] = useState(user?.seller_type || "");
+  const [sellerType, setSellerType] = useState(
+    user?.seller_type || ""
+  );
 
-  const [currentPassword, setCurrentPassword] = useState("");
+  const [currentPassword, setCurrentPassword] =
+    useState("");
+
   const [newPassword, setNewPassword] = useState("");
 
   const [error, setError] = useState("");
@@ -53,9 +63,14 @@ export default function ProfilePage() {
       await checkAuth?.();
 
       setEditing(false);
-      setMessage("Profilul a fost actualizat.");
+      setMessage(
+        t("profile.messages.profileUpdated")
+      );
     } catch (err) {
-      setError(err.message || "Nu s-au putut salva modificările.");
+      setError(
+        err.message ||
+          t("profile.messages.profileSaveError")
+      );
     } finally {
       setBusy(false);
     }
@@ -80,7 +95,10 @@ export default function ProfilePage() {
       await logout();
       navigate("/login");
     } catch (err) {
-      setError(err.message || "Parola nu a putut fi schimbată.");
+      setError(
+        err.message ||
+          t("profile.messages.passwordChangeError")
+      );
     } finally {
       setBusy(false);
     }
@@ -96,11 +114,17 @@ export default function ProfilePage() {
       <main className="saved-page">
         <div className="saved-container">
           <div className="saved-empty">
-            <h2>Profilul tău</h2>
-            <p>Autentifică-te pentru a-ți accesa profilul.</p>
+            <h2>{t("profile.title")}</h2>
 
-            <Link className="saved-primary" to="/login">
-              Autentificare
+            <p>
+              {t("profile.loginRequired")}
+            </p>
+
+            <Link
+              className="saved-primary"
+              to="/login"
+            >
+              {t("profile.login")}
             </Link>
           </div>
         </div>
@@ -111,41 +135,55 @@ export default function ProfilePage() {
   return (
     <main className="saved-page">
       <BackgroundTriangles />
+
       <div className="saved-container">
         <header className="saved-heading">
-          <span className="saved-eyebrow">CONTUL MEU</span>
+          <span className="saved-eyebrow">
+            {t("profile.account")}
+          </span>
 
-          <h1>Profilul Meu</h1>
+          <h1>{t("profile.title")}</h1>
 
           <p>
-            Informațiile contului tău și opțiunile de securitate.
+            {t("profile.description")}
           </p>
         </header>
 
-        <nav className="saved-tabs" aria-label="Elemente salvate">
+        <nav
+          className="saved-tabs"
+          aria-label={t(
+            "profile.tabs.savedItems"
+          )}
+        >
           <Link to={savedPaths.favourites}>
-            Anunțuri Favorite
+            {t("profile.tabs.favourites")}
           </Link>
 
           <Link to={savedPaths.risks}>
-            Analize Risc Salvate
+            {t("profile.tabs.risks")}
           </Link>
 
           <Link to={savedPaths.searches}>
-            Filtre Salvate
+            {t("profile.tabs.searches")}
           </Link>
 
-          <Link to="/profile" aria-current="page">
-            Profilul Meu
+          <Link
+            to="/profile"
+            aria-current="page"
+          >
+            {t("profile.tabs.profile")}
           </Link>
 
           <Link to={savedPaths.myListings}>
-            Anunțurile Mele
+            {t("profile.tabs.myListings")}
           </Link>
         </nav>
 
         {error && (
-          <p className="saved-error" role="alert">
+          <p
+            className="saved-error"
+            role="alert"
+          >
             {error}
           </p>
         )}
@@ -160,7 +198,7 @@ export default function ProfilePage() {
           <section className="saved-card">
             <div className="saved-card-top">
               <span className="saved-eyebrow">
-                INFORMAȚII CONT
+                {t("profile.accountInfo")}
               </span>
             </div>
 
@@ -168,23 +206,51 @@ export default function ProfilePage() {
 
             <div className="saved-profile-details">
               <div>
-                <strong>Nume</strong>
-                <span>{user.name || "—"}</span>
+                <strong>
+                  {t("profile.fields.name")}
+                </strong>
+
+                <span>
+                  {user.name || "—"}
+                </span>
               </div>
 
               <div>
-                <strong>Email</strong>
-                <span>{user.email || "—"}</span>
+                <strong>
+                  {t("profile.fields.email")}
+                </strong>
+
+                <span>
+                  {user.email || "—"}
+                </span>
               </div>
 
               <div>
-                <strong>Telefon</strong>
-                <span>{user.phone || "—"}</span>
+                <strong>
+                  {t("profile.fields.phone")}
+                </strong>
+
+                <span>
+                  {user.phone || "—"}
+                </span>
               </div>
 
               <div>
-                <strong>Tip utilizator</strong>
-                <span> {user.seller_type === "private" ? "Persoană fizică" : user.seller_type === "dealer" ? "Dealer" : "—"}</span>
+                <strong>
+                  {t("profile.fields.userType")}
+                </strong>
+
+                <span>
+                  {user.seller_type === "private"
+                    ? t(
+                        "profile.sellerTypes.private"
+                      )
+                    : user.seller_type === "dealer"
+                      ? t(
+                          "profile.sellerTypes.dealer"
+                        )
+                      : "—"}
+                </span>
               </div>
             </div>
 
@@ -195,14 +261,16 @@ export default function ProfilePage() {
                   setName(user.name || "");
                   setEmail(user.email || "");
                   setPhone(user.phone || "");
-                  setSellerType(user.seller_type || "");
+                  setSellerType(
+                    user.seller_type || ""
+                  );
 
                   setError("");
                   setMessage("");
                   setEditing(true);
                 }}
               >
-                Editează profilul
+                {t("profile.actions.edit")}
               </button>
 
               <button
@@ -213,14 +281,16 @@ export default function ProfilePage() {
                   setChangingPassword(true);
                 }}
               >
-                Schimbă parola
+                {t(
+                  "profile.actions.changePassword"
+                )}
               </button>
 
               <button
                 className="saved-delete"
                 onClick={handleLogout}
               >
-                Deconectare
+                {t("profile.actions.logout")}
               </button>
             </div>
           </section>
@@ -228,42 +298,51 @@ export default function ProfilePage() {
 
         {editing && (
           <section className="saved-editor">
-            <form className="saved-card" onSubmit={saveProfile}>
-              <h2>Editează profilul</h2>
+            <form
+              className="saved-card"
+              onSubmit={saveProfile}
+            >
+              <h2>{t("profile.edit.title")}</h2>
 
               <label htmlFor="profile-name">
-                Nume
+                {t("profile.fields.name")}
               </label>
 
               <input
                 id="profile-name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) =>
+                  setName(e.target.value)
+                }
                 disabled={busy}
                 required
               />
 
               <label htmlFor="profile-email">
-                Email
+                {t("profile.fields.email")}
               </label>
 
               <input
                 id="profile-email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) =>
+                  setEmail(e.target.value)
+                }
                 disabled={busy}
                 required
               />
 
               <label htmlFor="profile-phone">
-                Telefon
+                {t("profile.fields.phone")}
               </label>
 
               <input
                 id="profile-phone"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) =>
+                  setPhone(e.target.value)
+                }
                 disabled={busy}
               />
 
@@ -271,34 +350,50 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   className={`seller-type-option ${
-                    sellerType === "private" ? "selected" : ""
+                    sellerType === "private"
+                      ? "selected"
+                      : ""
                   }`}
-                  onClick={() => setSellerType("private")}
+                  onClick={() =>
+                    setSellerType("private")
+                  }
                   disabled={busy}
                 >
                   <span className="seller-type-title">
-                    Persoană fizică
+                    {t(
+                      "profile.sellerTypes.private"
+                    )}
                   </span>
 
                   <span className="seller-type-description">
-                    Vând ca persoană fizică
+                    {t(
+                      "profile.sellerTypes.privateDescription"
+                    )}
                   </span>
                 </button>
 
                 <button
                   type="button"
                   className={`seller-type-option ${
-                    sellerType === "dealer" ? "selected" : ""
+                    sellerType === "dealer"
+                      ? "selected"
+                      : ""
                   }`}
-                  onClick={() => setSellerType("dealer")}
+                  onClick={() =>
+                    setSellerType("dealer")
+                  }
                   disabled={busy}
                 >
                   <span className="seller-type-title">
-                    Dealer
+                    {t(
+                      "profile.sellerTypes.dealer"
+                    )}
                   </span>
 
                   <span className="seller-type-description">
-                    Reprezint un dealer auto
+                    {t(
+                      "profile.sellerTypes.dealerDescription"
+                    )}
                   </span>
                 </button>
               </div>
@@ -309,8 +404,12 @@ export default function ProfilePage() {
                   disabled={busy}
                 >
                   {busy
-                    ? "Se salvează..."
-                    : "Salvează modificările"}
+                    ? t(
+                        "profile.actions.saving"
+                      )
+                    : t(
+                        "profile.actions.save"
+                      )}
                 </button>
 
                 <button
@@ -322,7 +421,9 @@ export default function ProfilePage() {
                     setEditing(false);
                   }}
                 >
-                  Anulează
+                  {t(
+                    "profile.actions.cancel"
+                  )}
                 </button>
               </div>
             </form>
@@ -335,29 +436,49 @@ export default function ProfilePage() {
               className="saved-card"
               onSubmit={changePassword}
             >
-              <h2>Schimbă parola</h2>
+              <h2>
+                {t(
+                  "profile.password.title"
+                )}
+              </h2>
 
               <label htmlFor="current-password">
-                Parola actuală
+                {t(
+                  "profile.password.current"
+                )}
               </label>
 
               <PasswordInput
                 name="current_password"
-                placeholder="Parola actuală"
+                placeholder={t(
+                  "profile.password.current"
+                )}
                 value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
+                onChange={(e) =>
+                  setCurrentPassword(
+                    e.target.value
+                  )
+                }
                 disabled={busy}
               />
 
               <label htmlFor="new-password">
-                Parola nouă
+                {t(
+                  "profile.password.new"
+                )}
               </label>
 
               <PasswordInput
                 name="new_password"
-                placeholder="Parola nouă"
+                placeholder={t(
+                  "profile.password.new"
+                )}
                 value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                onChange={(e) =>
+                  setNewPassword(
+                    e.target.value
+                  )
+                }
                 disabled={busy}
               />
 
@@ -367,8 +488,12 @@ export default function ProfilePage() {
                   disabled={busy}
                 >
                   {busy
-                    ? "Se schimbă..."
-                    : "Schimbă parola"}
+                    ? t(
+                        "profile.actions.changing"
+                      )
+                    : t(
+                        "profile.actions.change"
+                      )}
                 </button>
 
                 <button
@@ -380,7 +505,9 @@ export default function ProfilePage() {
                     setChangingPassword(false);
                   }}
                 >
-                  Anulează
+                  {t(
+                    "profile.actions.cancel"
+                  )}
                 </button>
               </div>
             </form>

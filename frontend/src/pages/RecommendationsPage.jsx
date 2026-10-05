@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { searchListingsPaginated } from "../api/listings";
 import { getRecommendationsForCar } from "../api/recommendations";
 import CarCard from "../components/CarCard";
@@ -8,6 +9,8 @@ const ITEMS_PER_PAGE = 9;
 const RECOMMENDATIONS_PER_LOAD = 6;
 
 function RecommendationsPage() {
+  const { t } = useTranslation();
+
   const [cars, setCars] = useState([]);
   const [recommendations, setRecommendations] = useState({});
   const [visibleRecommendations, setVisibleRecommendations] = useState({});
@@ -73,7 +76,7 @@ function RecommendationsPage() {
       console.error("Failed to load cars:", err);
 
       if (replace) {
-        setError(err.message || "Failed to load cars.");
+        setError(err.message || t("recommendations.error"));
       }
     } finally {
       if (replace) {
@@ -143,8 +146,6 @@ function RecommendationsPage() {
       setExpandedCarId(null);
       setExpandedRecommendationId(null);
 
-      // When the main card closes, reset its recommendations
-      // back to the first 3.
       setVisibleRecommendations((current) => ({
         ...current,
         [carId]: RECOMMENDATIONS_PER_LOAD,
@@ -156,8 +157,6 @@ function RecommendationsPage() {
     setExpandedCarId(carId);
     setExpandedRecommendationId(null);
 
-    // Always start the recommendation list from the first 3
-    // when opening a main car.
     setVisibleRecommendations((current) => ({
       ...current,
       [carId]: RECOMMENDATIONS_PER_LOAD,
@@ -181,7 +180,7 @@ function RecommendationsPage() {
         (current[carId] ?? RECOMMENDATIONS_PER_LOAD) +
         RECOMMENDATIONS_PER_LOAD,
     }));
-  
+
     setExpandedRecommendationId(null);
   }
 
@@ -190,9 +189,9 @@ function RecommendationsPage() {
       ...current,
       [carId]: RECOMMENDATIONS_PER_LOAD,
     }));
-  
+
     setExpandedRecommendationId(null);
-  
+
     setTimeout(() => {
       recommendationRefs.current[carId]?.scrollIntoView({
         behavior: "smooth",
@@ -223,7 +222,7 @@ function RecommendationsPage() {
     if (currentPage >= totalPages || loadingMoreCars) {
       return;
     }
-  
+
     loadCars(currentPage + 1, false);
   }
 
@@ -231,12 +230,12 @@ function RecommendationsPage() {
     setCars((current) =>
       current.slice(0, ITEMS_PER_PAGE)
     );
-  
+
     setCurrentPage(1);
-  
+
     setExpandedCarId(null);
     setExpandedRecommendationId(null);
-  
+
     setTimeout(() => {
       mainCarsTopRef.current?.scrollIntoView({
         behavior: "smooth",
@@ -244,507 +243,513 @@ function RecommendationsPage() {
       });
     }, 50);
   }
-  
+
   if (loading) {
     return (
-    <>
-      <div className="background-shapes">
-    {triangles.map((t) => (
-      <svg
-        key={t.id}
-        className="floating-shape"
-        style={{
-          width: `${t.size}px`,
-          height: `${t.size}px`,
-          color: t.color,
-          top: t.top,
-          [t.side]: t.offset,
-          animationDelay: t.delay,
-          "--rot": `${t.rot}deg`,
-        }}
-        viewBox="-20 -20 140 140"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <polygon
-          points="50,0 100,100 0,100"
-          fill="currentColor"
-          stroke="currentColor"
-          strokeWidth="30"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ))}
-  </div>
-      <main className="recommendations-main">
-        <div className="recommendations-loading">
-          Se încarcă mașinile...
+      <>
+        <div className="background-shapes">
+          {triangles.map((t) => (
+            <svg
+              key={t.id}
+              className="floating-shape"
+              style={{
+                width: `${t.size}px`,
+                height: `${t.size}px`,
+                color: t.color,
+                top: t.top,
+                [t.side]: t.offset,
+                animationDelay: t.delay,
+                "--rot": `${t.rot}deg`,
+              }}
+              viewBox="-20 -20 140 140"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <polygon
+                points="50,0 100,100 0,100"
+                fill="currentColor"
+                stroke="currentColor"
+                strokeWidth="30"
+                strokeLinejoin="round"
+              />
+            </svg>
+          ))}
         </div>
-      </main>
-    </>
+
+        <main className="recommendations-main">
+          <div className="recommendations-loading">
+            {t("recommendations.loading")}
+          </div>
+        </main>
+      </>
     );
   }
 
   if (error) {
     return (
-    <>
-      <div className="background-shapes">
-      {triangles.map((t) => (
-        <svg
-          key={t.id}
-          className="floating-shape"
-          style={{
-            width: `${t.size}px`,
-            height: `${t.size}px`,
-            color: t.color,
-            top: t.top,
-            [t.side]: t.offset,
-            animationDelay: t.delay,
-            "--rot": `${t.rot}deg`,
-          }}
-          viewBox="-20 -20 140 140"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <polygon
-            points="50,0 100,100 0,100"
-            fill="currentColor"
-            stroke="currentColor"
-            strokeWidth="30"
-            strokeLinejoin="round"
-          />
-        </svg>
-      ))}
-    </div>
-      <main className="recommendations-main">
-        <div className="recommendations-error">
-          <h2>Ceva nu a mers bine</h2>
-
-          <p>{error}</p>
-
-          <button onClick={() => loadCars(1, true)}>
-            Încearcă din nou
-          </button>
+      <>
+        <div className="background-shapes">
+          {triangles.map((t) => (
+            <svg
+              key={t.id}
+              className="floating-shape"
+              style={{
+                width: `${t.size}px`,
+                height: `${t.size}px`,
+                color: t.color,
+                top: t.top,
+                [t.side]: t.offset,
+                animationDelay: t.delay,
+                "--rot": `${t.rot}deg`,
+              }}
+              viewBox="-20 -20 140 140"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <polygon
+                points="50,0 100,100 0,100"
+                fill="currentColor"
+                stroke="currentColor"
+                strokeWidth="30"
+                strokeLinejoin="round"
+              />
+            </svg>
+          ))}
         </div>
-      </main>
-    </>
+
+        <main className="recommendations-main">
+          <div className="recommendations-error">
+            <h2>{t("recommendations.errorTitle")}</h2>
+
+            <p>{error}</p>
+
+            <button onClick={() => loadCars(1, true)}>
+              {t("recommendations.retry")}
+            </button>
+          </div>
+        </main>
+      </>
     );
   }
 
   return (
-  <>
-    <div className="background-shapes">
-    {triangles.map((t) => (
-      <svg
-        key={t.id}
-        className="floating-shape"
-        style={{
-          width: `${t.size}px`,
-          height: `${t.size}px`,
-          color: t.color,
-          top: t.top,
-          [t.side]: t.offset,
-          animationDelay: t.delay,
-          "--rot": `${t.rot}deg`,
-        }}
-        viewBox="-20 -20 140 140"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <polygon
-          points="50,0 100,100 0,100"
-          fill="currentColor"
-          stroke="currentColor"
-          strokeWidth="30"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ))}
-  </div>
-    <main className="recommendations-main">
+    <>
+      <div className="background-shapes">
+        {triangles.map((t) => (
+          <svg
+            key={t.id}
+            className="floating-shape"
+            style={{
+              width: `${t.size}px`,
+              height: `${t.size}px`,
+              color: t.color,
+              top: t.top,
+              [t.side]: t.offset,
+              animationDelay: t.delay,
+              "--rot": `${t.rot}deg`,
+            }}
+            viewBox="-20 -20 140 140"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <polygon
+              points="50,0 100,100 0,100"
+              fill="currentColor"
+              stroke="currentColor"
+              strokeWidth="30"
+              strokeLinejoin="round"
+            />
+          </svg>
+        ))}
+      </div>
 
-      <section className="recommendations-header">
+      <main className="recommendations-main">
 
-        <button
-          className="recommendations-back-button"
-          onClick={() => window.history.back()}
-        >
-          <span>←</span>
-          Înapoi la marketplace
-        </button>
+        <section className="recommendations-header">
 
-        <div className="recommendations-title">
-          <h1>Mașini recomandate</h1>
+          <button
+            className="recommendations-back-button"
+            onClick={() => window.history.back()}
+          >
+            <span>←</span>
+            {t("recommendations.back")}
+          </button>
 
-          <p>
-            Selectează o mașină pentru a descoperi anunțuri similare.
-          </p>
-        </div>
+          <div className="recommendations-title">
+            <h1>{t("recommendations.title")}</h1>
 
-      </section>
+            <p>
+              {t("recommendations.subtitle")}
+            </p>
+          </div>
 
-      <section className="recommendations-info">
+        </section>
 
-        <div className="recommendations-info-icon">
-          ✨
-        </div>
+        <section className="recommendations-info">
 
-        <div>
-          <strong>
-            Cum funcționează recomandările?
-          </strong>
+          <div className="recommendations-info-icon">
+            ✨
+          </div>
 
-          <p>
-            Alegem mașini similare în funcție de preț,
-            kilometraj și clasa vehiculului.
-          </p>
-        </div>
+          <div>
+            <strong>
+              {t("recommendations.info.title")}
+            </strong>
 
-      </section>
+            <p>
+              {t("recommendations.info.description")}
+            </p>
+          </div>
 
-      {cars.length === 0 ? (
+        </section>
 
-        <div className="recommendations-empty">
-          <h2>Nu au fost găsite mașini</h2>
+        {cars.length === 0 ? (
 
-          <p>
-            Momentan nu există anunțuri disponibile.
-          </p>
-        </div>
+          <div className="recommendations-empty">
+            <h2>{t("recommendations.empty.title")}</h2>
 
-      ) : (
+            <p>
+              {t("recommendations.empty.description")}
+            </p>
+          </div>
 
-        <div className="recommendations-list" ref={mainCarsTopRef}>
+        ) : (
 
-          {cars.map((car, index) => {
+          <div
+            className="recommendations-list"
+            ref={mainCarsTopRef}
+          >
 
-            const expanded =
-              expandedCarId === car.id;
+            {cars.map((car, index) => {
 
-            const carRecommendations =
-              recommendations[car.id] ?? [];
+              const expanded =
+                expandedCarId === car.id;
 
-            const visibleCount =
-              visibleRecommendations[car.id] ??
-              RECOMMENDATIONS_PER_LOAD;
+              const carRecommendations =
+                recommendations[car.id] ?? [];
 
-            const visibleCars =
-              carRecommendations.slice(0, visibleCount);
+              const visibleCount =
+                visibleRecommendations[car.id] ??
+                RECOMMENDATIONS_PER_LOAD;
 
-            const hasMore =
-              visibleCount < carRecommendations.length;
+              const visibleCars =
+                carRecommendations.slice(0, visibleCount);
 
-            const hasPrevious =
-              visibleCount > RECOMMENDATIONS_PER_LOAD;
+              const hasMore =
+                visibleCount < carRecommendations.length;
 
-            const recommendationRows =
-              getRecommendationRows(visibleCars);
+              const hasPrevious =
+                visibleCount > RECOMMENDATIONS_PER_LOAD;
 
-            return (
-              <section
-                key={car.id}
+              const recommendationRows =
+                getRecommendationRows(visibleCars);
+
+              return (
+                <section
+                  key={car.id}
                   ref={(element) => {
                     recommendationRefs.current[car.id] = element;
                   }}
                   className={
-                  `recommendation-item ${
-                    expanded
-                      ? "recommendation-item-expanded"
-                      : ""
-                  }`
-                }
-              >
+                    `recommendation-item ${
+                      expanded
+                        ? "recommendation-item-expanded"
+                        : ""
+                    }`
+                  }
+                >
 
-                <div className="recommendation-source-card">
-                  <CarCard
-                    car={car}
-                    expanded={expanded}
-                    position={getPosition(index)}
-                    onClick={() => handleCarClick(car.id)}
-                  />
-                </div>
+                  <div className="recommendation-source-card">
+                    <CarCard
+                      car={car}
+                      expanded={expanded}
+                      position={getPosition(index)}
+                      onClick={() => handleCarClick(car.id)}
+                    />
+                  </div>
 
-                {/* RECOMMENDATIONS */}
+                  {expanded && (
 
-                {expanded && (
+                    <div
+                      className="recommendation-results"
+                      onMouseDown={(event) => {
+                        event.stopPropagation();
+                      }}
+                    >
 
-                  <div
-                    className="recommendation-results"
-                    onMouseDown={(event) => {
-                      event.stopPropagation();
-                    }}
-                  >
+                      <div className="recommendation-results-header">
 
-                    <div className="recommendation-results-header">
+                        <div>
+                          <span className="recommendation-label">
+                            {t("recommendations.results.label")}
+                          </span>
 
-                      <div>
-                        <span className="recommendation-label">
-                          RECOMANDĂRI
-                        </span>
+                          <h2>
+                            {t("recommendations.results.title")}
+                          </h2>
 
-                        <h2>
-                          Mașini similare
-                        </h2>
-
-                        <p>
-                          Anunțuri selectate pe baza caracteristicilor
-                          acestei mașini.
-                        </p>
-                      </div>
-
-                      {loadingRecommendations[car.id] && (
-                        <span className="recommendation-status">
-                          Se caută...
-                        </span>
-                      )}
-
-                    </div>
-
-                    {loadingRecommendations[car.id] ? (
-
-                      <div className="recommendation-loading">
-                        <div className="recommendation-spinner" />
-
-                        <span>
-                          Se caută mașini similare...
-                        </span>
-                      </div>
-
-                    ) : (
-
-                      carRecommendations.length === 0 ? (
-
-                        <div className="recommendation-empty">
                           <p>
-                            Nu au fost găsite mașini similare.
+                            {t("recommendations.results.description")}
                           </p>
+                        </div>
+
+                        {loadingRecommendations[car.id] && (
+                          <span className="recommendation-status">
+                            {t("recommendations.results.searching")}
+                          </span>
+                        )}
+
+                      </div>
+
+                      {loadingRecommendations[car.id] ? (
+
+                        <div className="recommendation-loading">
+                          <div className="recommendation-spinner" />
+
+                          <span>
+                            {t("recommendations.results.loading")}
+                          </span>
                         </div>
 
                       ) : (
 
-                        <>
+                        carRecommendations.length === 0 ? (
 
-                          <div className="recommendation-rows">
+                          <div className="recommendation-empty">
+                            <p>
+                              {t("recommendations.results.empty")}
+                            </p>
+                          </div>
 
-                            {recommendationRows.map(
-                              (row, rowIndex) => {
+                        ) : (
 
-                                const expandedInRow =
-                                  row.findIndex(
-                                    (recommendation) =>
-                                      recommendation.id ===
-                                      expandedRecommendationId
-                                  );
+                          <>
 
-                                if (expandedInRow !== -1) {
+                            <div className="recommendation-rows">
 
-                                  const recommendedCar =
-                                    row[expandedInRow];
+                              {recommendationRows.map(
+                                (row, rowIndex) => {
+
+                                  const expandedInRow =
+                                    row.findIndex(
+                                      (recommendation) =>
+                                        recommendation.id ===
+                                        expandedRecommendationId
+                                    );
+
+                                  if (expandedInRow !== -1) {
+
+                                    const recommendedCar =
+                                      row[expandedInRow];
+
+                                    return (
+                                      <div
+                                        key={`expanded-row-${rowIndex}`}
+                                        className="recommendation-row recommendation-row-expanded"
+                                      >
+                                        <div
+                                          className="recommendation-card recommendation-card-expanded"
+                                        >
+                                          <CarCard
+                                            car={recommendedCar}
+                                            expanded={true}
+                                            position={getPosition(
+                                              expandedInRow
+                                            )}
+                                            onClick={() =>
+                                              handleRecommendationClick(
+                                                recommendedCar.id
+                                              )
+                                            }
+                                          />
+                                        </div>
+                                      </div>
+                                    );
+                                  }
 
                                   return (
                                     <div
-                                      key={`expanded-row-${rowIndex}`}
-                                      className="recommendation-row recommendation-row-expanded"
+                                      key={`row-${rowIndex}`}
+                                      className="recommendation-row"
                                     >
-                                      <div
-                                        className="recommendation-card recommendation-card-expanded"
-                                      >
-                                        <CarCard
-                                          car={recommendedCar}
-                                          expanded={true}
-                                          position={getPosition(
-                                            expandedInRow
-                                          )}
-                                          onClick={() =>
-                                            handleRecommendationClick(
-                                              recommendedCar.id
-                                            )
-                                          }
-                                        />
-                                      </div>
+
+                                      {row.map(
+                                        (
+                                          recommendedCar,
+                                          columnIndex
+                                        ) => {
+
+                                          const recommendationExpanded =
+                                            expandedRecommendationId ===
+                                            recommendedCar.id;
+
+                                          return (
+                                            <div
+                                              key={recommendedCar.id}
+                                              className={
+                                                `recommendation-card ${
+                                                  recommendationExpanded
+                                                    ? "recommendation-card-expanded"
+                                                    : ""
+                                                }`
+                                              }
+                                            >
+
+                                              <CarCard
+                                                car={recommendedCar}
+                                                expanded={
+                                                  recommendationExpanded
+                                                }
+                                                position={getPosition(
+                                                  columnIndex
+                                                )}
+                                                onClick={() =>
+                                                  handleRecommendationClick(
+                                                    recommendedCar.id
+                                                  )
+                                                }
+                                              />
+
+                                            </div>
+                                          );
+                                        }
+                                      )}
+
                                     </div>
                                   );
                                 }
+                              )}
 
-                                return (
-                                  <div
-                                    key={`row-${rowIndex}`}
-                                    className="recommendation-row"
-                                  >
+                            </div>
 
-                                    {row.map(
-                                      (
-                                        recommendedCar,
-                                        columnIndex
-                                      ) => {
+                            <div className="recommendation-controls">
 
-                                        const recommendationExpanded =
-                                          expandedRecommendationId ===
-                                          recommendedCar.id;
+                              {hasPrevious && (
+                                <button
+                                  type="button"
+                                  className="recommendation-previous"
+                                  onMouseDown={(event) => {
+                                    event.stopPropagation();
+                                  }}
+                                  onClick={() =>
+                                    loadPreviousRecommendations(
+                                      car.id
+                                    )
+                                  }
+                                >
+                                  <span className="load-more-arrow">
+                                    ↑
+                                  </span>
 
-                                        return (
-                                          <div
-                                            key={recommendedCar.id}
-                                            className={
-                                              `recommendation-card ${
-                                                recommendationExpanded
-                                                  ? "recommendation-card-expanded"
-                                                  : ""
-                                              }`
-                                            }
-                                          >
+                                  <span>
+                                    {t("recommendations.controls.showFewer")}
+                                  </span>
+                                </button>
+                              )}
 
-                                            <CarCard
-                                              car={recommendedCar}
-                                              expanded={
-                                                recommendationExpanded
-                                              }
-                                              position={getPosition(
-                                                columnIndex
-                                              )}
-                                              onClick={() =>
-                                                handleRecommendationClick(
-                                                  recommendedCar.id
-                                                )
-                                              }
-                                            />
+                              {hasMore && (
+                                <button
+                                  type="button"
+                                  className="recommendation-load-more"
+                                  onMouseDown={(event) => {
+                                    event.stopPropagation();
+                                  }}
+                                  onClick={() =>
+                                    loadMoreRecommendations(
+                                      car.id
+                                    )
+                                  }
+                                >
+                                  <span>
+                                    {t("recommendations.controls.showMore")}
+                                  </span>
 
-                                          </div>
-                                        );
-                                      }
-                                    )}
+                                  <span className="load-more-arrow">
+                                    ↓
+                                  </span>
+                                </button>
+                              )}
 
-                                  </div>
-                                );
-                              }
-                            )}
+                              <span className="recommendation-count">
+                                {t("recommendations.controls.count", {
+                                  visible: visibleCars.length,
+                                  total: carRecommendations.length,
+                                })}
+                              </span>
 
-                          </div>
+                            </div>
 
-                          <div className="recommendation-controls">
+                          </>
 
-                            {hasPrevious && (
-                              <button
-                                type="button"
-                                className="recommendation-previous"
-                                onMouseDown={(event) => {
-                                  event.stopPropagation();
-                                }}
-                                onClick={() =>
-                                  loadPreviousRecommendations(
-                                    car.id
-                                  )
-                                }
-                              >
-                                <span className="load-more-arrow">
-                                  ↑
-                                </span>
+                        )
+                      )}
 
-                                <span>
-                                  Afișează mai puține
-                                </span>
-                              </button>
-                            )}
+                    </div>
+                  )}
 
-                            {hasMore && (
-                              <button
-                                type="button"
-                                className="recommendation-load-more"
-                                onMouseDown={(event) => {
-                                  event.stopPropagation();
-                                }}
-                                onClick={() =>
-                                  loadMoreRecommendations(
-                                    car.id
-                                  )
-                                }
-                              >
-                                <span>
-                                  Afișează mai multe
-                                </span>
+                </section>
+              );
+            })}
 
-                                <span className="load-more-arrow">
-                                  ↓
-                                </span>
-                              </button>
-                            )}
-
-                            <span className="recommendation-count">
-                              Se afișează {visibleCars.length} din{" "}
-                              {carRecommendations.length}
-                            </span>
-
-                          </div>
-
-                        </>
-
-                      )
-                    )}
-
-                  </div>
-                )}
-
-              </section>
-            );
-          })}
-
-          {currentPage < totalPages && (
-            <div
-            className="main-cars-load-more"
-            ref={mainCarsBottomRef}
-          >
-          
             {currentPage < totalPages && (
-              <button
-                type="button"
-                className="main-cars-load-more-button"
-                disabled={loadingMoreCars}
-                onClick={handleLoadMoreCars}
+              <div
+                className="main-cars-load-more"
+                ref={mainCarsBottomRef}
               >
-                {loadingMoreCars ? (
-                  <>
-                    <span className="main-cars-spinner" />
-                    Se încarcă...
-                  </>
-                ) : (
-                  <>
-                    <span>
-                      Afișează mai multe mașini
-                    </span>
-          
-                    <span className="main-cars-load-more-arrow">
-                      ↓
-                    </span>
-                  </>
+
+                {currentPage < totalPages && (
+                  <button
+                    type="button"
+                    className="main-cars-load-more-button"
+                    disabled={loadingMoreCars}
+                    onClick={handleLoadMoreCars}
+                  >
+                    {loadingMoreCars ? (
+                      <>
+                        <span className="main-cars-spinner" />
+                        {t("recommendations.cars.loading")}
+                      </>
+                    ) : (
+                      <>
+                        <span>
+                          {t("recommendations.cars.showMore")}
+                        </span>
+
+                        <span className="main-cars-load-more-arrow">
+                          ↓
+                        </span>
+                      </>
+                    )}
+                  </button>
                 )}
-              </button>
-            )}
-          
-            {currentPage > 1 && (
-              <button
-                type="button"
-                className="main-cars-previous-button"
-                onClick={handleShowFewerCars}
-              >
-                <span className="main-cars-load-more-arrow">
-                  ↑
+
+                {currentPage > 1 && (
+                  <button
+                    type="button"
+                    className="main-cars-previous-button"
+                    onClick={handleShowFewerCars}
+                  >
+                    <span className="main-cars-load-more-arrow">
+                      ↑
+                    </span>
+
+                    <span>
+                      {t("recommendations.cars.showFewer")}
+                    </span>
+                  </button>
+                )}
+
+                <span className="main-cars-count">
+                  {t("recommendations.cars.count", {
+                    count: cars.length,
+                  })}
                 </span>
-          
-                <span>
-                  Afișează mai puține mașini
-                </span>
-              </button>
+
+              </div>
             )}
-          
-            <span className="main-cars-count">
-              Se afișează {cars.length} mașini
-            </span>
-          
+
           </div>
-          )}
+        )}
 
-        </div>
-      )}
-
-    </main>
-  </>
+      </main>
+    </>
   );
 }
 

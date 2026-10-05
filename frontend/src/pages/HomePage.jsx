@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import CarViewer from "../components/CarViewer";
 import "./HomePage.css";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getListingOptions } from "../api/listings";
 import { estimatePrice } from "../api/price_estimate";
 import Autocomplete from "../components/Autocomplete";
@@ -11,6 +11,7 @@ import {
   getPredictionModels,
   getPredictionGenerations,
 } from "../api/predictions";
+import { useTranslation } from "react-i18next";
 
 function formatPrice(value) {
   if (value === null || value === undefined || Number.isNaN(Number(value))) {
@@ -57,6 +58,7 @@ const EMPTY_OPTIONS = {
 
 function HomePage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const [estimator, setEstimator] = useState(INITIAL_ESTIMATOR);
   const [options, setOptions] = useState(EMPTY_OPTIONS);
@@ -64,6 +66,52 @@ function HomePage() {
   const [estimate, setEstimate] = useState(null);
   const [estimateLoading, setEstimateLoading] = useState(false);
   const [estimateError, setEstimateError] = useState("");
+
+  const fieldRefs = {
+    brand: useRef(null),
+    model: useRef(null),
+    generation: useRef(null),
+    year: useRef(null),
+    mileage: useRef(null),
+    fuel_type: useRef(null),
+    engine: useRef(null),
+    gearbox: useRef(null),
+    drivetrain: useRef(null),
+    body_type: useRef(null),
+  };
+
+  function focusNextField(currentField) {
+    const order = [
+      "brand",
+      "model",
+      "generation",
+      "year",
+      "mileage",
+      "fuel_type",
+      "engine",
+      "gearbox",
+      "drivetrain",
+      "body_type",
+    ];
+
+    const currentIndex = order.indexOf(currentField);
+    const nextField = order[currentIndex + 1];
+
+    if (!nextField) return;
+
+    requestAnimationFrame(() => {
+      const element = fieldRefs[nextField]?.current;
+
+      if (element) {
+        element.focus();
+
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    });
+  }
 
   useEffect(() => {
     async function loadOptions() {
@@ -78,16 +126,14 @@ function HomePage() {
           body_type: result.body_type || [],
         });
       } catch {
-        setEstimateError(
-          "Nu au putut fi încărcate opțiunile pentru estimator."
-        );
+        setEstimateError(t("home.estimator.errors.options"));
       }
     }
 
     loadOptions();
-  }, []);
+  }, [t]);
 
-  function updateEstimator(name, value) {
+  function updateEstimator(name, value, moveNext = false) {
     setEstimator((current) => ({
       ...current,
       [name]: value,
@@ -95,6 +141,10 @@ function HomePage() {
 
     setEstimate(null);
     setEstimateError("");
+
+    if (moveNext && value) {
+      focusNextField(name);
+    }
   }
 
   function handleBrandChange(value) {
@@ -107,6 +157,10 @@ function HomePage() {
 
     setEstimate(null);
     setEstimateError("");
+
+    if (value) {
+      focusNextField("brand");
+    }
   }
 
   function handleModelChange(value) {
@@ -118,10 +172,14 @@ function HomePage() {
 
     setEstimate(null);
     setEstimateError("");
+
+    if (value) {
+      focusNextField("model");
+    }
   }
 
   function handleGenerationChange(value) {
-    updateEstimator("generation", value);
+    updateEstimator("generation", value, true);
   }
 
   async function handleEstimate() {
@@ -139,9 +197,7 @@ function HomePage() {
       !estimator.drivetrain ||
       !estimator.body_type
     ) {
-      setEstimateError(
-        "Completează toate câmpurile obligatorii pentru a calcula prețul."
-      );
+      setEstimateError(t("home.estimator.errors.required"));
       setEstimate(null);
       return;
     }
@@ -183,7 +239,7 @@ function HomePage() {
     } catch (error) {
       setEstimateError(
         error?.message ||
-        "Nu am putut calcula prețul estimat."
+        t("home.estimator.errors.estimate")
       );
     } finally {
       setEstimateLoading(false);
@@ -199,61 +255,58 @@ function HomePage() {
           {user ? (
             <>
               <div className="hero-badge">
-                Bine ai revenit, {user.name}
+                {t("home.hero.welcome", { name: user.name })}
               </div>
 
               <h1 className="hero-title">
-                Piața te așteaptă. Continuă vânătoarea.
+                {t("home.hero.loggedInTitle")}
               </h1>
 
               <p className="hero-subtitle">
-                Anunțurile tale favorite sunt salvate, iar algoritmul nostru
-                a evaluat deja ofertele noi apărute în piață.
+                {t("home.hero.loggedInSubtitle")}
               </p>
 
               <div className="hero-buttons">
                 <Link to="/listings" className="btn-primary">
-                  Răsfoiește Piața
+                  {t("home.hero.browseMarket")}
                 </Link>
 
                 <Link to="/favourites" className="btn-secondary">
-                  Anunțurile Mele
+                  {t("home.hero.myListings")}
                 </Link>
 
                 <Link
                   to="/anomaly-risk"
                   className="btn-primary hero-risk-link"
                 >
-                  Estimează Riscul unei Oferte
+                  {t("home.hero.estimateRisk")}
                 </Link>
               </div>
             </>
           ) : (
             <>
               <h1 className="hero-title">
-                Află Valoarea Reală a Oricărei Mașini Instant.
+                {t("home.hero.guestTitle")}
               </h1>
 
               <p className="hero-subtitle">
-                Nu mai plăti prea mult pentru mașini second-hand.
-                Algoritmul nostru analizează mii de date din piață
-                pentru a evalua precis fiecare anunț.
+                {t("home.hero.guestSubtitle")}
               </p>
 
               <div className="hero-buttons">
                 <Link to="/listings" className="btn-primary">
-                  Răsfoiește Piața
+                  {t("home.hero.browseMarket")}
                 </Link>
 
                 <Link to="/register" className="btn-secondary">
-                  Înscrie-te Gratuit
+                  {t("home.hero.registerFree")}
                 </Link>
 
                 <Link
                   to="/anomaly-risk"
                   className="btn-primary hero-risk-link"
                 >
-                  Estimează Riscul unei Oferte
+                  {t("home.hero.estimateRisk")}
                 </Link>
               </div>
             </>
@@ -265,25 +318,22 @@ function HomePage() {
         </div>
       </section>
 
-
       {/* PRICE ESTIMATOR */}
       <section className="home-estimator-section">
 
         <div className="home-estimator-header">
           <span className="home-estimator-badge">
-            ANALIZĂ DE PIAȚĂ
+            {t("home.estimator.badge")}
           </span>
 
           <h2>
-            Cât valorează mașina ta?
+            {t("home.estimator.title")}
           </h2>
 
           <p>
-            Introdu caracteristicile vehiculului și află instant
-            prețul estimat pe baza anunțurilor comparabile din piață.
+            {t("home.estimator.description")}
           </p>
         </div>
-
 
         <div className="home-estimator-card">
 
@@ -291,12 +341,17 @@ function HomePage() {
 
             {/* BRAND */}
             <div className="home-estimator-field">
-              <label>Marcă *</label>
+              <label>
+                {t("home.estimator.fields.brand")}
+              </label>
 
               <Autocomplete
+                inputRef={fieldRefs.brand}
                 value={estimator.brand}
-                onChange={handleBrandChange}
-                onSelect={handleBrandChange}
+                onChange={(value) => updateEstimator("brand", value)}
+                onSelect={(value) => {
+                  handleBrandChange(value);
+                }}
                 fetchSuggestions={async (query) => {
                   try {
                     const data = await getPredictionBrands(query);
@@ -305,19 +360,23 @@ function HomePage() {
                     return [];
                   }
                 }}
-                placeholder="ex. BMW"
+                placeholder={t("home.estimator.placeholders.brand")}
               />
             </div>
 
-
             {/* MODEL */}
             <div className="home-estimator-field">
-              <label>Model *</label>
+              <label>
+                {t("home.estimator.fields.model")}
+              </label>
 
               <Autocomplete
+                inputRef={fieldRefs.model}
                 value={estimator.model}
-                onChange={handleModelChange}
-                onSelect={handleModelChange}
+                onChange={(value) => updateEstimator("model", value)}
+                onSelect={(value) => {
+                  handleModelChange(value);
+                }}
                 fetchSuggestions={async (query) => {
                   if (!estimator.brand) {
                     return [];
@@ -334,20 +393,24 @@ function HomePage() {
                     return [];
                   }
                 }}
-                placeholder="ex. Seria 3"
+                placeholder={t("home.estimator.placeholders.model")}
                 disabled={!estimator.brand}
               />
             </div>
 
-
             {/* GENERATION */}
             <div className="home-estimator-field">
-              <label>Generație *</label>
+              <label>
+                {t("home.estimator.fields.generation")}
+              </label>
 
               <Autocomplete
+                inputRef={fieldRefs.generation}
                 value={estimator.generation}
-                onChange={handleGenerationChange}
-                onSelect={handleGenerationChange}
+                onChange={(value) => updateEstimator("generation", value)}
+                onSelect={(value) => {
+                  handleGenerationChange(value);
+                }}
                 fetchSuggestions={async (query) => {
                   if (!estimator.brand || !estimator.model) {
                     return [];
@@ -365,59 +428,78 @@ function HomePage() {
                     return [];
                   }
                 }}
-                placeholder="ex. G20"
+                placeholder={t("home.estimator.placeholders.generation")}
                 disabled={!estimator.model}
               />
             </div>
 
-
             {/* YEAR */}
             <div className="home-estimator-field">
-              <label>An *</label>
+              <label>
+                {t("home.estimator.fields.year")}
+              </label>
 
               <input
+                ref={fieldRefs.year}
                 type="number"
                 min="1886"
                 value={estimator.year}
                 onChange={(event) =>
                   updateEstimator("year", event.target.value)
                 }
-                placeholder="ex. 2020"
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && estimator.year) {
+                    event.preventDefault();
+                    focusNextField("year");
+                  }
+                }}
+                placeholder={t("home.estimator.placeholders.year")}
               />
             </div>
 
-
             {/* MILEAGE */}
             <div className="home-estimator-field">
-              <label>Kilometraj (km) *</label>
+              <label>
+                {t("home.estimator.fields.mileage")}
+              </label>
 
               <input
+                ref={fieldRefs.mileage}
                 type="number"
                 min="0"
                 value={estimator.mileage}
                 onChange={(event) =>
                   updateEstimator("mileage", event.target.value)
                 }
-                placeholder="ex. 85000"
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && estimator.mileage) {
+                    event.preventDefault();
+                    focusNextField("mileage");
+                  }
+                }}
+                placeholder={t("home.estimator.placeholders.mileage")}
               />
             </div>
 
-
             {/* FUEL */}
             <div className="home-estimator-field">
-              <label>Combustibil *</label>
+              <label>
+                {t("home.estimator.fields.fuel")}
+              </label>
 
               <select
+                ref={fieldRefs.fuel_type}
                 value={estimator.fuel_type}
                 onChange={(event) =>
                   updateEstimator(
                     "fuel_type",
-                    event.target.value
+                    event.target.value,
+                    true
                   )
                 }
               >
                 <option value="">
-                  Selectează
+                  {t("home.estimator.select")}
                 </option>
 
                 {options.fuel_type.map((value) => (
@@ -428,22 +510,25 @@ function HomePage() {
               </select>
             </div>
 
-
             {/* ENGINE */}
             <div className="home-estimator-field">
-              <label>Motor</label>
+              <label>
+                {t("home.estimator.fields.engine")}
+              </label>
 
               <select
+                ref={fieldRefs.engine}
                 value={estimator.engine}
                 onChange={(event) =>
                   updateEstimator(
                     "engine",
-                    event.target.value
+                    event.target.value,
+                    true
                   )
                 }
               >
                 <option value="">
-                  Selectează
+                  {t("home.estimator.select")}
                 </option>
 
                 {options.engine.map((value) => (
@@ -454,22 +539,25 @@ function HomePage() {
               </select>
             </div>
 
-
             {/* GEARBOX */}
             <div className="home-estimator-field">
-              <label>Cutie de viteze *</label>
+              <label>
+                {t("home.estimator.fields.gearbox")}
+              </label>
 
               <select
+                ref={fieldRefs.gearbox}
                 value={estimator.gearbox}
                 onChange={(event) =>
                   updateEstimator(
                     "gearbox",
-                    event.target.value
+                    event.target.value,
+                    true
                   )
                 }
               >
                 <option value="">
-                  Selectează
+                  {t("home.estimator.select")}
                 </option>
 
                 {options.gearbox.map((value) => (
@@ -480,22 +568,25 @@ function HomePage() {
               </select>
             </div>
 
-
             {/* DRIVETRAIN */}
             <div className="home-estimator-field">
-              <label>Tracțiune *</label>
+              <label>
+                {t("home.estimator.fields.drivetrain")}
+              </label>
 
               <select
+                ref={fieldRefs.drivetrain}
                 value={estimator.drivetrain}
                 onChange={(event) =>
                   updateEstimator(
                     "drivetrain",
-                    event.target.value
+                    event.target.value,
+                    true
                   )
                 }
               >
                 <option value="">
-                  Selectează
+                  {t("home.estimator.select")}
                 </option>
 
                 {options.drivetrain.map((value) => (
@@ -506,22 +597,25 @@ function HomePage() {
               </select>
             </div>
 
-
             {/* BODY */}
             <div className="home-estimator-field">
-              <label>Caroserie *</label>
+              <label>
+                {t("home.estimator.fields.body")}
+              </label>
 
               <select
+                ref={fieldRefs.body_type}
                 value={estimator.body_type}
                 onChange={(event) =>
                   updateEstimator(
                     "body_type",
-                    event.target.value
+                    event.target.value,
+                    true
                   )
                 }
               >
                 <option value="">
-                  Selectează
+                  {t("home.estimator.select")}
                 </option>
 
                 {options.body_type.map((value) => (
@@ -534,7 +628,6 @@ function HomePage() {
 
           </div>
 
-
           <div className="home-estimator-action">
 
             <button
@@ -546,15 +639,14 @@ function HomePage() {
               {estimateLoading ? (
                 <>
                   <span className="home-estimate-spinner" />
-                  Se calculează...
+                  {t("home.estimator.actions.calculating")}
                 </>
               ) : (
-                "Estimează Prețul"
+                t("home.estimator.actions.estimate")
               )}
             </button>
 
           </div>
-
 
           {estimateError && (
             <div className="home-estimate-error">
@@ -562,14 +654,13 @@ function HomePage() {
             </div>
           )}
 
-
           {estimate?.estimate_available && estimate.estimate && (
             <div className="home-estimate-result">
 
               <div className="home-result-main">
 
                 <span>
-                  PREȚ ESTIMAT PE PIAȚĂ
+                  {t("home.estimator.result.marketPrice")}
                 </span>
 
                 <strong>
@@ -586,11 +677,12 @@ function HomePage() {
 
               </div>
 
-
               <div className="home-result-ranges">
 
                 <div className="home-result-range">
-                  <span>Vânzare rapidă</span>
+                  <span>
+                    {t("home.estimator.result.quickSale")}
+                  </span>
 
                   <strong>
                     €{formatPrice(
@@ -603,9 +695,10 @@ function HomePage() {
                   </strong>
                 </div>
 
-
                 <div className="home-result-range home-result-range-highlight">
-                  <span>Preț normal</span>
+                  <span>
+                    {t("home.estimator.result.normalPrice")}
+                  </span>
 
                   <strong>
                     €{formatPrice(
@@ -618,9 +711,10 @@ function HomePage() {
                   </strong>
                 </div>
 
-
                 <div className="home-result-range">
-                  <span>Preț cerut mai ridicat</span>
+                  <span>
+                    {t("home.estimator.result.higherAsking")}
+                  </span>
 
                   <strong>
                     €{formatPrice(
@@ -638,17 +732,16 @@ function HomePage() {
             </div>
           )}
 
-
           {estimate &&
             !estimate.estimate_available && (
               <div className="home-estimate-no-data">
                 <strong>
-                  Nu există suficiente date de piață.
+                  {t("home.estimator.result.noDataTitle")}
                 </strong>
 
                 <p>
                   {estimate.comparison?.message ||
-                    "Nu au fost găsite suficiente anunțuri comparabile pentru această configurație."}
+                    t("home.estimator.result.noDataDescription")}
                 </p>
               </div>
             )}
@@ -656,50 +749,60 @@ function HomePage() {
         </div>
       </section>
 
-
       {/* FEATURES */}
       <section className="features-section">
-        <h2>Inteligență de Piață Inegalabilă</h2>
+        <h2>
+          {t("home.features.title")}
+        </h2>
 
         <div className="features-grid">
+
           <div className="feature-card">
-            <h3>Scor Algoritmic al Ofertei</h3>
+            <h3>
+              {t("home.features.algorithmicScore.title")}
+            </h3>
+
             <p>
-              Fiecare mașină este evaluată matematic până la un maxim de
-              80 de puncte, pe baza deprecierii exacte, a medianelor reale
-              ale pieței și a anomaliilor ascunse.
+              {t("home.features.algorithmicScore.description")}
             </p>
           </div>
 
           <div className="feature-card">
-            <h3>Detectarea Fraudelor și Țepelor</h3>
+            <h3>
+              {t("home.features.fraudDetection.title")}
+            </h3>
+
             <p>
-              Algoritmul nostru depistează instant vehiculele ascunse
-              „Fost Taxi”, kilometrajele modificate și actele lipsă.
+              {t("home.features.fraudDetection.description")}
             </p>
           </div>
 
           <div className="feature-card">
-            <h3>Ținte Dinamice de Preț</h3>
+            <h3>
+              {t("home.features.dynamicPriceTargets.title")}
+            </h3>
+
             <p>
-              Spune-ne ce scor dorești (Corect, Bun, Excelent), și noi
-              vom calcula prețul exact pe care ar trebui să-l negociezi.
+              {t("home.features.dynamicPriceTargets.description")}
             </p>
           </div>
 
           <div className="feature-card">
-            <h3>Recomandări de Preț pentru Anunțuri</h3>
+            <h3>
+              {t("home.features.priceRecommendations.title")}
+            </h3>
+
             <p>
-              Vânzătorii pot folosi algoritmul nostru pentru a obține
-              recomandarea perfectă de preț la adăugarea unui nou anunț.
+              {t("home.features.priceRecommendations.description")}
             </p>
           </div>
+
         </div>
       </section>
 
-
       {/* WHY US */}
       <section className="why-us-section">
+
         <div className="why-car-image">
           <img
             src="/lada.png"
@@ -708,32 +811,43 @@ function HomePage() {
           />
         </div>
 
-        <h2>De ce să alegi CarAnalytics?</h2>
+        <h2>
+          {t("home.whyUs.title")}
+        </h2>
 
         <div className="why-grid">
+
           <div className="why-item">
             <div className="why-icon">
-              <img src="/icon_chart.png" alt="Bazat pe Date icon" />
+              <img
+                src="/icon_chart.png"
+                alt={t("home.whyUs.dataDriven.alt")}
+              />
             </div>
 
-            <h4>Bazat pe Date</h4>
+            <h4>
+              {t("home.whyUs.dataDriven.title")}
+            </h4>
 
             <p>
-              Nu ne bazăm pe opinii subiective. Matematica pură și
-              medianele pieței dictează scorul.
+              {t("home.whyUs.dataDriven.description")}
             </p>
           </div>
 
           <div className="why-item">
             <div className="why-icon">
-              <img src="/icon_shield.png" alt="Imparțial icon" />
+              <img
+                src="/icon_shield.png"
+                alt={t("home.whyUs.impartial.alt")}
+              />
             </div>
 
-            <h4>Imparțial</h4>
+            <h4>
+              {t("home.whyUs.impartial.title")}
+            </h4>
 
             <p>
-              Vânzătorii nu pot manipula algoritmul. Primești adevărul
-              brut, nefiltrat, despre ofertă.
+              {t("home.whyUs.impartial.description")}
             </p>
           </div>
 
@@ -741,14 +855,16 @@ function HomePage() {
             <div className="why-icon">
               <img
                 src="/icon_lightning.png"
-                alt="În Timp Real icon"
+                alt={t("home.whyUs.realTime.alt")}
               />
             </div>
 
-            <h4>În Timp Real</h4>
+            <h4>
+              {t("home.whyUs.realTime.title")}
+            </h4>
 
             <p>
-              Pe măsură ce piața se schimbă, se schimbă și bazele noastre.
+              {t("home.whyUs.realTime.description")}
             </p>
           </div>
 
@@ -756,115 +872,137 @@ function HomePage() {
             <div className="why-icon">
               <img
                 src="/icon_money.png"
-                alt="Economisește Bani icon"
+                alt={t("home.whyUs.saveMoney.alt")}
               />
             </div>
 
-            <h4>Economisește Bani</h4>
+            <h4>
+              {t("home.whyUs.saveMoney.title")}
+            </h4>
 
             <p>
-              Nu mai plăti niciodată în plus pentru o mașină cu rulaj mare.
+              {t("home.whyUs.saveMoney.description")}
             </p>
           </div>
+
         </div>
       </section>
 
-
       {/* REVIEWS */}
       <section className="reviews-section">
-        <h2>Recenzii ale Comunității</h2>
+        <h2>
+          {t("home.reviews.title")}
+        </h2>
 
         <div className="reviews-empty">
           <p>
-            Construim o nouă comunitate de cumpărători inteligenți de
-            mașini. Fii primul care lasă o recenzie platformei noastre!
+            {t("home.reviews.description")}
           </p>
 
           <button
             className="btn-secondary"
             onClick={() =>
-              alert(
-                "Formularul pentru recenzii va fi disponibil în curând!"
-              )
+              alert(t("home.reviews.comingSoon"))
             }
           >
-            Scrie o Recenzie
+            {t("home.reviews.write")}
           </button>
         </div>
       </section>
 
-
       {/* FAQ */}
       <section className="faq-section">
-        <h2>Întrebări Frecvente</h2>
+        <h2>
+          {t("home.faq.title")}
+        </h2>
 
         <div className="faq-list">
+
           <div className="faq-item">
-            <h4>Cum funcționează Scorul Algoritmic?</h4>
+            <h4>
+              {t("home.faq.algorithmicScore.question")}
+            </h4>
 
             <p>
-              Grupăm mașinile după Marcă, Model, Generație, An și
-              Capacitate Motor pentru a calcula prețurile mediane adevărate
-              și kilometrajele de bază.
+              {t("home.faq.algorithmicScore.answer")}
             </p>
           </div>
 
           <div className="faq-item">
-            <h4>Cum depistați țepele?</h4>
+            <h4>
+              {t("home.faq.scams.question")}
+            </h4>
 
             <p>
-              Algoritmul nostru penalizează anunțurile cu proporții
-              imposibile între rulaj și vârstă, cuvinte-cheie ascunse sau
-              prețuri statistic prea bune ca să fie adevărate.
+              {t("home.faq.scams.answer")}
             </p>
           </div>
 
           <div className="faq-item">
-            <h4>Este gratuit?</h4>
+            <h4>
+              {t("home.faq.free.question")}
+            </h4>
 
             <p>
-              Da, navigarea pe piață și vizualizarea scorurilor algoritmului
-              sunt complet gratuite pentru toți cumpărătorii.
+              {t("home.faq.free.answer")}
             </p>
           </div>
+
         </div>
       </section>
-
 
       {/* CTA */}
       <section className="cta-section">
         <div className="cta-box">
-          <h2>Ești pregătit să găsești mașina perfectă?</h2>
+
+          <h2>
+            {t("home.cta.title")}
+          </h2>
 
           <p>
-            Alătură-te miilor de cumpărători inteligenți care folosesc
-            datele pentru a bate piața.
+            {t("home.cta.description")}
           </p>
 
           <Link
             to="/listings"
             className="btn-primary large"
           >
-            Începe să Cauți Acum
+            {t("home.cta.button")}
           </Link>
+
         </div>
       </section>
-
 
       {/* FOOTER */}
       <footer className="footer-section">
         <div className="footer-content">
+
           <div className="footer-logo">
             CarAnalytics
           </div>
 
           <div className="footer-links">
-            <a href="#">Despre Noi</a>
-            <a href="#">Funcționalități</a>
-            <a href="#">Prețuri</a>
-            <a href="#">Termeni și Condiții</a>
-            <a href="#">Politica de Confidențialitate</a>
+            <a href="#">
+              {t("home.footer.about")}
+            </a>
+
+            <a href="#">
+              {t("home.footer.features")}
+            </a>
+
+            <a href="#">
+              {t("home.footer.pricing")}
+            </a>
+
+            <a href="#">
+              {t("home.footer.terms")}
+            </a>
+
+            <a href="#">
+              {t("home.footer.privacy")}
+            </a>
           </div>
+
         </div>
       </footer>
 

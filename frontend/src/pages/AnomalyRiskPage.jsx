@@ -7,6 +7,7 @@ import VehicleSelect from "../components/VehicleSelect";
 import SaveItemButton from "../components/SaveItemButton";
 import { createSaved } from "../api/saved_items";
 import "./AnomalyRiskPage.css";
+import { useTranslation } from "react-i18next";
 
 const EMPTY_FORM = {
   brand: "", model: "", generation: "", price: "", year: "", mileage: "",
@@ -34,6 +35,8 @@ export default function AnomalyRiskPage() {
   const resultRef = useRef(null);
   const selectedBrand = resolveVehicleOption(brands, form.brand);
   const selectedModel = selectedBrand ? resolveVehicleOption(models, form.model) : null;
+  const { t } = useTranslation();
+
   useEffect(() => {
     window.scrollTo({ top: 0 });
     return () => requestRef.current?.abort();
@@ -102,9 +105,15 @@ export default function AnomalyRiskPage() {
   async function submit(event) {
     event.preventDefault();
     if (requestRef.current) return;
-    if (!selectedBrand || !selectedModel) { setError("Alege marca și modelul din listele disponibile."); return; }
+    if (!selectedBrand || !selectedModel) {
+      setError(t("risk.errors.selectBrandModel"));
+      return;
+    }
     const selectedGeneration = resolveVehicleOption(generations, form.generation);
-    if (form.generation.trim() && !selectedGeneration) { setError("Alege generația din listă sau las-o necompletată."); return; }
+    if (form.generation.trim() && !selectedGeneration) {
+      setError(t("risk.errors.selectGeneration"));
+      return;
+    }
     const payload = buildRiskPayload({ ...form, brand: selectedBrand, model: selectedModel, generation: selectedGeneration ?? "" });
     const controller = new AbortController();
     requestRef.current = controller;
@@ -155,26 +164,95 @@ export default function AnomalyRiskPage() {
       </div>
       <main className="risk-page">
       <div className="risk-container">
-        <header className="risk-heading">
-          <h1>Vezi oferta dincolo de preț.</h1>
-          <p>Compară prețul, kilometrajul și configurația cu datele pieței. Află ce merită verificat înainte să cumperi.</p>
-        </header>
+      <header className="risk-heading">
+        <h1>{t("risk.title")}</h1>
+        <p>{t("risk.description")}</p>
+      </header>
 
         <form className="risk-form" onSubmit={submit} aria-busy={loading}>
-          <div className="risk-form-heading"><div><h2>Despre mașină</h2><p>Datele din anunț sunt suficiente pentru a începe.</p></div><span>* Obligatoriu</span></div>
+        <div className="risk-form-heading">
+          <div>
+            <h2>{t("risk.aboutCar")}</h2>
+            <p>{t("risk.formDescription")}</p>
+          </div>
+          <span>* {t("risk.required")}</span>
+        </div>
           <fieldset disabled={loading}>
-            <legend className="risk-sr-only">Datele ofertei</legend>
+          <legend className="risk-sr-only">
+            {t("risk.offerData")}
+          </legend>
             <div className="risk-fields risk-identity">
-              <VehicleSelect field="brand" label="Marcă" value={form.brand} options={brands} onChange={update} onCommit={commit} required loading={optionsLoading.brand} error={optionsError.brand} />
-              <VehicleSelect key={selectedBrand ?? ""} field="model" label="Model" value={form.model} options={models} onChange={update} onCommit={commit} required disabled={!selectedBrand} loading={optionsLoading.model} error={optionsError.model} />
-              <VehicleSelect key={`${selectedBrand}/${selectedModel}`} field="generation" label="Generație" value={form.generation} options={generations} onChange={update} onCommit={commit} disabled={!selectedModel} loading={optionsLoading.generation} error={optionsError.generation} />
+            <VehicleSelect
+              field="brand"
+              label={t("risk.brand")}
+              value={form.brand}
+              options={brands}
+              onChange={update}
+              onCommit={commit}
+              required
+              loading={optionsLoading.brand}
+              error={optionsError.brand}
+            />
+
+            <VehicleSelect
+              key={selectedBrand ?? ""}
+              field="model"
+              label={t("risk.model")}
+              value={form.model}
+              options={models}
+              onChange={update}
+              onCommit={commit}
+              required
+              disabled={!selectedBrand}
+              loading={optionsLoading.model}
+              error={optionsError.model}
+            />
+
+            <VehicleSelect
+              key={`${selectedBrand}/${selectedModel}`}
+              field="generation"
+              label={t("risk.generation")}
+              value={form.generation}
+              options={generations}
+              onChange={update}
+              onCommit={commit}
+              disabled={!selectedModel}
+              loading={optionsLoading.generation}
+              error={optionsError.generation}
+            />
             </div>
             <div className="risk-fields">
               {[
-                { field: "price", label: "Preț cerut (€)", min: 0.01, step: "0.01", placeholder: "Ex. 12000", required: true },
-                { field: "year", label: "An fabricație", min: 1886, max: new Date().getFullYear() + 1, placeholder: "Ex. 2016" },
-                { field: "mileage", label: "Kilometraj (km)", min: 0, max: 10000000, placeholder: "Ex. 150000" },
-                { field: "engine", label: "Motor (litri)", min: 0, max: 20, step: "any", placeholder: "Ex. 2.0" },
+                {
+                  field: "price",
+                  label: t("risk.price"),
+                  min: 0.01,
+                  step: "0.01",
+                  placeholder: t("risk.placeholders.price"),
+                  required: true,
+                },
+                {
+                  field: "year",
+                  label: t("risk.year"),
+                  min: 1886,
+                  max: new Date().getFullYear() + 1,
+                  placeholder: t("risk.placeholders.year"),
+                },
+                {
+                  field: "mileage",
+                  label: t("risk.mileage"),
+                  min: 0,
+                  max: 10000000,
+                  placeholder: t("risk.placeholders.mileage"),
+                },
+                {
+                  field: "engine",
+                  label: t("risk.engine"),
+                  min: 0,
+                  max: 20,
+                  step: "any",
+                  placeholder: t("risk.placeholders.engine"),
+                },
               ].map(({ field, label, ...props }) => (
                 <div className="risk-field" key={field}>
                   <label htmlFor={`risk-${field}`}>{label}{props.required ? " *" : ""}</label>
@@ -183,38 +261,106 @@ export default function AnomalyRiskPage() {
               ))}
             </div>
             <div className="risk-fields">
-              {[["fuel_type", "Combustibil"], ["gearbox", "Cutie de viteze"], ["drivetrain", "Tracțiune"], ["body_type", "Caroserie"]].map(([field, label]) => (
+              {[
+                  ["fuel_type", t("risk.fuel")],
+                  ["gearbox", t("risk.gearbox")],
+                  ["drivetrain", t("risk.drivetrain")],
+                  ["body_type", t("risk.bodyType")],
+                ].map(([field, label]) => (
                 <div className="risk-field" key={field}>
                   <label htmlFor={`risk-${field}`}>{label}</label>
                   <select id={`risk-${field}`} name={field} value={form[field]} onChange={(e) => update(field, e.target.value)}>
-                    <option value="">Nespecificat</option>
-                    {OPTIONS[field].map((option) => <option key={option}>{option}</option>)}
+                  <option value="">{t("risk.unspecified")}</option>
+                  {OPTIONS[field].map((option) => (
+                    <option key={option} value={option}>
+                      {t(`risk.options.${field}.${option}`, option)}
+                    </option>
+                  ))}
                   </select>
                 </div>
               ))}
             </div>
-            <p className="risk-form-note">Completează cât mai multe detalii pentru o analiză mai relevantă. Pentru o mașină electrică, motorul poate fi 0 sau necompletat.</p>
+            <p className="risk-form-note">
+              {t("risk.formNote")}
+            </p>
             <div className="risk-actions">
-              <button className="risk-submit" type="submit">{loading ? "Se analizează oferta…" : "Analizează oferta"}</button>
-              <button className="risk-reset" type="button" onClick={() => { setForm({ ...EMPTY_FORM }); setModels([]); setGenerations([]); setResult(null); setError(""); }}>Resetează</button>
-              {result && submitted && <SaveItemButton key={JSON.stringify(submitted)} label="Salveaza Analiza"
-                defaultName={`${submitted.brand} ${submitted.model}${submitted.year ? ` ${submitted.year}` : ""}`}
-                path="/saved-risk-assessments" onSave={(name) => createSaved("risks", { name, input: submitted })}
-                onSaved={(item) => setResult(item.result)} />}
+            <button className="risk-submit" type="submit">
+                {loading ? t("risk.analyzing") : t("risk.analyze")}
+              </button>
+
+              <button
+                className="risk-reset"
+                type="button"
+                onClick={() => {
+                  setForm({ ...EMPTY_FORM });
+                  setModels([]);
+                  setGenerations([]);
+                  setResult(null);
+                  setError("");
+                }}
+              >
+                {t("risk.reset")}
+              </button>
+              {result && submitted && (
+                  <SaveItemButton
+                    key={JSON.stringify(submitted)}
+                    label={t("risk.saveAnalysis")}
+                    defaultName={`${submitted.brand} ${submitted.model}${submitted.year ? ` ${submitted.year}` : ""}`}
+                    path="/saved-risk-assessments"
+                    onSave={(name) =>
+                      createSaved("risks", { name, input: submitted })
+                    }
+                    onSaved={(item) => setResult(item.result)}
+                  />
+                )}
             </div>
           </fieldset>
-          {error && <p className="risk-error" role="alert">{error}</p>}
-          {loading && <p className="risk-loading" role="status">Comparăm oferta cu anunțurile din baza de date.</p>}
+          {error && (
+              <p className="risk-error" role="alert">
+                {error}
+              </p>
+            )}
+
+            {loading && (
+              <p className="risk-loading" role="status">
+                {t("risk.loading")}
+              </p>
+            )}
         </form>
 
         {result ? <div ref={resultRef} tabIndex={-1} className="risk-result-focus"><AnomalyRiskResults result={result} vehicle={submitted} /></div> : !loading && (
-          <div className="risk-preview" aria-label="Ce vei afla">
-            {[["/risk-price-context.png", "Prețul în context", "Prețurile observate în baza de date și poziția ofertei în grupul selectat."], ["/risk-odometer.png", "Detalii de verificat", "Kilometrajul și configurațiile neobișnuite pentru mașini similare."], ["/risk-market-evidence.png", "Câtă încredere să ai", "Câte exemple susțin analiza și când datele sunt insuficiente."]].map(([icon, title, description]) => (
-              <article key={title}><img className="risk-preview-icon" src={icon} alt="" width="112" height="112" /><h3>{title}</h3><p>{description}</p></article>
-            ))}
-          </div>
+          <div className="risk-preview" aria-label={t("risk.whatYouLearn")}>
+          {[
+            [
+              "/risk-price-context.png",
+              "priceContext",
+            ],
+            [
+              "/risk-odometer.png",
+              "detailsToCheck",
+            ],
+            [
+              "/risk-market-evidence.png",
+              "confidence",
+            ],
+          ].map(([icon, key]) => (
+            <article key={key}>
+              <img
+                className="risk-preview-icon"
+                src={icon}
+                alt=""
+                width="112"
+                height="112"
+              />
+              <h3>{t(`risk.preview.${key}.title`)}</h3>
+              <p>{t(`risk.preview.${key}.description`)}</p>
+            </article>
+          ))}
+        </div>
         )}
-        <p className="risk-disclaimer">Scorurile identifică oferte neobișnuite, nu probabilitatea unei fraude. Analiza nu înlocuiește verificarea istoricului și inspecția mașinii.</p>
+       <p className="risk-disclaimer">
+        {t("risk.disclaimer")}
+      </p>
       </div>
     </main>
     </>
