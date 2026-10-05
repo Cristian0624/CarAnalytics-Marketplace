@@ -1,0 +1,194 @@
+.comparator-page {
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.comparator-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.comparator-header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #17202A;
+  margin: 0;
+}
+
+.back-to-market-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: white;
+  border: 1px solid #CBD5E1;
+  border-radius: 8px;
+  color: #17202A;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.back-to-market-btn:hover {
+  background: #F8FAFC;
+  border-color: #94A3B8;
+}
+
+.comparator-empty {
+  text-align: center;
+  background: white;
+  padding: 60px 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.comparator-empty h2 {
+  font-size: 24px;
+  color: #17202A;
+  margin-bottom: 16px;
+}
+
+.comparator-empty p {
+  color: #64748B;
+  max-width: 600px;
+  margin: 0 auto 30px;
+  line-height: 1.6;
+}
+
+.comparator-table-wrapper {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+  border: 1px solid #E2E8F0;
+}
+
+.comparator-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+
+.comparator-table th,
+.comparator-table td {
+  padding: 16px;
+  text-align: left;
+  border-bottom: 1px solid #E2E8F0;
+  border-right: 1px solid #E2E8F0;
+  vertical-align: top;
+}
+
+.comparator-table th {
+  background: #F8FAFC;
+  font-weight: 600;
+  color: #475569;
+  width: 20%;
+}
+
+.comparator-table td {
+  width: calc(80% / var(--car-count));
+  color: #17202A;
+}
+
+.comparator-table tr:last-child th,
+.comparator-table tr:last-child td {
+  border-bottom: none;
+}
+
+.comparator-table th:last-child,
+.comparator-table td:last-child {
+  border-right: none;
+}
+
+.car-header-cell {
+  position: relative;
+  text-align: center !important;
+}
+
+.car-header-cell img {
+  height: 40px;
+  object-fit: contain;
+  margin-bottom: 12px;
+}
+
+.car-header-cell h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+}
+
+.car-header-cell p {
+  color: #64748B;
+  margin: 0 0 16px 0;
+  font-size: 14px;
+}
+
+.remove-car-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #FEE2E2;
+  color: #EF4444;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.remove-car-btn:hover {
+  background: #FECACA;
+  color: #DC2626;
+}
+
+.best-value {
+  color: #10B981;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.best-value::after {
+  content: "✓";
+  display: inline-block;
+}
+
+.score-cell {
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+.score-circle-comp {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: white;
+  margin: 0 auto;
+}
+
+.score-circle-comp.score-green { background: #10B981; }
+.score-circle-comp.score-orange { background: #F59E0B; }
+.score-circle-comp.score-red { background: #EF4444; }
+
+.score-circle-comp span {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.score-circle-comp small {
+  font-size: 10px;
+  opacity: 0.9;
+}

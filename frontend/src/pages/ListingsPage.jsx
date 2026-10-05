@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { searchListingsPaginated } from "../api/listings";
 import { createSaved } from "../api/saved_items";
 import { listingFiltersToApi, listingFiltersToForm, emptyListingFilters, listingFilterError } from "../utils/listingFilters";
@@ -7,6 +7,7 @@ import CarCard from "../components/CarCard";
 import ListingFilters from "../components/ListingFilters";
 import BackgroundTriangles from "../components/BackgroundTriangles";
 import SaveItemButton from "../components/SaveItemButton";
+import { useComparator } from "../context/ComparatorContext";
 import "./ListingsPage.css";
 
 const ITEMS_PER_PAGE = 45;
@@ -25,14 +26,15 @@ function shuffleListings(items) {
 
 export default function ListingsPage() {
   const location = useLocation();
-  return <ListingSearch key={location.key} initialFilters={location.state?.savedFilters} />;
+  return <ListingSearch key={location.key} initialFilters={location.state?.savedFilters} initialPage={location.state?.savedPage} keepFiltersClosed={location.state?.keepFiltersClosed} />;
 }
 
 
-function ListingSearch({ initialFilters }) {
+function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = false }) {
+  const { comparedCars } = useComparator();
   const [filters, setFilters] = useState(() => listingFiltersToForm(initialFilters));
   // Draft edits never change the filters used for pagination or saving.
-  const [query, setQuery] = useState(() => ({ filters: listingFiltersToApi(listingFiltersToForm(initialFilters)), page: 1, applied: Boolean(initialFilters) }));
+  const [query, setQuery] = useState(() => ({ filters: listingFiltersToApi(listingFiltersToForm(initialFilters)), page: initialPage, applied: Boolean(initialFilters) }));
   const [data, setData] = useState({ items: [], pages: 0, total: 0 });
   const [expandedCarId, setExpandedCarId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -185,22 +187,22 @@ function ListingSearch({ initialFilters }) {
         onReset={handleReset}
         loading={loading}
         actions={saveAction}
-        initiallyOpen={Boolean(initialFilters)}
+        initiallyOpen={Boolean(initialFilters) && !keepFiltersClosed}
         resultCount={filterCount}
         countLoading={countLoading}
         sortingActive={Boolean(query.sort_by)}
 
         barExtras={
-          <div className="lf-sort" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--lf-ink)' }}>Afișare:</span>
-              <button
-              type="button"
-              className={`lf-toggle ${sortOpen ? "open" : ""}`}
-              onClick={() => setSortOpen((v) => !v)}
-            >
-              {sortLabel}
-              <span className="lf-arrow" aria-hidden="true">▾</span>
-            </button>
+            <div className="lf-sort" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--lf-ink)' }}>Afișare:</span>
+                <button
+                type="button"
+                className={`lf-toggle ${sortOpen ? "open" : ""}`}
+                onClick={() => setSortOpen((v) => !v)}
+              >
+                {sortLabel}
+                <span className="lf-arrow" aria-hidden="true">▾</span>
+              </button>
         
             {sortOpen && (
               <div className="lf-sort-menu">
@@ -360,6 +362,17 @@ function ListingSearch({ initialFilters }) {
           </div>
         }
       />
+
+      <div className="comparator-action-row">
+        <Link 
+          to="/comparator" 
+          state={{ savedFilters: query.filters, savedPage: query.page }} 
+          className="comparator-banner-btn"
+        >
+          Deschide comparare ({comparedCars.length}/3 mașini)
+        </Link>
+      </div>
+
     <div id="listings-results-start" style={{ scrollMarginTop: "20px" }} />
     {loading && <div className="marketplace-loading" role="status">Se încarcă mașinile...</div>}
     {!loading && error && <div className="marketplace-error" role="alert"><p>{error}</p><button onClick={() => setQuery((current) => ({ ...current }))}>Încearcă din nou</button></div>}

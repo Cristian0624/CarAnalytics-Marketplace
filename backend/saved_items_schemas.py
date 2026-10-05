@@ -40,6 +40,8 @@ class SavedSearchFilters(InputModel):
     drivetrains: Values | None = None
     doors_min: NonnegativeInt | None = None
     doors_max: NonnegativeInt | None = None
+    is_comparison: bool | None = None
+    cars: list | None = None
     seats_min: NonnegativeInt | None = None
     seats_max: NonnegativeInt | None = None
     seller_type: Values | None = None
@@ -60,7 +62,7 @@ class SavedSearchFilters(InputModel):
 
     def to_listing_filters(self):
         # Supply all fields so FastAPI Query defaults never enter direct calls.
-        return ListingFilters(**self.model_dump())
+        return ListingFilters(**self.model_dump(exclude={"is_comparison", "cars"}))
 
 
 class SavedSearchCreate(InputModel):

@@ -15,8 +15,10 @@ class SavedItemsRepository:
             self.model.id == item_id, self.model.user_id == user_id,
         ))
 
-    def page(self, user_id: int, page: int, limit: int):
+    def page(self, user_id: int, page: int, limit: int, condition=None):
         owned = select(self.model).where(self.model.user_id == user_id)
+        if condition is not None:
+            owned = owned.where(condition)
         total = self.db.scalar(select(func.count()).select_from(owned.subquery())) or 0
         items = self.db.scalars(owned.order_by(self.model.id.desc())
                                .offset((page - 1) * limit).limit(limit)).all()

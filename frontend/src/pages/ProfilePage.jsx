@@ -135,6 +135,10 @@ export default function ProfilePage() {
             Filtre Salvate
           </Link>
 
+          <Link to="/saved-comparisons">
+            Comparări Salvate
+          </Link>
+
           <Link to="/profile" aria-current="page">
             Profilul Meu
           </Link>

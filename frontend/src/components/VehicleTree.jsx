@@ -110,20 +110,18 @@ export default function VehicleTree({ filters, update, lockModels }) {
                     checked={brandOn} partial={brandPartial}
                     onCheck={() => {
                       if (brandOn) {
-                        // Uncheck fully checked brand
                         const newBrands = selBrands.filter(x => x !== b);
-                        const newModels = selModels.filter(m => modelToBrand[m] !== b);
-                        const newGens = selGens.filter(g => {
-                          const mx = genToModel[g];
-                          return mx ? modelToBrand[mx] !== b : true;
+                        const newModels = selModels.filter(mx => modelToBrand[mx] !== b && !bModelsKnown.includes(mx));
+                        const newGens = selGens.filter(gx => {
+                          const mx = genToModel[gx];
+                          return mx ? (modelToBrand[mx] !== b && !bModelsKnown.includes(mx)) : true;
                         });
                         commit(newBrands, newModels, newGens);
                       } else {
-                        // Make it fully checked (whether it was partial or empty)
-                        const newModels = selModels.filter(m => modelToBrand[m] !== b);
-                        const newGens = selGens.filter(g => {
-                          const mx = genToModel[g];
-                          return mx ? modelToBrand[mx] !== b : true;
+                        const newModels = selModels.filter(mx => modelToBrand[mx] !== b && !bModelsKnown.includes(mx));
+                        const newGens = selGens.filter(gx => {
+                          const mx = genToModel[gx];
+                          return mx ? (modelToBrand[mx] !== b && !bModelsKnown.includes(mx)) : true;
                         });
                         commit(withItem(selBrands, b), newModels, newGens);
                       }
@@ -151,20 +149,27 @@ export default function VehicleTree({ filters, update, lockModels }) {
                                 checked={isVisuallyOn} partial={mPartial}
                                 onCheck={() => {
                                   if (isVisuallyOn || brandOn) {
-                                    // Uncheck model. If brand was fully checked, they want to uncheck this specific model, so we must uncheck the brand entirely.
-                                    const newBrands = selBrands.filter(x => x !== b);
-                                    let newModels = selModels.filter(x => modelToBrand[x] !== b);
-                                    newModels = newModels.filter(x => x !== m);
-                                    let newGens = selGens.filter(g => {
-                                      const mx = genToModel[g];
-                                      return mx ? modelToBrand[mx] !== b : true;
-                                    });
-                                    newGens = newGens.filter(g => genToModel[g] !== m);
+                                    let newBrands = [...selBrands];
+                                    let newModels = selModels.filter(x => x !== m);
+                                    let newGens = selGens.filter(gx => !(mGensKnown.includes(gx) || genToModel[gx] === m));
+                                    
+                                    if (brandOn) {
+                                      newBrands = newBrands.filter(x => x !== b);
+                                      newModels = newModels.filter(x => modelToBrand[x] !== b && !bModelsKnown.includes(x));
+                                      newGens = newGens.filter(gx => {
+                                        const mx = genToModel[gx];
+                                        return mx ? (modelToBrand[mx] !== b && !bModelsKnown.includes(mx)) : true;
+                                      });
+                                    } else {
+                                      if (bSelModels.length === 1) {
+                                        newBrands = newBrands.filter(x => x !== b);
+                                      }
+                                    }
                                     commit(newBrands, newModels, newGens);
                                   } else {
                                     // Make model fully checked. Make brand partial (i.e. added to selBrands).
                                     // We also clear any specific generations for this model, because it becomes fully checked.
-                                    let newGens = selGens.filter(g => genToModel[g] !== m);
+                                    let newGens = selGens.filter(gx => !(mGensKnown.includes(gx) || genToModel[gx] === m));
                                     commit(withItem(selBrands, b), withItem(selModels, m), newGens);
                                   }
                                 }}
@@ -180,22 +185,27 @@ export default function VehicleTree({ filters, update, lockModels }) {
                                       checked={gOn}
                                       onCheck={() => {
                                         if (gOn) {
-                                          // Uncheck generation. Clear parent model and parent brand if they were fully checked.
-                                          const newBrands = brandOn ? selBrands.filter(x => x !== b) : selBrands;
-                                          let newModels = brandOn ? selModels.filter(x => modelToBrand[x] !== b) : selModels;
-                                          if (isVisuallyOn) {
-                                            newModels = newModels.filter(x => x !== m);
-                                          }
-                                          
+                                          let newBrands = [...selBrands];
+                                          let newModels = [...selModels];
                                           let newGens = selGens.filter(x => x !== g);
+
                                           if (brandOn) {
+                                            newBrands = newBrands.filter(x => x !== b);
+                                            newModels = newModels.filter(x => modelToBrand[x] !== b && !bModelsKnown.includes(x));
                                             newGens = newGens.filter(gx => {
                                               const mx = genToModel[gx];
-                                              return mx ? modelToBrand[mx] !== b : true;
+                                              return mx ? (modelToBrand[mx] !== b && !bModelsKnown.includes(mx)) : true;
                                             });
-                                          }
-                                          if (isVisuallyOn) {
-                                            newGens = newGens.filter(gx => genToModel[gx] !== m);
+                                          } else if (isVisuallyOn) {
+                                            newModels = newModels.filter(x => x !== m);
+                                            newGens = newGens.filter(gx => !(mGensKnown.includes(gx) || genToModel[gx] === m));
+                                          } else {
+                                            if (mSelGens.length === 1) {
+                                              newModels = newModels.filter(x => x !== m);
+                                              if (bSelModels.length === 1) {
+                                                newBrands = newBrands.filter(x => x !== b);
+                                              }
+                                            }
                                           }
                                           commit(newBrands, newModels, newGens);
                                         } else {

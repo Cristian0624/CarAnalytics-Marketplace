@@ -25,10 +25,26 @@ def create_saved_search(payload: SavedSearchCreate, user: User = Depends(get_cur
     )
 
 
+from sqlalchemy import func
+
 @router.get("", response_model=SavedPage[SavedSearchResponse])
 def list_saved_searches(page: int = Query(1, ge=1), limit: int = Query(20, ge=1, le=100),
+                        is_comparison: bool | None = Query(None),
                         user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    return SavedItemsRepository(db, SavedSearch).page(user.id, page, limit)
+    filt = None
+    if is_comparison is not None:
+        if str(db.bind.url).startswith("sqlite"):
+            if is_comparison:
+                filt = func.json_extract(SavedSearch.filters, '$.is_comparison') == True
+            else:
+                filt = (func.json_extract(SavedSearch.filters, '$.is_comparison') == False) | (func.json_extract(SavedSearch.filters, '$.is_comparison').is_(None))
+        else:
+            if is_comparison:
+                filt = SavedSearch.filters.op("->>")("is_comparison") == 'true'
+            else:
+                filt = (SavedSearch.filters.op("->>")("is_comparison") == 'false') | (SavedSearch.filters.op("->>")("is_comparison").is_(None))
+
+    return SavedItemsRepository(db, SavedSearch).page(user.id, page, limit, filt)
 
 
 @router.get("/{item_id}", response_model=SavedSearchResponse)

@@ -10,6 +10,7 @@ import AnomalyRiskResults from "../components/AnomalyRiskResults";
 import CarCard from "../components/CarCard";
 import ListingFilters from "../components/ListingFilters";
 import BackgroundTriangles from "../components/BackgroundTriangles";
+import { useComparator } from "../context/ComparatorContext";
 import "./AnomalyRiskPage.css";
 import "./SavedItemsPage.css";
 
@@ -17,6 +18,7 @@ const titles = {
   favourites: "Anunțuri Favorite",
   risks: "Analize Risc Salvate",
   searches: "Filtre Salvate",
+  comparisons: "Comparări Salvate",
   profile: "Profilul Meu",
   myListings: "Anunțurile Mele",
 };
@@ -25,19 +27,21 @@ const descriptions = {
   favourites: "Ofertele pe care vrei să le păstrezi la îndemână.",
   risks: "Revino la analizele tale și la rezultatele din momentul salvării.",
   searches: "Criteriile tale de căutare, gata de folosit pe piața actuală.",
+  comparisons: "Comparările tale între mașini salvate anterior.",
   profile: "Informațiile contului tău și opțiunile de securitate.",
   myListings: "Gestionează anunțurile create și publicate de tine.",
+};
+
+const allPaths = {
+  ...savedPaths,
+  comparisons: "/saved-comparisons",
+  profile: "/profile",
+  myListings: "/my-listings",
 };
 
 export default function SavedItemsPage({ kind }) {
   const { user, loading } = useAuth();
   const { id } = useParams();
-
-  const allPaths = {
-    ...savedPaths,
-    profile: "/profile",
-    myListings: "/my-listings",
-  };
 
   return (
     <main className="saved-page">
@@ -82,6 +86,7 @@ export default function SavedItemsPage({ kind }) {
 }
 
 function ItemSummary({ kind, item }) {
+  if (kind === "comparisons") return <p style={{color: '#64748B'}}>Compară {item.filters?.cars?.length || 0} mașini</p>;
   if (kind === "searches") return <ul className="saved-filter-tags">{describeFilters(item.filters).map((text) => <li key={text}>{text}</li>)}</ul>;
   const car = kind === "risks" ? item.input : item.snapshot;
   return <>
@@ -106,6 +111,7 @@ function SavedCollection({ kind }) {
   const [busy, setBusy] = useState(false);
   const favourites = useFavourites();
   const navigate = useNavigate();
+  const { loadComparator } = useComparator();
   const favouriteRevision = kind === "favourites" ? favourites.revision : 0;
   useEffect(() => {
     const controller = new AbortController();
@@ -139,10 +145,10 @@ function SavedCollection({ kind }) {
     {error && <p className="saved-error" role="alert">{error} <button type="button" onClick={() => setRevision((value) => value + 1)}>Încearcă din nou</button></p>}
     {loading ? <p role="status">Se încarcă salvările...</p> : data?.items.length ? <>
       <div className="saved-grid">{data.items.map((item) => <article className="saved-card" key={item.id}>
-        <div className="saved-card-top"><span className="saved-eyebrow">{kind === "favourites" ? "★ FAVORIT" : kind === "risks" ? "ANALIZĂ" : "CĂUTARE"}</span><time dateTime={item.created_at}>{savedDate(item.created_at)}</time></div>
+        <div className="saved-card-top"><span className="saved-eyebrow">{kind === "favourites" ? "★ FAVORIT" : kind === "risks" ? "ANALIZĂ" : kind === "comparisons" ? "COMPARARE" : "CĂUTARE"}</span><time dateTime={item.created_at}>{savedDate(item.created_at)}</time></div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: '12px', textAlign: 'left' }}>
             <div style={{ textAlign: 'left' }}>
-              <h2 style={{ marginTop: 0, textAlign: 'left' }}><Link to={`${savedPaths[kind]}/${item.id}`}>{itemTitle(kind, item)}</Link></h2>
+              <h2 style={{ marginTop: 0, textAlign: 'left' }}><Link to={`${allPaths[kind]}/${item.id}`}>{itemTitle(kind, item)}</Link></h2>
               <ItemSummary kind={kind} item={item} />
             </div>
             {(kind === 'favourites' || kind === 'risks') && (
@@ -154,22 +160,23 @@ function SavedCollection({ kind }) {
                   onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
                 />
                 {((kind === 'favourites' && item.snapshot.score != null) || (kind === 'risks' && item.result.anomaly_score != null)) && (
-                  <span className={`score-badge ${getScoreClass(kind === 'risks' ? item.result.anomaly_score : item.snapshot.score)}`} style={{ fontSize: '14px', padding: '4px 8px' }}>
+                  <span className={`score-badge ${kind === 'risks' ? (item.result.anomaly_score < 30 ? "score-green" : item.result.anomaly_score < 60 ? "score-orange" : "score-red") : getScoreClass(item.snapshot.score)}`} style={{ fontSize: '14px', padding: '4px 8px' }}>
                     {Number(kind === 'risks' ? item.result.anomaly_score : item.snapshot.score).toFixed(0)}
                   </span>
                 )}
               </div>
             )}
           </div>
-        <div className="saved-actions"><Link className="saved-primary" to={`${savedPaths[kind]}/${item.id}`}>Deschide</Link>
+        <div className="saved-actions"><Link className="saved-primary" to={`${allPaths[kind]}/${item.id}`}>Deschide</Link>
           {kind === "searches" && <button className="saved-secondary" onClick={() => navigate("/listings", { state: { savedFilters: item.filters } })}>Vezi anunțurile</button>}
+          {kind === "comparisons" && <button className="saved-secondary" onClick={() => { loadComparator(item.filters.cars); navigate("/comparator"); }}>Deschide compararea</button>}
           <button className="saved-secondary" onClick={() => setEditing(item)}>{kind === "risks" ? "Redenumește" : "Editează"}</button>
           <button className="saved-delete" onClick={() => setDeleting(item.id)}>Șterge</button>
         </div>
         {deleting === item.id && <div className="saved-confirm"><p>Ștergi acest element din cont?</p><div className="saved-actions"><button className="saved-delete" disabled={busy} onClick={() => remove(item)}>{busy ? "Se șterge…" : "Da, șterge"}</button><button className="saved-secondary" disabled={busy} onClick={() => setDeleting(null)}>Anulează</button></div></div>}
       </article>)}</div>
       {data.pages > 1 && <nav className="saved-pagination" aria-label="Paginare salvări"><button className="saved-secondary" disabled={page === 1} onClick={() => setPage(page - 1)}>Precedenta</button><span>{page} / {data.pages}</span><button className="saved-secondary" disabled={page >= data.pages} onClick={() => setPage(page + 1)}>Următoarea</button></nav>}
-    </> : !error && <div className="saved-empty"><h2>Încă nu ai nimic salvat aici</h2><p>{kind === "risks" ? "Analizează o ofertă și salvează rezultatul." : kind === "searches" ? "Aplică filtrele în piață, apoi salvează căutarea." : "Deschide un anunț din piață și apasă pe stea."}</p><Link className="saved-primary" to={kind === "risks" ? "/anomaly-risk" : "/listings"}>{kind === "risks" ? "Analizează o ofertă" : "Răsfoiește piața"}</Link></div>}
+    </> : !error && <div className="saved-empty"><h2>Încă nu ai nimic salvat aici</h2><p>{kind === "risks" ? "Analizează o ofertă și salvează rezultatul." : kind === "comparisons" ? "Compară mașini și salvează-le." : kind === "searches" ? "Aplică filtrele în piață, apoi salvează căutarea." : "Deschide un anunț din piață și apasă pe stea."}</p><Link className="saved-primary" to={kind === "risks" ? "/anomaly-risk" : kind === "comparisons" ? "/listings" : kind === "searches" ? "/listings" : "/listings"}>{kind === "risks" ? "Analizează o ofertă" : "Răsfoiește piața"}</Link></div>}
   </>;
 }
 
@@ -181,6 +188,7 @@ function SavedDetail({ kind, id }) {
   const [revision, setRevision] = useState(0);
   const [expanded, setExpanded] = useState(true);
   const navigate = useNavigate();
+  const { loadComparator } = useComparator();
   useEffect(() => {
     const controller = new AbortController();
     setError("");
@@ -202,16 +210,18 @@ function SavedDetail({ kind, id }) {
 
   if (editing && item) return <SavedEditor kind={kind} item={item} onCancel={() => setEditing(false)} onDone={() => { setEditing(false); setRevision((value) => value + 1); }} />;
   return <>
-    <Link className="saved-back" to={savedPaths[kind]}>← Toate salvările</Link>
+    <Link className="saved-back" to={allPaths[kind]}>← Toate salvările</Link>
     {error && <p className="saved-error" role="alert">{error} <button type="button" onClick={() => setRevision((value) => value + 1)}>Încearcă din nou</button></p>}
     {!item ? !error && <p role="status">Se încarcă...</p> : <>
       <section className="saved-card saved-detail-heading"><h2>{itemTitle(kind, item)}</h2><p>Salvat la {savedDate(item.created_at)}</p>
         <div className="saved-actions"><button className="saved-secondary" onClick={() => setEditing(true)} disabled={busy}>{kind === "risks" ? "Redenumește" : "Editează"}</button>
           {kind === "searches" && <button className="saved-primary" onClick={() => navigate("/listings", { state: { savedFilters: item.filters } })}>Vezi anunțurile actuale</button>}
+          {kind === "comparisons" && <button className="saved-primary" onClick={() => { loadComparator(item.filters.cars); navigate("/comparator"); }}>Deschide compararea</button>}
           {kind === "risks" && <button className="saved-primary" disabled={busy} onClick={reanalyse}>{busy ? "Se reanalizează…" : "Reanalizează"}</button>}
         </div>
       </section>
       {kind === "searches" && <section className="saved-card"><h2>Criterii salvate</h2><ItemSummary kind={kind} item={item} /><p>Anunțurile se actualizează la deschiderea căutării.</p></section>}
+      {kind === "comparisons" && <section className="saved-card"><h2>Comparare salvată</h2><ItemSummary kind={kind} item={item} /><p>Apasă butonul de mai sus pentru a relua comparația detaliată.</p></section>}
       {kind === "risks" && <><p className="saved-notice">Acesta este rezultatul salvat. Reanalizarea creează o analiză nouă și o păstrează pe cea originală.</p><AnomalyRiskResults result={item.result} vehicle={item.input} /></>}
       {kind === "favourites" && <><p className="saved-notice">{item.available ? "Anunțul este prezent în baza de date. Mai jos vezi datele actuale." : "Anunțul nu mai este în baza de date. Mai jos vezi datele păstrate la salvare."}</p>
         {item.notes && <p className="saved-notice">Notițe: {item.notes}</p>}
@@ -243,7 +253,7 @@ function SavedEditor({ kind, item, onCancel, onDone }) {
     finally { pending.current = false; setBusy(false); }
   }
   return <section className="saved-editor"><form onSubmit={save} className="saved-card">
-    <h2>{kind === "favourites" ? "Notițele anunțului" : kind === "risks" ? "Redenumește analiza" : "Editează filtrele salvate"}</h2>
+    <h2>{kind === "favourites" ? "Notițele anunțului" : kind === "risks" ? "Redenumește analiza" : kind === "comparisons" ? "Redenumește compararea" : "Editează filtrele salvate"}</h2>
     {kind === "favourites" ? <><label htmlFor="saved-notes">Notițe</label><textarea id="saved-notes" value={notes} maxLength={1000} disabled={busy} onChange={(event) => setNotes(event.target.value)} /></>
       : <><label htmlFor="saved-name">Nume</label><input id="saved-name" value={name} maxLength={120} required disabled={busy} onChange={(event) => setName(event.target.value)} /></>}
     <div className="saved-actions"><button className="saved-primary" disabled={busy}>{busy ? "Se salvează…" : "Salvează modificările"}</button><button type="button" className="saved-secondary" disabled={busy} onClick={onCancel}>Anulează</button></div>

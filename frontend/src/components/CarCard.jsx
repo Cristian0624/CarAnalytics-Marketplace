@@ -6,6 +6,7 @@ import { getRecommendationsForCar } from "../api/recommendations";
 import AnomalyRiskResults from "./AnomalyRiskResults";
 import { buildRiskPayload } from "../utils/anomalyRisk";
 import { createPortal } from "react-dom";
+import { useComparator } from "../context/ComparatorContext";
 
 export function getLogoFileName(brand) {
   if (!brand) return "unknown";
@@ -36,6 +37,8 @@ function formatNumber(value) {
 
 function CarCard({ car, expanded, position, onClick, showFavourite = true, peeking = false }) {
   const [currentCar, setCurrentCar] = useState(car);
+  const { comparedCars, addCar, removeCar } = useComparator();
+  const isCompared = comparedCars.some(c => c.id === currentCar.id);
 
   useEffect(() => {
     setCurrentCar(car);
@@ -222,6 +225,9 @@ function CarCard({ car, expanded, position, onClick, showFavourite = true, peeki
               <button className="original-listing-button" onClick={openOriginalListing} title="Deschide anunțul original pe 999.md">
                 <img src="/999-logo.png" alt="999.md" className="button-logo-999" />
                 <span>Deschide anunțul</span>
+              </button>
+              <button className={`comparator-button ${isCompared ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); isCompared ? removeCar(currentCar.id) : addCar(currentCar); }} title={isCompared ? "Elimină din comparare" : "Adaugă în comparare"}>
+                <span>{isCompared ? "Comparat" : "Compară"}</span>
               </button>
               <button className="close-card-button" onClick={handleClose} title="Close">✕</button>
 

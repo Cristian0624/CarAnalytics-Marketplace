@@ -826,3 +826,33 @@
 
 
 
+
+.comparator-button {
+  position: absolute;
+  top: 16px;
+  right: 170px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  border: 1px solid #E2E8F0;
+  color: #17202A;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.comparator-button:hover {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+}
+
+.comparator-button.active {
+  background: #14B8A6;
+  color: white;
+  border-color: #14B8A6;
+}

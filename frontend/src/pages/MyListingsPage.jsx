@@ -167,6 +167,7 @@ export default function MyListingsPage() {
           <Link to={savedPaths.favourites}>Anunțuri Favorite</Link>
           <Link to={savedPaths.risks}>Analize Risc Salvate</Link>
           <Link to={savedPaths.searches}>Filtre Salvate</Link>
+          <Link to="/saved-comparisons">Comparări Salvate</Link>
           <Link to="/profile">Profilul Meu</Link>
           <Link to="/my-listings" aria-current="page">
             Anunțurile Mele
