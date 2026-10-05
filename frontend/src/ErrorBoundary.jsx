@@ -1,4 +1,5 @@
 import React from "react";
+import { withTranslation } from "react-i18next";
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -16,10 +17,13 @@ class ErrorBoundary extends React.Component {
   }
 
   render() {
+    const { t } = this.props;
+
     if (this.state.hasError) {
       return (
         <div style={{ padding: "20px", color: "red", background: "#f8d7da" }}>
-          <h2>Something went wrong.</h2>
+          <h2>{t("errorBoundary.title")}</h2>
+
           <details style={{ whiteSpace: "pre-wrap" }}>
             {this.state.error && this.state.error.toString()}
             <br />
@@ -28,8 +32,9 @@ class ErrorBoundary extends React.Component {
         </div>
       );
     }
+
     return this.props.children;
   }
 }
 
-export default ErrorBoundary;
+export default withTranslation()(ErrorBoundary);

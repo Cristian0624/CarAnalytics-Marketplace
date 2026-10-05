@@ -1,16 +1,21 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import "./Autocomplete.css";
 import { highlightParts } from "../utils/autocomplete";
 import { filterVehicleOptions, resolveVehicleOption } from "../utils/anomalyRisk";
 
 function HighlightMatch({ text, query }) {
   if (!query) return <span>{text}</span>;
+
   const parts = highlightParts(text, query);
+
   return (
     <span>
       {parts.map((part, i) =>
         part.match ? (
-          <span key={i} className="highlight-match">{part.text}</span>
+          <span key={i} className="highlight-match">
+            {part.text}
+          </span>
         ) : (
           <span key={i}>{part.text}</span>
         )
@@ -22,6 +27,7 @@ function HighlightMatch({ text, query }) {
 export default function Autocomplete({
   value,
   onChange,
+  inputRef,
   onSelect,
   fetchSuggestions,
   placeholder,
@@ -31,6 +37,8 @@ export default function Autocomplete({
   error = false,
   label,
 }) {
+  const { t } = useTranslation();
+
   const [suggestions, setSuggestions] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
@@ -43,7 +51,9 @@ export default function Autocomplete({
         setIsOpen(false);
       }
     }
+
     document.addEventListener("mousedown", handleClickOutside);
+
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
@@ -52,11 +62,15 @@ export default function Autocomplete({
 
     async function loadSuggestions() {
       if (!isOpen || disabled) return;
-      
+
       try {
         const results = options
-          ? filterVehicleOptions(options, options.includes(value) ? "" : value || "")
+          ? filterVehicleOptions(
+              options,
+              options.includes(value) ? "" : value || ""
+            )
           : await fetchSuggestions(value || "");
+
         if (active) {
           setSuggestions(results);
           setSearching(false);
@@ -88,6 +102,7 @@ export default function Autocomplete({
   return (
     <div className="autocomplete-wrapper" ref={wrapperRef}>
       <input
+        ref={inputRef}
         type="text"
         aria-label={label ?? placeholder}
         autoComplete="off"
@@ -98,22 +113,49 @@ export default function Autocomplete({
           setActiveIndex(-1);
           setSearching(true);
         }}
-        onFocus={() => { setIsOpen(true); setActiveIndex(-1); setSearching(true); }}
+        onFocus={() => {
+          setIsOpen(true);
+          setActiveIndex(-1);
+          setSearching(true);
+        }}
         onBlur={() => {
           setIsOpen(false);
+
           const selected = options && resolveVehicleOption(options, value);
-          if (selected && selected !== value) onSelect(selected);
+
+          if (selected && selected !== value) {
+            onSelect(selected);
+          }
         }}
         onKeyDown={(event) => {
-          if (event.key === "Escape") setIsOpen(false);
+          if (event.key === "Escape") {
+            setIsOpen(false);
+          }
+
           if (event.key === "ArrowDown" || event.key === "ArrowUp") {
             event.preventDefault();
             setIsOpen(true);
-            setActiveIndex((index) => Math.max(0, Math.min(suggestions.length - 1, index + (event.key === "ArrowDown" ? 1 : -1))));
+
+            setActiveIndex((index) =>
+              Math.max(
+                0,
+                Math.min(
+                  suggestions.length - 1,
+                  index + (event.key === "ArrowDown" ? 1 : -1)
+                )
+              )
+            );
           }
+
           if (event.key === "Enter" && isOpen) {
             event.preventDefault();
-            if (suggestions.length && !loading && !error && !searching) {
+
+            if (
+              suggestions.length &&
+              !loading &&
+              !error &&
+              !searching
+            ) {
               choose(suggestions[activeIndex] ?? suggestions[0]);
             }
           }
@@ -121,24 +163,39 @@ export default function Autocomplete({
         placeholder={placeholder}
         disabled={disabled}
       />
+
       {isOpen && !disabled && (options || suggestions.length > 0) && (
         <ul className="autocomplete-list">
-          {error ? <li role="status">Opțiunile nu s-au putut încărca. Reîncearcă.</li>
-            : loading ? <li role="status">Se încarcă opțiunile…</li>
-            : searching ? <li role="status">Se caută potriviri…</li>
-            : !suggestions.length ? <li role="status">Nicio opțiune găsită.</li>
-            : suggestions.map((s, idx) => (
-            <li
-              key={idx}
-              className={activeIndex === idx ? "active" : ""}
-              onMouseDown={(event) => {
-                event.preventDefault();
-                choose(s);
-              }}
-            >
-              <HighlightMatch text={s} query={value} />
+          {error ? (
+            <li role="status">
+              {t("autocomplete.loadError")}
             </li>
-          ))}
+          ) : loading ? (
+            <li role="status">
+              {t("autocomplete.loading")}
+            </li>
+          ) : searching ? (
+            <li role="status">
+              {t("autocomplete.searching")}
+            </li>
+          ) : !suggestions.length ? (
+            <li role="status">
+              {t("autocomplete.noResults")}
+            </li>
+          ) : (
+            suggestions.map((s, idx) => (
+              <li
+                key={idx}
+                className={activeIndex === idx ? "active" : ""}
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  choose(s);
+                }}
+              >
+                <HighlightMatch text={s} query={value} />
+              </li>
+            ))
+          )}
         </ul>
       )}
     </div>

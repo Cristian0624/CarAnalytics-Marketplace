@@ -1,7 +1,7 @@
 import { useLocation, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useComparator } from "../context/ComparatorContext";
-import { getLogoFileName, getScoreClass } from "../components/CarCard";
+import { getLogoFileName, getScoreClass } from "../utils/carCard";
 import SaveItemButton from "../components/SaveItemButton";
 import { createSaved } from "../api/saved_items";
 import { assessAnomalyRisk } from "../api/anomaly_risk";

@@ -15,6 +15,7 @@ import {
 } from "../api/predictions";
 
 import "./CreateListingPage.css";
+import { useTranslation } from "react-i18next";
 
 
 const INITIAL_FORM = {
@@ -143,6 +144,7 @@ function getEstimatePayload(form) {
 export default function CreateListingPage() {
     const { user, loading: authLoading } = useAuth();
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const [form, setForm] = useState(() => ({
         ...INITIAL_FORM,
@@ -208,7 +210,7 @@ export default function CreateListingPage() {
                 if (!cancelled) {
                     setSubmitError(
                         error?.message ||
-                        "Could not load vehicle options."
+                        t("createListing.errors.loadOptions")
                     );
                 }
             } finally {
@@ -374,7 +376,7 @@ export default function CreateListingPage() {
 
                     setEstimateError(
                         error?.message ||
-                        "Could not calculate the recommended price."
+                        t("createListing.errors.priceEstimate")
                     );
                 }
             } finally {
@@ -411,35 +413,35 @@ export default function CreateListingPage() {
 
     function validateForm() {
         const errors = [];
-
-        if (!form.brand) errors.push("Brand is required.");
-        if (!form.model) errors.push("Model is required.");
-        if (!form.generation) errors.push("Generation is required.");
-
-        if (!form.year) errors.push("Year is required.");
-        if (!form.mileage) errors.push("Mileage is required.");
-
-        if (!form.fuel_type) errors.push("Fuel type is required.");
-        if (!form.gearbox) errors.push("Gearbox is required.");
-        if (!form.body_type) errors.push("Body type is required.");
-        if (!form.drivetrain) errors.push("Drivetrain is required.");
-
+    
+        if (!form.brand) errors.push(t("createListing.validation.brand"));
+        if (!form.model) errors.push(t("createListing.validation.model"));
+        if (!form.generation) errors.push(t("createListing.validation.generation"));
+    
+        if (!form.year) errors.push(t("createListing.validation.year"));
+        if (!form.mileage) errors.push(t("createListing.validation.mileage"));
+    
+        if (!form.fuel_type) errors.push(t("createListing.validation.fuel"));
+        if (!form.gearbox) errors.push(t("createListing.validation.gearbox"));
+        if (!form.body_type) errors.push(t("createListing.validation.bodyType"));
+        if (!form.drivetrain) errors.push(t("createListing.validation.drivetrain"));
+    
         if (!form.price_eur) {
-            errors.push("Your asking price is required.");
+            errors.push(t("createListing.validation.price"));
         }
-
+    
         if (parseNumber(form.year) === null) {
-            errors.push("Year must be a valid number.");
+            errors.push(t("createListing.validation.yearNumber"));
         }
-
+    
         if (parseNumber(form.mileage) === null) {
-            errors.push("Mileage must be a valid number.");
+            errors.push(t("createListing.validation.mileageNumber"));
         }
-
+    
         if (form.price_eur && parseNumber(form.price_eur) === null) {
-            errors.push("Price must be a valid number.");
+            errors.push(t("createListing.validation.priceNumber"));
         }
-
+    
         return errors;
     }
 
@@ -532,7 +534,7 @@ export default function CreateListingPage() {
 
             setSubmitError(
                 error?.message ||
-                "Could not create the listing."
+                t("createListing.errors.createListing")
             );
         } finally {
             setSubmitLoading(false);
@@ -544,7 +546,7 @@ export default function CreateListingPage() {
         return (
             <div className="create-listing-loading-page">
                 <div className="create-listing-spinner" />
-                <p>Loading...</p>
+                <p>{t("createListing.loading")}</p>
             </div>
         );
     }
@@ -581,20 +583,19 @@ export default function CreateListingPage() {
 
                 <div className="create-listing-header">
 
-                    <button
-                        type="button"
-                        className="create-listing-back"
-                        onClick={() => navigate("/listings")}
-                    >
-                        ← Înapoi la anunțuri
-                    </button>
+                <button
+                    type="button"
+                    className="create-listing-back"
+                    onClick={() => navigate("/listings")}
+                >
+                    ← {t("createListing.backToListings")}
+                </button>
 
-                    <h1>Creează un anunț</h1>
+                <h1>{t("createListing.title")}</h1>
 
-                    <p>
-                        
-Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a salva anunțul.
-                    </p>
+                <p>
+                    {t("createListing.description")}
+                </p>
 
                 </div>
 
@@ -608,7 +609,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
 
                 {submitSuccess && (
                     <div className="create-listing-alert create-listing-alert-success">
-                        Anunțul a fost creat cu succes.
+                        {t("createListing.success")}
                     </div>
                 )}
 
@@ -623,10 +624,10 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                         <section className="create-listing-section">
 
                             <div className="create-listing-section-header">
-                                <h2>Vehicul</h2>
-                                <p>
-                                    Selectează marca, modelul și generația vehiculului.
-                                </p>
+                                <h2>{t("createListing.vehicle.title")}</h2>
+                                    <p>
+                                        {t("createListing.vehicle.description")}
+                                    </p>
                             </div>
 
 
@@ -635,9 +636,9 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                 {/* MARCĂ */}
 
                                 <div className="create-listing-field">
-                                    <label>
-                                        Marcă <span>*</span>
-                                    </label>
+                                <label>
+                                    {t("createListing.fields.brand")} <span>*</span>
+                                </label>
 
                                     <Autocomplete
                                         value={form.brand}
@@ -675,7 +676,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                                 return [];
                                             }
                                         }}
-                                        placeholder="ex. BMW"
+                                        placeholder={t("createListing.placeholders.brand")}
                                         disabled={optionsLoading}
                                     />
                                 </div>
@@ -685,7 +686,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
 
                                 <div className="create-listing-field">
                                     <label>
-                                        Model <span>*</span>
+                                        {t("createListing.fields.model")} <span>*</span>
                                     </label>
 
                                     <Autocomplete
@@ -729,7 +730,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                                 return [];
                                             }
                                         }}
-                                        placeholder="ex. Seria 3"
+                                        placeholder={t("createListing.placeholders.model")}
                                         disabled={!form.brand}
                                     />
                                 </div>
@@ -739,7 +740,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
 
                                 <div className="create-listing-field">
                                     <label>
-                                        Generație <span>*</span>
+                                        {t("createListing.fields.generation")} <span>*</span>
                                     </label>
 
                                     <Autocomplete
@@ -780,7 +781,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                                 return [];
                                             }
                                         }}
-                                        placeholder="ex. G20"
+                                        placeholder={t("createListing.placeholders.generation")}
                                         disabled={!form.model}
                                     />
                                 </div>
@@ -790,7 +791,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
 
                                 <div className="create-listing-field">
                                     <label htmlFor="year">
-                                        An <span>*</span>
+                                        {t("createListing.fields.year")} <span>*</span>
                                     </label>
 
                                     <input
@@ -804,7 +805,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                                 event.target.value
                                             )
                                         }
-                                        placeholder="ex. 2020"
+                                        placeholder={t("createListing.placeholders.year")}
                                     />
                                 </div>
 
@@ -813,7 +814,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
 
                                 <div className="create-listing-field">
                                     <label htmlFor="mileage">
-                                        Kilometraj (km) <span>*</span>
+                                        {t("createListing.fields.mileage")} <span>*</span>
                                     </label>
 
                                     <input
@@ -827,7 +828,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                                 event.target.value
                                             )
                                         }
-                                        placeholder="ex. 85000"
+                                        placeholder={t("createListing.placeholders.mileage")}
                                     />
                                 </div>
 
@@ -841,10 +842,10 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                     <section className="create-listing-section">
 
                         <div className="create-listing-section-header">
-                            <h2>Informații tehnice</h2>
-                            <p>
-                            Adaugă principalele caracteristici tehnice ale vehiculului.
-                            </p>
+                            <h2>{t("createListing.technical.title")}</h2>
+                                <p>
+                                    {t("createListing.technical.description")}
+                                </p>
                         </div>
 
 
@@ -852,7 +853,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
 
                             <div className="create-listing-field">
                                 <label htmlFor="fuel_type">
-                                Tip combustibil<span>*</span>
+                                    {t("createListing.fields.fuelType")} <span>*</span>
                                 </label>
 
                                 <select
@@ -866,7 +867,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                     }
                                 >
                                     <option value="">
-                                    Selectează tipul de combustibil
+                                        {t("createListing.placeholders.selectFuel")}
                                     </option>
 
                                     {options.fuel_type.map((value) => (
@@ -882,9 +883,9 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
 
 
                             <div className="create-listing-field">
-                                <label htmlFor="engine">
-                                Motor
-                                </label>
+                            <label htmlFor="engine">
+                                {t("createListing.fields.engine")}
+                            </label>
 
                                 <select
                                     id="engine"
@@ -897,7 +898,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                     }
                                 >
                                     <option value="">
-                                    Selectează motorul
+                                        {t("createListing.placeholders.selectEngine")}
                                     </option>
 
                                     {options.engine.map((value) => (
@@ -914,7 +915,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
 
                             <div className="create-listing-field">
                                 <label htmlFor="gearbox">
-                                Cutie de viteze <span>*</span>
+                                    {t("createListing.fields.gearbox")} <span>*</span>
                                 </label>
 
                                 <select
@@ -928,7 +929,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                     }
                                 >
                                     <option value="">
-                                    Selectează cutia de viteze
+                                        {t("createListing.placeholders.selectGearbox")}
                                     </option>
 
                                     {options.gearbox.map((value) => (
@@ -945,7 +946,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
 
                             <div className="create-listing-field">
                                 <label htmlFor="drivetrain">
-                                Tracțiune <span>*</span>
+                                    {t("createListing.fields.drivetrain")} <span>*</span>
                                 </label>
 
                                 <select
@@ -959,7 +960,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                     }
                                 >
                                     <option value="">
-                                    Selectează tracțiunea
+                                        {t("createListing.placeholders.selectDrivetrain")}
                                     </option>
 
                                     {options.drivetrain.map((value) => (
@@ -976,7 +977,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
 
                             <div className="create-listing-field">
                                 <label htmlFor="body_type">
-                                Caroserie <span>*</span>
+                                    {t("createListing.fields.bodyType")} <span>*</span>
                                 </label>
 
                                 <select
@@ -990,7 +991,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                     }
                                 >
                                     <option value="">
-                                    Selectează caroseria
+                                        {t("createListing.placeholders.selectBodyType")}
                                     </option>
 
                                     {options.body_type.map((value) => (
@@ -1007,7 +1008,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
 
                             <div className="create-listing-field">
                                 <label htmlFor="horsepower">
-                                Cai putere
+                                    {t("createListing.fields.horsepower")}
                                 </label>
 
                                 <input
@@ -1021,14 +1022,14 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                             event.target.value
                                         )
                                     }
-                                    placeholder="e.g. 150"
+                                    placeholder={t("createListing.placeholders.horsepower")}
                                 />
                             </div>
 
 
                             <div className="create-listing-field">
                                 <label htmlFor="doors">
-                                Număr de uși
+                                    {t("createListing.fields.doors")}
                                 </label>
 
                                 <input
@@ -1042,14 +1043,14 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                             event.target.value
                                         )
                                     }
-                                    placeholder="e.g. 4"
+                                    placeholder={t("createListing.placeholders.doors")}
                                 />
                             </div>
 
 
                             <div className="create-listing-field">
                                 <label htmlFor="seats">
-                                Număr de locuri
+                                    {t("createListing.fields.seats")}
                                 </label>
 
                                 <input
@@ -1063,14 +1064,14 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                             event.target.value
                                         )
                                     }
-                                    placeholder="e.g. 5"
+                                    placeholder={t("createListing.placeholders.seats")}
                                 />
                             </div>
 
 
                             <div className="create-listing-field">
                                 <label htmlFor="state">
-                                Stare
+                                    {t("createListing.fields.state")}
                                 </label>
 
                                 <select
@@ -1084,13 +1085,15 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                     }
                                 >
                                     <option value="Used">
-                                    Uzat
+                                        {t("createListing.state.used")}
                                     </option>
+
                                     <option value="New">
-                                    Nou
+                                        {t("createListing.state.new")}
                                     </option>
+
                                     <option value="Damaged">
-                                    Necesită reparații
+                                        {t("createListing.state.damaged")}
                                     </option>
                                 </select>
                             </div>
@@ -1105,10 +1108,10 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                     <section className="create-listing-section">
 
                         <div className="create-listing-section-header">
-                            <h2>Informații despre vânzător</h2>
-                            <p>
-                            Informații despre vânzător și înmatricularea vehiculului.
-                            </p>
+                            <h2>{t("createListing.seller.title")}</h2>
+                                <p>
+                                    {t("createListing.seller.description")}
+                                </p>
                         </div>
 
 
@@ -1116,7 +1119,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
 
                             <div className="create-listing-field">
                                 <label htmlFor="seller_type">
-                                Tip vânzător
+                                    {t("createListing.fields.sellerType")}
                                 </label>
 
                                 <select
@@ -1130,15 +1133,15 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                     }
                                 >
                                     <option value="">
-                                    Selectează tipul vânzătorului
+                                        {t("createListing.placeholders.selectSeller")}
                                     </option>
 
                                     <option value="private">
-                                        Persoană fizică
+                                        {t("createListing.seller.private")}
                                     </option>
 
                                     <option value="dealer">
-                                        Dealer auto
+                                        {t("createListing.seller.dealer")}
                                     </option>
                                 </select>
                             </div>
@@ -1146,7 +1149,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
 
                             <div className="create-listing-field">
                                 <label htmlFor="registration_country">
-                                Țara de înmatriculare
+                                    {t("createListing.fields.registrationCountry")}
                                 </label>
 
                                 <select
@@ -1160,31 +1163,31 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                     }
                                 >
                                     <option value="">
-                                    Selectează țara
+                                        {t("createListing.placeholders.selectCountry")}
                                     </option>
 
                                     <option value="Moldova">
-                                        Moldova
+                                        {t("createListing.countries.moldova")}
                                     </option>
 
                                     <option value="Germany">
-                                        Germania
+                                        {t("createListing.countries.germany")}
                                     </option>
 
                                     <option value="Romania">
-                                        România
+                                        {t("createListing.countries.romania")}
                                     </option>
 
                                     <option value="France">
-                                        Franța
+                                        {t("createListing.countries.france")}
                                     </option>
 
                                     <option value="Italy">
-                                        Italia
+                                        {t("createListing.countries.italy")}
                                     </option>
 
                                     <option value="Other">
-                                        Alta
+                                        {t("createListing.countries.other")}
                                     </option>
                                 </select>
                             </div>
@@ -1192,7 +1195,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
 
                             <div className="create-listing-field">
                                 <label htmlFor="class">
-                                Clasa vehiculului
+                                    {t("createListing.fields.vehicleClass")}
                                 </label>
 
                                 <select
@@ -1210,7 +1213,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                     }
                                 >
                                     <option value="">
-                                    Selectează clasa
+                                        {t("createListing.placeholders.selectClass")}
                                     </option>
 
                                     {options.class.map((value) => (
@@ -1234,10 +1237,10 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                     <section className="create-listing-section create-listing-price-section">
 
                         <div className="create-listing-section-header">
-                            <h2>Preț</h2>
-                            <p>
-                            Introdu prețul solicitat pentru vehicul.
-                            </p>
+                            <h2>{t("createListing.price.title")}</h2>
+                                <p>
+                                    {t("createListing.price.description")}
+                                </p>
                         </div>
 
 
@@ -1246,7 +1249,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                             <div className="create-listing-price-input-area">
 
                                 <label htmlFor="price_eur">
-                                Prețul solicitat (€) <span>*</span>
+                                    {t("createListing.fields.askingPrice")} <span>*</span>
                                 </label>
 
                                 <div className="create-listing-price-input-wrapper">
@@ -1264,7 +1267,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                                 event.target.value
                                             )
                                         }
-                                        placeholder="Introdu prețul"
+                                        placeholder={t("createListing.placeholders.price")}
                                     />
                                 </div>
 
@@ -1274,7 +1277,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                             <div className="create-listing-estimate-card">
 
                                 <div className="create-listing-estimate-title">
-                                Preț recomandat de piață
+                                {t("createListing.price.marketRecommended")}
                                 </div>
 
 
@@ -1282,7 +1285,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                     <div className="create-listing-estimate-loading">
                                         <div className="create-listing-small-spinner" />
                                         <span>
-                                        Se calculează recomandarea...
+                                        {t("createListing.price.calculating")}
                                         </span>
                                     </div>
                                 ) : estimate ? (
@@ -1294,7 +1297,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
 
                                         <div className="create-listing-normal-range">
                                             <span>
-                                            Interval normal de preț
+                                            {t("createListing.price.normalRange")}
                                             </span>
 
                                             <strong>
@@ -1320,9 +1323,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                                 ) : (
 
                                     <div className="create-listing-estimate-placeholder">
-                                        Completează informațiile obligatorii
-                                        despre vehicul pentru a vedea prețul
-                                        recomandat de piață.
+                                        {t("createListing.price.completeRequired")}
                                     </div>
 
                                 )}
@@ -1344,7 +1345,7 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                             onClick={() => navigate("/listings")}
                             disabled={submitLoading}
                         >
-                            Cancel
+                            {t("createListing.cancel")}
                         </button>
 
 
@@ -1354,15 +1355,15 @@ Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a 
                             disabled={submitLoading}
                         >
                             {submitLoading ? (
-                                <>
-                                    <span className="create-listing-button-spinner" />
-                                    Se creează...
-                                </>
-                            ) : (
-                                <>
-                                    Creează un anunț
-                                </>
-                            )}
+                                    <>
+                                        <span className="create-listing-button-spinner" />
+                                        {t("createListing.creating")}
+                                    </>
+                                ) : (
+                                    <>
+                                        {t("createListing.createButton")}
+                                    </>
+                                )}
                         </button>
 
                     </div>

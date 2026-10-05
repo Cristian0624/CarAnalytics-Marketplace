@@ -1,9 +1,16 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import "./HomeButton.css";
 
 function HomeButton() {
+  const { t } = useTranslation();
+
   return (
-    <Link to="/" className="home-button" aria-label="Acasă">
+    <Link
+      to="/"
+      className="home-button"
+      aria-label={t("common.home")}
+    >
       <svg
         width="18"
         height="18"
@@ -21,7 +28,8 @@ function HomeButton() {
         <circle cx="16.5" cy="17" r="1.8" />
         <path d="M9.3 17h5.4" />
       </svg>
-      Acasă
+
+      {t("common.home")}
     </Link>
   );
 }

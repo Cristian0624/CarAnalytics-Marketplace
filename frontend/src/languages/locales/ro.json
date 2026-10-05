@@ -1,0 +1,1159 @@
+{
+    
+    "common": {
+      "home": "Acasă",
+      "listings": "Anunțuri",
+      "recommendations": "Recomandări",
+      "profile": "Profil",
+      "login": "Autentificare",
+      "register": "Înregistrare",
+      "logout": "Deconectare",
+      "save": "Salvează",
+      "cancel": "Anulează",
+      "delete": "Șterge",
+      "edit": "Editează",
+      "search": "Caută",
+      "loading": "Se încarcă...",
+      "back": "Înapoi",
+      "next": "Următorul",
+      "previous": "Anterior",
+      "viewListings": "Vezi anunțurile"
+    },
+  
+    "language": {
+      "ro": "Română",
+      "en": "English",
+      "ru": "Русский"
+    },
+  
+    "header": {
+      "home": "Acasă",
+      "listings": "Piață",
+      "riskAnalysis": "Analiza Risc",
+      "profile": "Profilul meu",
+      "login": "Autentificare",
+      "register": "Înregistrare"
+    },
+  
+    "estimator": {
+      "title": "Estimează prețul mașinii",
+      "brand": "Marcă",
+      "model": "Model",
+      "generation": "Generație",
+      "year": "An",
+      "mileage": "Kilometraj",
+      "fuel": "Combustibil",
+      "engine": "Motor",
+      "gearbox": "Cutie de viteze",
+      "drivetrain": "Tracțiune",
+      "body": "Caroserie",
+      "estimate": "Estimează prețul"
+    },
+  
+    "risk": {
+      "title": "Vezi oferta dincolo de preț.",
+      "description": "Compară prețul, kilometrajul și configurația cu datele pieței. Află ce merită verificat înainte să cumperi.",
+      "aboutCar": "Despre mașină",
+      "formDescription": "Datele din anunț sunt suficiente pentru a începe.",
+      "required": "Obligatoriu",
+      "offerData": "Datele ofertei",
+  
+      "brand": "Marcă",
+      "model": "Model",
+      "generation": "Generație",
+      "price": "Preț cerut (€)",
+      "year": "An fabricație",
+      "mileage": "Kilometraj (km)",
+      "engine": "Motor (litri)",
+      "fuel": "Combustibil",
+      "gearbox": "Cutie de viteze",
+      "drivetrain": "Tracțiune",
+      "bodyType": "Caroserie",
+  
+      "unspecified": "Nespecificat",
+  
+      "placeholders": {
+        "price": "Ex. 12000",
+        "year": "Ex. 2016",
+        "mileage": "Ex. 150000",
+        "engine": "Ex. 2.0"
+      },
+  
+      "formNote": "Completează cât mai multe detalii pentru o analiză mai relevantă. Pentru o mașină electrică, motorul poate fi 0 sau necompletat.",
+  
+      "analyzing": "Se analizează oferta…",
+      "analyze": "Analizează oferta",
+      "reset": "Resetează",
+      "saveAnalysis": "Salvează analiza",
+  
+      "loading": "Comparăm oferta cu anunțurile din baza de date.",
+  
+      "whatYouLearn": "Ce vei afla",
+  
+      "preview": {
+        "priceContext": {
+          "title": "Prețul în context",
+          "description": "Prețurile observate în baza de date și poziția ofertei în grupul selectat."
+        },
+        "detailsToCheck": {
+          "title": "Detalii de verificat",
+          "description": "Kilometrajul și configurațiile neobișnuite pentru mașini similare."
+        },
+        "confidence": {
+          "title": "Câtă încredere să ai",
+          "description": "Câte exemple susțin analiza și când datele sunt insuficiente."
+        }
+      },
+  
+      "disclaimer": "Scorurile identifică oferte neobișnuite, nu probabilitatea unei fraude. Analiza nu înlocuiește verificarea istoricului și inspecția mașinii.",
+  
+      "errors": {
+        "selectBrandModel": "Alege marca și modelul din listele disponibile.",
+        "selectGeneration": "Alege generația din listă sau las-o necompletată."
+      },
+  
+      "options": {
+        "fuel_type": {
+          "Benzină": "Benzină",
+          "Diesel": "Diesel",
+          "Electricitate": "Electricitate",
+          "Hybrid": "Hibrid",
+          "Gaz": "Gaz",
+          "Gaz / Benzină (propan)": "Gaz / Benzină (propan)",
+          "Gaz / Benzină (metan)": "Gaz / Benzină (metan)",
+          "Plug-in Hybrid (benzină)": "Plug-in Hybrid (benzină)",
+          "Plug-in Hybrid (diesel)": "Plug-in Hybrid (diesel)",
+          "Mild Hybrid (benzină)": "Mild Hybrid (benzină)",
+          "Mild Hybrid (diesel)": "Mild Hybrid (diesel)"
+        },
+        "gearbox": {
+          "Mecanică": "Mecanică",
+          "Automată": "Automată",
+          "Automat-Tiptronic": "Automat-Tiptronic",
+          "Robotizată": "Robotizată",
+          "Variator": "Variator"
+        },
+        "drivetrain": {
+          "Din față": "Din față",
+          "Din spate": "Din spate",
+          "4x4": "4x4",
+          "4x2": "4x2"
+        },
+        "body_type": {
+          "Sedan": "Sedan",
+          "Hatchback": "Hatchback",
+          "Universal": "Universal",
+          "Combi": "Combi",
+          "SUV": "SUV",
+          "Crossover": "Crossover",
+          "Coupe": "Coupe",
+          "Cabriolet": "Cabriolet",
+          "Roadster": "Roadster",
+          "Pickup": "Pickup",
+          "Minivan": "Minivan",
+          "Microvan": "Microvan",
+          "Furgon": "Furgon",
+          "Camionetă": "Camionetă",
+          "Microautobus": "Microautobus",
+          "Platformă deschisă": "Platformă deschisă"
+        }
+      }
+    },
+
+"createListing": {
+  "loading": "Se încarcă...",
+
+  "backToListings": "Înapoi la anunțuri",
+  "title": "Creează un anunț",
+  "description": "Introdu detaliile vehiculului și vezi prețul estimat de piață înainte de a salva anunțul.",
+
+  "success": "Anunțul a fost creat cu succes.",
+
+  "vehicle": {
+    "title": "Vehicul",
+    "description": "Selectează marca, modelul și generația vehiculului."
+  },
+
+  "technical": {
+    "title": "Informații tehnice",
+    "description": "Adaugă principalele caracteristici tehnice ale vehiculului."
+  },
+
+  "seller": {
+    "title": "Informații despre vânzător",
+    "description": "Informații despre vânzător și înmatricularea vehiculului.",
+    "private": "Persoană fizică",
+    "dealer": "Dealer auto"
+  },
+
+  "price": {
+    "title": "Preț",
+    "description": "Introdu prețul solicitat pentru vehicul.",
+    "marketRecommended": "Preț recomandat de piață",
+    "calculating": "Se calculează recomandarea...",
+    "normalRange": "Interval normal de preț",
+    "completeRequired": "Completează informațiile obligatorii despre vehicul pentru a vedea prețul recomandat de piață."
+  },
+
+  "fields": {
+    "brand": "Marcă",
+    "model": "Model",
+    "generation": "Generație",
+    "year": "An",
+    "mileage": "Kilometraj (km)",
+    "fuelType": "Tip combustibil",
+    "engine": "Motor",
+    "gearbox": "Cutie de viteze",
+    "drivetrain": "Tracțiune",
+    "bodyType": "Caroserie",
+    "horsepower": "Cai putere",
+    "doors": "Număr de uși",
+    "seats": "Număr de locuri",
+    "state": "Stare",
+    "sellerType": "Tip vânzător",
+    "registrationCountry": "Țara de înmatriculare",
+    "vehicleClass": "Clasa vehiculului",
+    "askingPrice": "Prețul solicitat (€)"
+  },
+
+  "placeholders": {
+    "brand": "ex. BMW",
+    "model": "ex. Seria 3",
+    "generation": "ex. G20",
+    "year": "ex. 2020",
+    "mileage": "ex. 85000",
+    "horsepower": "ex. 150",
+    "doors": "ex. 4",
+    "seats": "ex. 5",
+    "selectFuel": "Selectează tipul de combustibil",
+    "selectEngine": "Selectează motorul",
+    "selectGearbox": "Selectează cutia de viteze",
+    "selectDrivetrain": "Selectează tracțiunea",
+    "selectBodyType": "Selectează caroseria",
+    "selectSeller": "Selectează tipul vânzătorului",
+    "selectCountry": "Selectează țara",
+    "selectClass": "Selectează clasa",
+    "price": "Introdu prețul"
+  },
+
+  "state": {
+    "used": "Uzat",
+    "new": "Nou",
+    "damaged": "Necesită reparații"
+  },
+
+  "countries": {
+    "moldova": "Moldova",
+    "germany": "Germania",
+    "romania": "România",
+    "france": "Franța",
+    "italy": "Italia",
+    "other": "Alta"
+  },
+
+  "validation": {
+    "brand": "Marca este obligatorie.",
+    "model": "Modelul este obligatoriu.",
+    "generation": "Generația este obligatorie.",
+    "year": "Anul este obligatoriu.",
+    "mileage": "Kilometrajul este obligatoriu.",
+    "fuel": "Tipul de combustibil este obligatoriu.",
+    "gearbox": "Cutia de viteze este obligatorie.",
+    "bodyType": "Caroseria este obligatorie.",
+    "drivetrain": "Tracțiunea este obligatorie.",
+    "price": "Prețul solicitat este obligatoriu.",
+    "yearNumber": "Anul trebuie să fie un număr valid.",
+    "mileageNumber": "Kilometrajul trebuie să fie un număr valid.",
+    "priceNumber": "Prețul trebuie să fie un număr valid."
+  },
+
+  "errors": {
+    "loadOptions": "Nu s-au putut încărca opțiunile pentru vehicul.",
+    "priceEstimate": "Nu s-a putut calcula prețul recomandat.",
+    "createListing": "Anunțul nu a putut fi creat."
+  },
+
+  "cancel": "Anulează",
+  "creating": "Se creează...",
+  "createButton": "Creează un anunț"
+},
+
+"home": {
+  "hero": {
+    "welcome": "Bine ai revenit, {{name}}",
+    "loggedInTitle": "Piața te așteaptă. Continuă vânătoarea.",
+    "loggedInSubtitle": "Anunțurile tale favorite sunt salvate, iar algoritmul nostru a evaluat deja ofertele noi apărute în piață.",
+    "guestTitle": "Află Valoarea Reală a Oricărei Mașini Instant.",
+    "guestSubtitle": "Nu mai plăti prea mult pentru mașini second-hand. Algoritmul nostru analizează mii de date din piață pentru a evalua precis fiecare anunț.",
+    "browseMarket": "Răsfoiește piața",
+    "myListings": "Anunțurile mele",
+    "registerFree": "Înscrie-te gratuit",
+    "estimateRisk": "Estimează riscul unei oferte"
+  },
+
+  "estimator": {
+    "badge": "ANALIZĂ DE PIAȚĂ",
+    "title": "Cât valorează mașina ta?",
+    "description": "Introdu caracteristicile vehiculului și află instant prețul estimat pe baza anunțurilor comparabile din piață.",
+
+    "fields": {
+      "brand": "Marcă",
+      "model": "Model",
+      "generation": "Generație",
+      "year": "An",
+      "mileage": "Kilometraj (km)",
+      "fuel": "Combustibil",
+      "engine": "Motor",
+      "gearbox": "Cutie de viteze",
+      "drivetrain": "Tracțiune",
+      "body": "Caroserie"
+    },
+
+    "placeholders": {
+      "brand": "ex. BMW",
+      "model": "ex. Seria 3",
+      "generation": "ex. G20",
+      "year": "ex. 2020",
+      "mileage": "ex. 85000"
+    },
+
+    "select": "Selectează",
+
+    "actions": {
+      "estimate": "Estimează prețul",
+      "calculating": "Se calculează..."
+    },
+
+    "errors": {
+      "options": "Nu au putut fi încărcate opțiunile pentru estimator.",
+      "required": "Completează toate câmpurile obligatorii pentru a calcula prețul.",
+      "estimate": "Nu am putut calcula prețul estimat."
+    },
+
+    "result": {
+      "marketPrice": "PREȚ ESTIMAT PE PIAȚĂ",
+      "quickSale": "Vânzare rapidă",
+      "normalPrice": "Preț normal",
+      "higherAsking": "Preț cerut mai ridicat",
+      "noDataTitle": "Nu există suficiente date de piață.",
+      "noDataDescription": "Nu au fost găsite suficiente anunțuri comparabile pentru această configurație."
+    }
+  },
+
+  "features": {
+    "title": "Inteligență de Piață Inegalabilă",
+
+    "algorithmicScore": {
+      "title": "Scor Algoritmic al Ofertei",
+      "description": "Fiecare mașină este evaluată matematic până la un maxim de 80 de puncte, pe baza deprecierii exacte, a medianelor reale ale pieței și a anomaliilor ascunse."
+    },
+
+    "fraudDetection": {
+      "title": "Detectarea Fraudelor și Țepelor",
+      "description": "Algoritmul nostru depistează instant vehiculele ascunse „Fost Taxi”, kilometrajele modificate și actele lipsă."
+    },
+
+    "dynamicPriceTargets": {
+      "title": "Ținte Dinamice de Preț",
+      "description": "Spune-ne ce scor dorești (Corect, Bun, Excelent), și noi vom calcula prețul exact pe care ar trebui să-l negociezi."
+    },
+
+    "priceRecommendations": {
+      "title": "Recomandări de Preț pentru Anunțuri",
+      "description": "Vânzătorii pot folosi algoritmul nostru pentru a obține recomandarea perfectă de preț la adăugarea unui nou anunț."
+    }
+  },
+
+  "whyUs": {
+    "title": "De ce să alegi CarAnalytics?",
+
+    "dataDriven": {
+      "title": "Bazat pe Date",
+      "alt": "Bazat pe Date icon",
+      "description": "Nu ne bazăm pe opinii subiective. Matematica pură și medianele pieței dictează scorul."
+    },
+
+    "impartial": {
+      "title": "Imparțial",
+      "alt": "Imparțial icon",
+      "description": "Vânzătorii nu pot manipula algoritmul. Primești adevărul brut, nefiltrat, despre ofertă."
+    },
+
+    "realTime": {
+      "title": "În Timp Real",
+      "alt": "În Timp Real icon",
+      "description": "Pe măsură ce piața se schimbă, se schimbă și bazele noastre."
+    },
+
+    "saveMoney": {
+      "title": "Economisește Bani",
+      "alt": "Economisește Bani icon",
+      "description": "Nu mai plăti niciodată în plus pentru o mașină cu rulaj mare."
+    }
+  },
+
+  "reviews": {
+    "title": "Recenzii ale Comunității",
+    "description": "Construim o nouă comunitate de cumpărători inteligenți de mașini. Fii primul care lasă o recenzie platformei noastre!",
+    "write": "Scrie o recenzie",
+    "comingSoon": "Formularul pentru recenzii va fi disponibil în curând!"
+  },
+
+  "faq": {
+    "title": "Întrebări Frecvente",
+
+    "algorithmicScore": {
+      "question": "Cum funcționează Scorul Algoritmic?",
+      "answer": "Grupăm mașinile după Marcă, Model, Generație, An și Capacitate Motor pentru a calcula prețurile mediane adevărate și kilometrajele de bază."
+    },
+
+    "scams": {
+      "question": "Cum depistați țepele?",
+      "answer": "Algoritmul nostru penalizează anunțurile cu proporții imposibile între rulaj și vârstă, cuvinte-cheie ascunse sau prețuri statistic prea bune ca să fie adevărate."
+    },
+
+    "free": {
+      "question": "Este gratuit?",
+      "answer": "Da, navigarea pe piață și vizualizarea scorurilor algoritmului sunt complet gratuite pentru toți cumpărătorii."
+    }
+  },
+
+  "cta": {
+    "title": "Ești pregătit să găsești mașina perfectă?",
+    "description": "Alătură-te miilor de cumpărători inteligenți care folosesc datele pentru a bate piața.",
+    "button": "Începe să cauți acum"
+  },
+
+  "footer": {
+    "about": "Despre Noi",
+    "features": "Funcționalități",
+    "pricing": "Prețuri",
+    "terms": "Termeni și Condiții",
+    "privacy": "Politica de Confidențialitate"
+  }
+},
+
+"listings": {
+  "sort": {
+    "label": "Afișare:",
+    "random": "Aleatoriu",
+    "scoreHighLow": "Scor: mare → mic",
+    "scoreLowHigh": "Scor: mic → mare",
+    "priceLowHigh": "Preț: mic → mare",
+    "priceHighLow": "Preț: mare → mic",
+    "yearNewOld": "An: nou → vechi",
+    "yearOldNew": "An: vechi → nou",
+    "mileageLowHigh": "Kilometraj: mic → mare",
+    "mileageHighLow": "Kilometraj: mare → mic"
+  },
+  "saveFilters": "Salvează filtrele",
+  "mySearch": "Căutarea mea",
+  "loading": "Se încarcă mașinile...",
+  "errorRetry": "Încearcă din nou",
+  "empty": {
+    "title": "Nu au fost găsite mașini",
+    "description": "Încearcă alte filtre."
+  },
+  "pagination": {
+    "ariaLabel": "Paginare anunțuri",
+    "previous": "Precedenta",
+    "next": "Următoarea",
+    "page": "Pagina {{current}} din {{total}}"
+  },
+  "errors": {
+    "load": "Nu am putut încărca anunțurile."
+  }
+},
+
+"login": {
+  "title": "Autentificare",
+  "email": "Adresă de email",
+  "password": "Parolă",
+  "submit": "Autentificare",
+  "error": "Autentificarea a eșuat.",
+  "noAccount": "Nu ai cont?",
+  "createAccount": "Creează un cont"
+},
+
+"myListings": {
+  "account": "CONTUL MEU",
+  "title": "Anunțurile Mele",
+  "description": "Gestionează anunțurile create și publicate de tine în baza de date.",
+  "loginRequired": "Autentifică-te pentru a-ți gestiona anunțurile create.",
+  "allInOnePlace": "Anunțurile tale, într-un singur loc",
+  "loginToAccess": "Autentifică-te pentru a le accesa.",
+  "login": "Autentificare",
+  "tabs": {
+    "savedItems": "Elemente salvate",
+    "favourites": "Anunțuri Favorite",
+    "risks": "Analize Risc Salvate",
+    "searches": "Filtre Salvate",
+    "profile": "Profilul Meu",
+    "myListings": "Anunțurile Mele"
+  },
+  "count": {
+    "one": "1 anunț publicat",
+    "many": "{{count}} anunțuri publicate"
+  },
+  "addNew": "+ Adaugă un Anunț Nou",
+  "loading": "Se încarcă anunțurile tale...",
+  "empty": {
+    "title": "Nu ai niciun anunț publicat încă",
+    "description": "Creează primul tău anunț auto pentru a primi estimări de preț de piață și pentru a-l salva în contul tău.",
+    "create": "+ Creează un anunț"
+  },
+  "status": "Activ",
+  "specs": {
+    "year": "An",
+    "mileage": "Rulaj",
+    "fuel": "Combustibil",
+    "gearbox": "Cutie",
+    "engine": "Motor",
+    "power": "Putere",
+    "body": "Caroserie",
+    "drivetrain": "Tracțiune"
+  },
+  "chips": {
+    "condition": "Stare: {{value}}",
+    "doors": "{{count}} uși",
+    "seats": "{{count}} locuri",
+    "seller": "Vânzător: {{value}}",
+    "registration": "Înmatriculare: {{value}}",
+    "class": "Clasă: {{value}}",
+    "score": "Scor: {{value}} / 100"
+  },
+  "actions": {
+    "edit": "Editează",
+    "riskAnalysis": "Analiză Risc",
+    "delete": "Șterge",
+    "confirmDelete": "Sigur dorești să ștergi acest anunț?",
+    "deleteYes": "Da, șterge",
+    "cancel": "Anulează",
+    "deleting": "Se șterge…",
+    "saving": "Se salvează…",
+    "saveChanges": "Salvează modificările"
+  },
+  "edit": {
+    "title": "Editează anunțul: {{brand}} {{model}}",
+    "description": "Actualizează detaliile vehiculului tău.",
+    "price": "Preț (€)",
+    "mileage": "Kilometraj (km)",
+    "year": "An fabricație",
+    "power": "Putere (CP)",
+    "fuel": "Combustibil",
+    "gearbox": "Cutie de viteze",
+    "body": "Caroserie",
+    "condition": "Stare",
+    "used": "Second-Hand (Used)",
+    "new": "Nou"
+  },
+  "errors": {
+    "load": "Nu s-au putut încărca anunțurile tale.",
+    "delete": "Nu s-a putut șterge anunțul.",
+    "save": "Nu s-au putut salva modificările."
+  }
+},
+
+"profile": {
+  "account": "CONTUL MEU",
+  "title": "Profilul Meu",
+  "description": "Informațiile contului tău și opțiunile de securitate.",
+  "loginRequired": "Autentifică-te pentru a-ți accesa profilul.",
+  "login": "Autentificare",
+  "tabs": {
+    "savedItems": "Elemente salvate",
+    "favourites": "Anunțuri Favorite",
+    "risks": "Analize Risc Salvate",
+    "searches": "Filtre Salvate",
+    "profile": "Profilul Meu",
+    "myListings": "Anunțurile Mele"
+  },
+  "accountInfo": "INFORMAȚII CONT",
+  "fields": {
+    "name": "Nume",
+    "email": "Email",
+    "phone": "Telefon",
+    "userType": "Tip utilizator"
+  },
+  "sellerTypes": {
+    "private": "Persoană fizică",
+    "dealer": "Dealer",
+    "privateDescription": "Vând ca persoană fizică",
+    "dealerDescription": "Reprezint un dealer auto"
+  },
+  "actions": {
+    "edit": "Editează profilul",
+    "changePassword": "Schimbă parola",
+    "logout": "Deconectare",
+    "save": "Salvează modificările",
+    "saving": "Se salvează...",
+    "cancel": "Anulează",
+    "change": "Schimbă parola",
+    "changing": "Se schimbă..."
+  },
+  "edit": {
+    "title": "Editează profilul"
+  },
+  "password": {
+    "title": "Schimbă parola",
+    "current": "Parola actuală",
+    "new": "Parola nouă"
+  },
+  "messages": {
+    "profileUpdated": "Profilul a fost actualizat.",
+    "profileSaveError": "Nu s-au putut salva modificările.",
+    "passwordChangeError": "Parola nu a putut fi schimbată."
+  }
+},
+
+"recommendations": {
+  "loading": "Se încarcă mașinile...",
+  "errorTitle": "Ceva nu a mers bine",
+  "error": "Nu am putut încărca mașinile.",
+  "retry": "Încearcă din nou",
+  "back": "Înapoi la marketplace",
+  "title": "Mașini recomandate",
+  "subtitle": "Selectează o mașină pentru a descoperi anunțuri similare.",
+  "info": {
+    "title": "Cum funcționează recomandările?",
+    "description": "Alegem mașini similare în funcție de preț, kilometraj și clasa vehiculului."
+  },
+  "empty": {
+    "title": "Nu au fost găsite mașini",
+    "description": "Momentan nu există anunțuri disponibile."
+  },
+  "results": {
+    "label": "RECOMANDĂRI",
+    "title": "Mașini similare",
+    "description": "Anunțuri selectate pe baza caracteristicilor acestei mașini.",
+    "searching": "Se caută...",
+    "loading": "Se caută mașini similare...",
+    "empty": "Nu au fost găsite mașini similare."
+  },
+  "controls": {
+    "showFewer": "Afișează mai puține",
+    "showMore": "Afișează mai multe",
+    "count": "Se afișează {{visible}} din {{total}}"
+  },
+  "cars": {
+    "loading": "Se încarcă...",
+    "showMore": "Afișează mai multe mașini",
+    "showFewer": "Afișează mai puține mașini",
+    "count": "Se afișează {{count}} mașini"
+  }
+},
+
+"register": {
+  "title": "Înregistrare",
+  "name": "Nume",
+  "email": "Email",
+  "password": "Parolă",
+  "submit": "Înregistrare",
+  "hasAccount": "Ai deja un cont?",
+  "login": "Autentifică-te",
+  "error": "Înregistrarea a eșuat."
+},
+
+"savedItems": {
+  "account": "CONTUL MEU",
+  "titles": {
+    "favourites": "Anunțuri Favorite",
+    "risks": "Analize Risc Salvate",
+    "searches": "Filtre Salvate",
+    "profile": "Profilul Meu",
+    "myListings": "Anunțurile Mele"
+  },
+  "descriptions": {
+    "favourites": "Ofertele pe care vrei să le păstrezi la îndemână.",
+    "risks": "Revino la analizele tale și la rezultatele din momentul salvării.",
+    "searches": "Criteriile tale de căutare, gata de folosit pe piața actuală.",
+    "profile": "Informațiile contului tău și opțiunile de securitate.",
+    "myListings": "Gestionează anunțurile create și publicate de tine."
+  },
+  "tabs": {
+    "ariaLabel": "Elemente salvate"
+  },
+  "loading": "Se încarcă...",
+  "loginRequired": {
+    "title": "Salvările tale, într-un singur loc",
+    "description": "Autentifică-te pentru a le accesa.",
+    "login": "Autentificare"
+  },
+  "summary": {
+    "unspecifiedPrice": "Preț nespecificat",
+    "insufficientScoreData": "Date insuficiente pentru scor",
+    "anomalyScore": "Scor anomalie: {{score}} / 100",
+    "logoAlt": "Logo"
+  },
+  "badges": {
+    "favourite": "★ FAVORIT",
+    "risk": "ANALIZĂ",
+    "search": "CĂUTARE"
+  },
+  "actions": {
+    "open": "Deschide",
+    "viewListings": "Vezi anunțurile",
+    "viewCurrentListings": "Vezi anunțurile actuale",
+    "edit": "Editează",
+    "rename": "Redenumește",
+    "delete": "Șterge",
+    "retry": "Încearcă din nou",
+    "cancel": "Anulează",
+    "deleteConfirm": "Da, șterge",
+    "deleting": "Se șterge…",
+    "reanalyze": "Reanalizează",
+    "reanalyzing": "Se reanalizează…",
+    "save": "Salvează modificările",
+    "saving": "Se salvează…"
+  },
+  "deleteConfirm": "Ștergi acest element din cont?",
+  "pagination": {
+    "ariaLabel": "Paginare salvări",
+    "previous": "Precedenta",
+    "next": "Următoarea"
+  },
+  "empty": {
+    "title": "Încă nu ai nimic salvat aici",
+    "risks": {
+      "description": "Analizează o ofertă și salvează rezultatul.",
+      "action": "Analizează o ofertă"
+    },
+    "searches": {
+      "description": "Aplică filtrele în piață, apoi salvează căutarea."
+    },
+    "favourites": {
+      "description": "Deschide un anunț din piață și apasă pe stea."
+    },
+    "browseMarket": "Răsfoiește piața"
+  },
+  "detail": {
+    "back": "← Toate salvările",
+    "savedAt": "Salvat la {{date}}",
+    "savedCriteria": "Criterii salvate",
+    "searchDescription": "Anunțurile se actualizează la deschiderea căutării.",
+    "riskNotice": "Acesta este rezultatul salvat. Reanalizarea creează o analiză nouă și o păstrează pe cea originală.",
+    "favouriteAvailable": "Anunțul este prezent în baza de date. Mai jos vezi datele actuale.",
+    "favouriteUnavailable": "Anunțul nu mai este în baza de date. Mai jos vezi datele păstrate la salvare.",
+    "notes": "Notițe: {{notes}}"
+  },
+  "editor": {
+    "favouriteTitle": "Notițele anunțului",
+    "riskTitle": "Redenumește analiza",
+    "searchTitle": "Editează filtrele salvate",
+    "notes": "Notițe",
+    "name": "Nume",
+    "nameRequired": "Introdu un nume."
+  },
+  "filters": {
+    "saveChanges": "Salvează modificările"
+  }
+},
+
+"errorBoundary": {
+  "title": "Ceva nu a mers bine."
+},
+
+"anomalyRiskResults": {
+  "unavailable": "Indisponibil",
+  "levels": {
+    "low": "Scăzut",
+    "medium": "Moderat",
+    "high": "Ridicat"
+  },
+  "confidenceLevels": {
+    "low": "Scăzută",
+    "medium": "Medie",
+    "high": "Ridicată"
+  },
+  "supportLabels": {
+    "normal": "Suport normal",
+    "limited": "Suport limitat",
+    "rare": "Grup rar",
+    "very_rare": "Foarte puține date"
+  },
+  "priceLabels": {
+    "normal": "În intervalul observat",
+    "unusually_cheap": "Sub intervalul observat",
+    "unusually_expensive": "Peste intervalul observat",
+    "unknown": "Date insuficiente"
+  },
+  "mileageLabels": {
+    "normal": "În intervalul observat",
+    "unusually_low": "Neobișnuit de mic",
+    "unusually_high": "Neobișnuit de mare",
+    "unknown": "Date insuficiente"
+  },
+  "comparisonLabels": {
+    "exact_year": "același an",
+    "nearby_years": "ani apropiați",
+    "model_generation": "același model și generație, ani diferiți",
+    "model": "același model, generații și ani diferiți",
+    "unsupported": "fără grup de comparație"
+  },
+  "severityLabels": {
+    "normal": "Obișnuit",
+    "uncommon": "Rar întâlnit",
+    "very_rare": "Foarte rar",
+    "unsupported": "Date insuficiente",
+    "unobserved": "Neobservat",
+    "outside_observed_range": "În afara intervalului"
+  },
+  "componentScore": {
+    "score": "Scor anomalie",
+    "weight": "Pondere în scor",
+    "unavailable": "Indisponibil"
+  },
+  "historical": {
+    "title": "Analiză istorică",
+    "description": "Acest rezultat a fost calculat cu o strategie anterioară. Valorile sunt păstrate așa cum au fost salvate; explicațiile regulilor actuale nu i se aplică. Folosește Reanalizează pentru o evaluare actuală.",
+    "overallScore": "Scor general salvat",
+    "priceScore": "Scor preț salvat",
+    "mileageScore": "Scor kilometraj salvat",
+    "specificationScore": "Scor configurație salvat",
+    "savedRange": "Interval salvat P10–P90",
+    "policy": "Reguli la salvare"
+  },
+  "header": {
+    "askingPrice": "Preț cerut"
+  },
+  "generationNote": "Generația nu a fost completată. Analiza folosește toate anunțurile pentru acest model; adaugă generația pentru o comparație mai precisă.",
+  "overview": {
+    "overallScore": "Scor general de anomalie",
+    "overallEvaluation": "Evaluare generală",
+    "anomalyLevel": "Nivel de anomalie",
+    "higherScore": "Un scor mai mare indică o ofertă mai neobișnuită.",
+    "insufficientData": "Date insuficiente",
+    "insufficientScore": "Nu putem produce un scor general fiabil pentru grupul selectat.",
+    "analysisConfidence": "Încredere în analiză",
+    "confidenceDescription": "Depinde de datele din grupul selectat, variația prețurilor și câmpurile disponibile.",
+    "examples": "exemple",
+    "sameModelGeneration": "Același model și aceeași generație",
+    "allGenerations": "Același model, toate generațiile",
+    "databaseAtAnalysis": "în baza de date la momentul analizei.",
+    "rarityAdjustment": "Ajustare pentru raritate: +{{points}} puncte.",
+    "overallScoreUnavailable": "Scor general indisponibil."
+  },
+  "caution": {
+    "fewExamplesTitle": "Prea puține exemple pentru o concluzie.",
+    "cautionTitle": "Interpretează rezultatul cu prudență.",
+    "fewExamplesDescription": "Grupul selectat are prea puține anunțuri pentru un scor general.",
+    "cautionDescription": "Datele disponibile limitează încrederea în analiză. Folosește rezultatul ca punct de pornire pentru verificări."
+  },
+  "price": {
+    "label": "Preț",
+    "description": "{{count}} anunțuri cu aceeași marcă și același model{{generation}}, {{allGenerations}}.",
+    "generation": " și aceeași generație",
+    "allGenerations": "din toate generațiile",
+    "limitedSupport": " Suport de preț limitat (10–19 anunțuri).",
+    "chartAriaLabel": "Prețul ofertei și intervalul observat",
+    "asking": "Preț cerut",
+    "median": "Mediană (P50)",
+    "percentile10": "Percentila 10 (P10)",
+    "percentile90": "Percentila 90 (P90)",
+    "deviation": "Prețul cerut este {{percent}}% {{direction}} mediana observată. Intervalul P10–P90 cuprinde zona centrală a prețurilor cerute în baza de date, nu garantează prețul de vânzare.",
+    "below": "sub",
+    "above": "peste",
+    "equal": "față de",
+    "insufficient": "Sunt necesare cel puțin 10 anunțuri din {{group}} pentru evaluarea prețului.",
+    "sameGeneration": "aceeași generație",
+    "sameModel": "același model"
+  },
+  "mileage": {
+    "label": "Kilometraj",
+    "unspecified": "Nespecificat",
+    "inListing": "În anunț",
+    "observedMedian": "Mediană observată",
+    "examplesAvailable": "Exemple disponibile",
+    "unavailable": "Indisponibilă",
+    "notEvaluated": "Neevaluat",
+    "comparison": "Comparație",
+    "warning": "Un kilometraj neobișnuit nu dovedește modificarea odometrului."
+  },
+  "specification": {
+    "label": "Configurație",
+    "title": "Specificațiile ofertei",
+    "fieldEvaluated": "câmp evaluat",
+    "fieldsEvaluated": "câmpuri evaluate",
+    "unspecified": "Nespecificat",
+    "insufficientData": "Date insuficiente",
+    "toCheck": "De verificat"
+  },
+  "explanation": {
+    "title": "Explicații și detalii suplimentare",
+    "centralRange": "Interval central P25–P75"
+  }
+},
+
+"fields": {
+  "brand": "Marcă",
+  "model": "Model",
+  "generation": "Generație",
+  "price": "Preț cerut",
+  "year": "An",
+  "mileage": "Kilometraj",
+  "engine": "Motor",
+  "fuel": "Combustibil",
+  "gearbox": "Cutie de viteze",
+  "drivetrain": "Tracțiune",
+  "body": "Caroserie"
+},
+"extremeSignals": {
+  "priceLow": "Alertă: preț mult sub mediana grupului.",
+  "priceHigh": "Alertă: preț mult peste mediana grupului.",
+  "mileageLow": "Alertă: kilometraj mult sub mediana grupului.",
+  "mileageHigh": "Alertă: kilometraj mult peste mediana grupului."
+},
+"explanations": {
+  "sameModelGeneration": "aceeași marcă, model și generație",
+  "allGenerations": "aceeași marcă și același model, din toate generațiile",
+  "analyzedGroup": "Grupul analizat: {{count}} anunțuri cu {{group}}.",
+  "extremeOverride": "Scorul general este dat direct de cea mai puternică anomalie extremă de preț sau kilometraj, fără media ponderată sau ajustarea pentru raritate. Semnalul necesită minimum 25 de valori comparabile, un scor de minimum 80 și o abatere de peste 45% față de mediană.",
+  "medianOverride": "Abaterea de {{trigger}} de peste 45% față de mediană, susținută de minimum 25 de valori comparabile, impune un scor general de cel puțin 80/100, fără media ponderată sau ajustarea pentru raritate. Scorul componentei nu trebuie să atingă 80 pentru activarea acestei reguli.",
+  "gradualOverride": "Abaterea de {{trigger}} de peste 45% față de mediană, susținută de minimum 25 de valori comparabile, determină direct scorul general, fără media ponderată sau ajustarea pentru raritate. Scorul crește gradual de la 80 la pragul de 45% până la 100 pentru o abatere de 100% sau mai mare. Dacă ambele semnale se califică, se folosește scorul mai mare. Scorurile componentelor rămân calculate separat din percentile.",
+  "price": "preț",
+  "mileage": "kilometraj",
+  "priceRange": "Intervalul observat P10–P90 are o lățime de {{width}} € ({{percentage}}% din mediană), pe baza a {{count}} anunțuri cu {{group}}. Anul, kilometrajul și configurația nu filtrează acest grup.",
+  "priceNotEvaluated": "Prețul nu a fost evaluat: {{count}} anunțuri comparabile, față de minimum 10 necesare. Comparația este limitată la {{group}}.",
+  "noOtherGenerations": "aceeași generație; nu se folosesc alte generații sau modele",
+  "veryRare": "Există prea puține anunțuri în grupul selectat pentru un scor general.",
+  "limitedSupport": "Exemplele disponibile sunt limitate. Interpretează scorul în contextul încrederii afișate.",
+  "priceCheap": "Prețul cerut este sub percentila 10 a prețurilor observate (P10).",
+  "priceExpensive": "Prețul cerut depășește percentila 90 a prețurilor observate (P90).",
+  "priceCentral": "Prețul cerut este aproape de zona centrală observată a pieței.",
+  "priceOutsideCentral": "Prețul cerut este în intervalul P10–P90, dar în afara zonei centrale P25–P75.",
+  "mileageMissing": "Kilometrajul nu a fost introdus, deci nu a fost evaluat.",
+  "mileageNotScored": "Kilometraj: {{count}} anunțuri cu kilometraj disponibil în grupul selectat. Mediana necesită minimum 10, iar scorul minimum 20.{{medianAvailable}}",
+  "medianAvailable": " Mediana este disponibilă, dar scorul nu.",
+  "mileageLow": "Kilometrajul este neobișnuit de mic",
+  "mileageHigh": "Kilometrajul este neobișnuit de mare",
+  "mileageNormal": "Kilometrajul se află în intervalul observat",
+  "mileageResult": "{{description}} față de {{count}} anunțuri cu kilometraj disponibil în grupul selectat.{{yearNotRestricting}}",
+  "yearNotRestricting": " Anul de fabricație nu restrânge grupul.",
+  "configuration": "Configurație: fiecare câmp introdus necesită minimum 25 de valori disponibile în același grup. Valorile lipsă nu participă la calculul acelui câmp.",
+  "missingFields": "Câmpuri necompletate: {{fields}}. Acestea pot reduce încrederea în rezultat.",
+  "thisModelGeneration": "acest model și această generație",
+  "thisModel": "acest model",
+  "thisGeneration": "această generație",
+  "severity": {
+    "unobserved": "nu apare în exemplele observate pentru {{group}}",
+    "outsideRange": "este în afara intervalului observat pentru {{group}}",
+    "uncommon": "este rar întâlnit în exemplele disponibile",
+    "veryRare": "este foarte rar întâlnit în exemplele disponibile"
+  },
+  "signal": "{{field}} ({{value}}) {{explanation}}.",
+  "rarityAdjustment": "Scorul general include o ajustare de {{points}} puncte pentru numărul redus de anunțuri din grupul selectat."
+},
+"errors": {
+  "timeout": "Analiza durează prea mult. Încearcă din nou în câteva momente.",
+  "unavailable": "Analiza este momentan indisponibilă. Încearcă din nou mai târziu.",
+  "fields": "Verifică aceste câmpuri: {{fields}}.",
+  "invalidData": "Verifică datele introduse și încearcă din nou.",
+  "connection": "Nu putem contacta serverul. Verifică conexiunea și încearcă din nou.",
+  "generic": "Analiza nu a putut fi finalizată. Încearcă din nou."
+},
+
+"listingFilters": {
+  "labels": {
+    "brand": "Marcă",
+    "model": "Model",
+    "generation": "Generație",
+    "price": "Preț (€)",
+    "mileage": "Kilometraj",
+    "year": "An",
+    "engine": "Motor",
+    "horsepower": "Cai putere",
+    "doors": "Uși",
+    "seats": "Locuri",
+    "score": "Scor",
+    "fuel": "Combustibil",
+    "gearbox": "Cutie",
+    "body": "Caroserie",
+    "state": "Stare",
+    "drivetrain": "Tracțiune",
+    "seller": "Vânzător",
+    "registration": "Înmatriculare",
+    "class": "Clasă"
+  },
+  "any": "oricât",
+  "allListings": "Toate anunțurile",
+  "sort": {
+    "label": "Sortare",
+    "price": "preț",
+    "score": "scor",
+    "year": "an",
+    "mileage": "kilometraj",
+    "descending": "descrescător",
+    "ascending": "crescător"
+  },
+  "errors": {
+    "modelOrClass": "Alegeți fie modelul, fie clasa/clasele mașinii.",
+    "brandBeforeModel": "Alegeți marca înainte de model.",
+    "modelBeforeGeneration": "Alegeți marca și modelul înainte de generație."
+  }
+},
+
+"savedItemsJS": {
+  "errors": {
+    "sessionExpired": "Sesiunea a expirat. Autentifică-te pentru a continua.",
+    "notAvailable": "Elementul nu mai este disponibil.",
+    "alreadyFavourite": "Anunțul este deja în favorite.",
+    "invalidValues": "Verifică valorile introduse și intervalele selectate.",
+    "serviceUnavailable": "Serviciul nu este disponibil momentan. Încearcă din nou.",
+    "generic": "Nu am putut finaliza operația. Verifică conexiunea și încearcă din nou."
+  }
+},
+
+"authButton": {
+  "account": "Cont",
+  "profile": "Profilul Meu",
+  "myListings": "Anunțurile Mele",
+  "createListing": "Creează Anunț",
+  "favourites": "Anunțuri Favorite",
+  "savedRisks": "Analize Risc Salvate",
+  "savedSearches": "Filtre Salvate",
+  "logout": "Deconectare",
+  "login": "Autentificare",
+  "register": "Înregistrare"
+},
+
+"autocomplete": {
+  "loadError": "Opțiunile nu s-au putut încărca. Reîncearcă.",
+  "loading": "Se încarcă opțiunile…",
+  "searching": "Se caută potriviri…",
+  "noResults": "Nicio opțiune găsită."
+},
+
+"carCard": {
+  "accountScore": "SCORE",
+  "price": "PREȚ",
+  "generalData": "DATE GENERALE",
+  "performance": "PERFORMANȚĂ",
+  "conditionDetails": "STARE ȘI DETALII",
+  "configuration": "CONFIGURAȚIE",
+  "description": "DESCRIERE",
+  "brand": "Marcă",
+  "model": "Model",
+  "body": "Caroserie",
+  "registration": "Înmatriculare",
+  "horsepower": "Cai Putere",
+  "horsepowerUnit": "CP",
+  "gearbox": "Cutie de viteze",
+  "drivetrain": "Tracțiune",
+  "fuel": "Combustibil",
+  "year": "An",
+  "mileage": "Rulaj",
+  "mileageUnit": "km",
+  "condition": "Stare",
+  "engine": "Motor",
+  "doors": "Uși",
+  "seats": "Locuri",
+  "openOriginalListing": "Deschide anunțul",
+  "openOriginalListingTitle": "Deschide anunțul original pe 999.md",
+  "close": "Închide",
+  "recommendations": "Recomandări",
+  "riskAnalysis": "Analiza Riscului",
+  "loading": "Se încarcă...",
+  "recommendationsTitle": "Mașini Recomandate",
+  "collapse": "Restrânge",
+  "showLess": "Arată mai puțin",
+  "showMore": "Arată mai mult",
+  "noRecommendations": "Nu s-au găsit recomandări pentru această mașină.",
+  "errors": {
+    "recommendations": "Nu am putut încărca recomandările.",
+    "risk": "Nu am putut încărca analiza riscului."
+  }
+},
+
+"favouriteButton": {
+  "remove": "Elimină din favorite",
+  "add": "Adaugă la favorite",
+  "loginToSave": "Autentifică-te pentru a salva"
+},
+
+"listing-Filters": {
+  "advanced": "Filtre avansate",
+  "brand": "Marcă",
+  "price": "Preț",
+  "year": "An fabricație",
+  "mileage": "Rulaj",
+  "fuel": "Combustibil",
+  "body": "Caroserie",
+  "gearbox": "Cutie de viteze",
+  "moreFilters": "Mai multe filtre",
+  "fewerFilters": "Mai puține filtre",
+  "drivetrain": "Tracțiune",
+  "state": "Stare",
+  "seller": "Vânzător",
+  "registrationCountry": "Țara de înmatriculare",
+  "carClass": "Clasa mașinii",
+  "engine": "Capacitate motor (L)",
+  "horsepower": "Cai putere",
+  "doors": "Uși",
+  "seats": "Locuri",
+  "score": "Scor",
+  "present": "Prezent",
+  "noLimit": "Fără limită",
+  "counting": "Se numără…",
+  "listingsCount": "{{count}} anunțuri",
+  "clearAll": "Curăță tot",
+  "reset": "Resetează filtrele",
+  "remove": "Elimină {{value}}",
+  "dialogLabel": "Filtre avansate",
+  "minimum": "{{label}} minim",
+  "maximum": "{{label}} maxim",
+  "min": "Min",
+  "max": "Max",
+  "classDisabledHint": "Eliminați modelul pentru a alege clasele mașinii.",
+  "errors": {
+    "modelAndClass": "Alegeți fie modelul, fie clasa/clasele mașinii.",
+    "modelNeedsBrand": "Alegeți marca înainte de model.",
+    "generationNeedsBrandModel": "Alegeți marca și modelul înainte de generație."
+  }
+},
+
+"marketplaceVehicleFields": {
+  "brand": "Marcă",
+  "model": "Model",
+  "generation": "Generație",
+  "choose": "Alege {{label}}",
+  "modelNeedsBrand": "Alegeți marca mai întâi.",
+  "modelNeedsClassesRemoved": "Eliminați clasele pentru a alege un model.",
+  "generationNeedsBrandModel": "Alegeți marca și modelul mai întâi.",
+  "generationNeedsClassesRemoved": "Eliminați clasele și alegeți marca și modelul mai întâi.",
+  "retry": "Reîncearcă încărcarea"
+},
+
+"passwordInput": {
+  "showPassword": "Arată parola",
+  "hidePassword": "Ascunde parola"
+},
+
+"saveItemButton": {
+  "saved": "Salvat ✓",
+  "name": "Nume",
+  "saving": "Se salvează…",
+  "save": "Salvează",
+  "cancel": "Anulează",
+  "loginToSave": "Autentifică-te pentru a salva în contul tău.",
+  "login": "Autentificare",
+  "close": "Închide"
+},
+
+"vehicleSelect": {
+  "choosePrevious": "Alege câmpul anterior",
+  "choose": "Alege {{label}}",
+  "loadError": "Opțiunile nu s-au putut încărca.",
+  "loading": "Se încarcă opțiunile…",
+  "searching": "Se caută potriviri…",
+  "noResults": "Nicio opțiune găsită.",
+  "disabledHint": "Alege mai întâi câmpul anterior.",
+  "hint": "Alege din listă sau caută după nume."
+},
+
+"vehicleTree": {
+  "searchBrand": "Caută marca",
+  "loading": "Se încarcă…",
+  "loadError": "Nu s-a putut încărca lista.",
+  "classesHint": "Eliminați clasele pentru a alege un model."
+}
+  }
