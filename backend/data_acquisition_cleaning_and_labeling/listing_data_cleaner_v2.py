@@ -1,31 +1,17 @@
-import psycopg
-
-DB_NAME = ""
-DB_USER = ""
-DB_HOST = ""
-DB_PORT = ""
-DB_PASSWORD = ""
+from pipeline_runtime import PipelineError, columns, names, run_cli, stage_session
 
 MDL_PER_EUR = 20.02
 USD_PER_EUR = 1.16
-
-
-def connect():
-    return psycopg.connect(
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_HOST,
-        port=DB_PORT,
-        sslmode="require",
-    )
 
 
 def main():
     import time
     started_at = time.perf_counter()
     print("[CLEANER] Connecting to PostgreSQL...", flush=True)
-    with connect() as conn:
+    with stage_session("clean") as run:
+        if run is None:
+            return
+        conn = run.connection
         with conn.cursor() as cur:
 
             cur.execute("SELECT COUNT(*) FROM listings_temp")
@@ -53,12 +39,9 @@ def main():
                     ADD COLUMN IF NOT EXISTS mileage_was_corrected BOOLEAN NOT NULL DEFAULT FALSE
             """)
 
-            columns = """
-                id, url, brand, model, price, currency, generation, year,
-                mileage, engine, horsepower, fuel_type, gearbox, state,
-                registration_country, drivetrain, body_type, doors, seats,
-                scraped_at, offer_type, seller_type
-            """
+            # Carry every raw column through, including optional metadata and existing raw scores.
+            raw_fields = columns(cur, "listings_temp")
+            column_list = names(raw_fields).as_string(conn)
 
             # 1. Copy only Vând + Schimb, Moldova registrations.
             # 2. Convert every price to EUR immediately.
@@ -68,9 +51,9 @@ def main():
 
             cur.execute(f"""
                 INSERT INTO listings_cleaned_temp
-                ({columns}, original_price, original_currency, price_eur)
+                ({column_list}, original_price, original_currency, price_eur)
                 SELECT
-                    {columns},
+                    {column_list},
                     price,
                     currency,
                     CASE
@@ -264,6 +247,10 @@ def main():
             print(f"[CLEANER] EXCLUDED: {exact_duplicates:,} rows (exact duplicates: all 18 identity fields identical)", flush=True)
             print(f"[CLEANER] AFTER:    {after_count:,} rows", flush=True)
 
+            cur.execute("""ALTER TABLE listings_cleaned_temp ALTER COLUMN engine TYPE NUMERIC
+                USING NULLIF(REPLACE(REGEXP_REPLACE(engine::text, '[^0-9,.]', '', 'g'), ',', '.'), '')::NUMERIC""")
+            cur.execute('ALTER TABLE listings_cleaned_temp ADD COLUMN IF NOT EXISTS "Score" NUMERIC')
+
             print("[CLEANER] START: Create analytical indexes", flush=True)
 
             cur.execute("SELECT COUNT(*) FROM listings_cleaned_temp")
@@ -313,6 +300,10 @@ def main():
             print("Created table:       listings_cleaned_temp")
             print("=" * 55)
 
+            if clean_count == 0:
+                raise PipelineError("Cleaning produced zero rows; current inventory stays intact.")
+            run.finish(cur, "clean")
+
         print("[CLEANER] Committing transaction...", flush=True)
         conn.commit()
         elapsed = time.perf_counter() - started_at
@@ -320,4 +311,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    run_cli(main)

@@ -4,7 +4,7 @@ import time
 import unicodedata
 from urllib.parse import urljoin, urlparse
 
-import psycopg
+from pipeline_runtime import connect, run_cli, stage_session
 import requests
 from bs4 import BeautifulSoup
 
@@ -12,12 +12,6 @@ from bs4 import BeautifulSoup
 # ============================================================
 # DATABASE
 # ============================================================
-
-DB_NAME = ""
-DB_USER = ""
-DB_HOST = ""
-DB_PORT = ""
-DB_PASSWORD = ""
 
 RESET_MODEL_CLASS_ON_START = False
 
@@ -136,14 +130,7 @@ OPENAI_URL = "https://api.openai.com/v1/responses"
 # ============================================================
 
 def db_connect():
-    return psycopg.connect(
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_HOST,
-        port=DB_PORT,
-        sslmode="require",
-    )
+    return connect()
 
 
 def clean_spaces(value):
@@ -1365,7 +1352,7 @@ def get_models(conn):
             SELECT DISTINCT
                 TRIM(listing.brand),
                 TRIM(listing.model)
-            FROM listings AS listing
+            FROM listings_cleaned_temp AS listing
             WHERE listing.brand IS NOT NULL
               AND listing.model IS NOT NULL
               AND TRIM(listing.brand) <> ''
@@ -1375,6 +1362,7 @@ def get_models(conn):
                   FROM model_class AS existing
                   WHERE LOWER(TRIM(existing.brand)) = LOWER(TRIM(listing.brand))
                     AND LOWER(TRIM(existing.model)) = LOWER(TRIM(listing.model))
+                    AND (existing.market_segment IS NOT NULL OR existing.status = 'skipped')
               )
             ORDER BY 1, 2
             """
@@ -2366,7 +2354,7 @@ def self_test():
 # MAIN
 # ============================================================
 
-def main():
+def classify_models():
     self_test()
 
     print(
@@ -2562,5 +2550,15 @@ def main():
     print("=" * 70)
 
 
+def main():
+    with stage_session("classes") as run:
+        if run is None:
+            return
+        classify_models()
+        with run.connection.cursor() as cur:
+            run.finish(cur, "classes")
+        run.connection.commit()
+
+
 if __name__ == "__main__":
-    main()
+    run_cli(main)

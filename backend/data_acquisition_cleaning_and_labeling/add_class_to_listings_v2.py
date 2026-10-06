@@ -1,228 +1,163 @@
+"""Classify staging, preserve outgoing records, and publish one atomic batch."""
 import psycopg
 from psycopg import sql
 
-DB_NAME = ""
-DB_USER = ""
-DB_HOST = ""
-DB_PORT = ""
-DB_PASSWORD = ""
+from pipeline_runtime import PipelineError, columns, ensure_columns, log, names, parser, run_cli, stage_session
 
 
-def get_columns(cur, table_name):
-    cur.execute("""
-        SELECT
-            attribute.attname,
-            pg_catalog.format_type(attribute.atttypid, attribute.atttypmod)
-        FROM pg_catalog.pg_attribute AS attribute
-        JOIN pg_catalog.pg_class AS relation
-          ON relation.oid = attribute.attrelid
-        JOIN pg_catalog.pg_namespace AS namespace
-          ON namespace.oid = relation.relnamespace
-        WHERE namespace.nspname = current_schema()
-          AND relation.relname = %s
-          AND attribute.attnum > 0
-          AND NOT attribute.attisdropped
-        ORDER BY attribute.attnum
-    """, (table_name,))
-    return cur.fetchall()
+def preserve_current_fields(cur, target, staged):
+    """Carry application-owned columns (including scores) over by stable listing ID."""
+    target_fields = columns(cur, target)
+    stage_fields = columns(cur, staged)
+    ensure_columns(cur, staged, target_fields)
+    for field in target_fields:
+        if field == "id":
+            continue
+        if field in {"Score", "score"}:
+            # Scoring may run while discovery/details are in progress. Prefer the latest live score.
+            cur.execute(sql.SQL("""UPDATE {} AS pending SET {}=current.{} FROM {} AS current
+                WHERE current.id=pending.id AND current.{} IS NOT NULL""").format(
+                    sql.Identifier(staged), sql.Identifier(field), sql.Identifier(field),
+                    sql.Identifier(target), sql.Identifier(field)))
+            continue
+        if field not in stage_fields or field in {"Score", "score", "class"}:
+            cur.execute(sql.SQL("""UPDATE {} AS pending SET {}=current.{} FROM {} AS current
+                WHERE current.id=pending.id AND pending.{} IS NULL""").format(
+                    sql.Identifier(staged), sql.Identifier(field), sql.Identifier(field),
+                    sql.Identifier(target), sql.Identifier(field)))
 
 
-def align_columns(cur, target_table, source_table, drop_extra_columns=False):
-    """Make target contain the source columns and use their PostgreSQL types."""
-    cur.execute(
-        sql.SQL("CREATE TABLE IF NOT EXISTS {} (LIKE {} INCLUDING ALL)").format(
-            sql.Identifier(target_table),
-            sql.Identifier(source_table),
-        )
-    )
-
-    source_columns = dict(get_columns(cur, source_table))
-    target_columns = dict(get_columns(cur, target_table))
-
-    for name, column_type in source_columns.items():
-        if name not in target_columns:
-            cur.execute(
-                sql.SQL("ALTER TABLE {} ADD COLUMN {} {}").format(
-                    sql.Identifier(target_table),
-                    sql.Identifier(name),
-                    sql.SQL(column_type),
-                )
-            )
-        elif target_columns[name] != column_type:
-            cur.execute(
-                sql.SQL("ALTER TABLE {} ALTER COLUMN {} TYPE {} USING {}::{}").format(
-                    sql.Identifier(target_table),
-                    sql.Identifier(name),
-                    sql.SQL(column_type),
-                    sql.Identifier(name),
-                    sql.SQL(column_type),
-                )
-            )
-
-    if drop_extra_columns:
-        for name in target_columns:
-            if name not in source_columns:
-                cur.execute(
-                    sql.SQL("ALTER TABLE {} DROP COLUMN {}").format(
-                        sql.Identifier(target_table),
-                        sql.Identifier(name),
-                    )
-                )
-
-    return list(source_columns)
+def archive(cur, run, source, destination, phase):
+    """Append the complete snapshot once, with source types and no unique constraint on ad ID."""
+    cur.execute("SELECT 1 FROM scrape_pipeline_archives WHERE run_id=%s AND table_name=%s AND phase=%s",
+                (run.id, destination, phase))
+    if cur.fetchone():
+        return
+    definitions = columns(cur, source)
+    if not definitions:
+        return
+    # No LIKE INCLUDING ALL: listing IDs intentionally repeat across snapshots.
+    ensure_columns(cur, destination, definitions)
+    ensure_columns(cur, destination, {
+        "archive_id": "BIGSERIAL", "snapshot_at": "TIMESTAMPTZ",
+        "batch_id": "UUID", "snapshot_phase": "TEXT",
+    })
+    field_names = names(definitions)
+    cur.execute(sql.SQL("""INSERT INTO {} ({},snapshot_at,batch_id,snapshot_phase)
+        SELECT {},NOW(),%s,%s FROM {}""").format(
+            sql.Identifier(destination), field_names, field_names, sql.Identifier(source)), (run.id, phase))
+    log(f"Staged archive: {cur.rowcount:,} {phase} rows in {destination}, including scores; awaiting commit.")
+    cur.execute("INSERT INTO scrape_pipeline_archives(run_id,table_name,phase) VALUES (%s,%s,%s)",
+                (run.id, destination, phase))
+    cur.execute(sql.SQL("CREATE INDEX IF NOT EXISTS {} ON {} (id,snapshot_at DESC,archive_id DESC)").format(
+        sql.Identifier(f"idx_{destination}_latest_listing"), sql.Identifier(destination)))
 
 
-def ensure_table_exists(cur, target_table, source_table):
-    cur.execute(
-        sql.SQL("CREATE TABLE IF NOT EXISTS {} (LIKE {} INCLUDING ALL)").format(
-            sql.Identifier(target_table),
-            sql.Identifier(source_table),
-        )
-    )
+def replace_current(cur, target, staged):
+    log(f"Preparing current-table schema: {target}.")
+    definitions = columns(cur, staged)
+    ensure_columns(cur, target, definitions)
+    # New ads have not been scored yet. Preserve existing values and represent unknown as NULL.
+    for score in ("Score", "score"):
+        if score in definitions:
+            cur.execute(sql.SQL("ALTER TABLE {} ALTER COLUMN {} DROP NOT NULL").format(
+                sql.Identifier(target), sql.Identifier(score)))
+    log(f"Replacing {target} from {staged} inside the publication transaction.")
+    cur.execute(sql.SQL("TRUNCATE TABLE {}").format(sql.Identifier(target)))
+    field_names = names(definitions)
+    cur.execute(sql.SQL("INSERT INTO {} ({}) SELECT {} FROM {}").format(
+        sql.Identifier(target), field_names, field_names, sql.Identifier(staged)))
+    log(f"Prepared {cur.rowcount:,} rows for {target}; awaiting transaction commit.")
+
+
+def table_count(cur, table):
+    if not columns(cur, table):
+        return 0
+    cur.execute(sql.SQL("SELECT COUNT(*) FROM {}").format(sql.Identifier(table)))
+    return cur.fetchone()[0]
+
+
+def check_publishable(cur, run, allow_large_drop=False):
+    cur.execute("""SELECT outcome,COUNT(*) FROM scrape_pipeline_ids WHERE run_id=%s GROUP BY outcome""", (run.id,))
+    outcomes = dict(cur.fetchall())
+    if not outcomes or outcomes.get("pending", 0) or outcomes.get("failed", 0):
+        raise PipelineError("Unresolved discovery/detail work exists. Publication refused.")
+    cur.execute("SELECT discovery_finished,staging_ready FROM scrape_pipeline_runs WHERE id=%s", (run.id,))
+    if cur.fetchone() != (True, True):
+        raise PipelineError("Discovery/staging is not complete. Publication refused.")
+    expected = outcomes.get("copied", 0) + outcomes.get("scraped", 0)
+    if table_count(cur, "listings_temp") != expected:
+        raise PipelineError("Raw staging count differs from the detail checkpoints. Publication refused.")
+    for current, staged in (("listings", "listings_temp"), ("listings_cleaned", "listings_cleaned_temp")):
+        before, after = table_count(cur, current), table_count(cur, staged)
+        log(f"Pre-publication check: {current}: {before:,} current -> {after:,} staged.")
+        if after == 0:
+            raise PipelineError("Empty staging cannot replace current inventory.")
+        if before and after < before * 0.80 and not allow_large_drop:
+            raise PipelineError("Inventory would shrink by more than 20%. Inspect the batch; use --allow-large-drop only if expected.")
+        cur.execute(sql.SQL("SELECT COUNT(*)-COUNT(DISTINCT id) FROM {}").format(sql.Identifier(staged)))
+        if cur.fetchone()[0]:
+            raise PipelineError(f"Duplicate or NULL IDs in {staged}; publication refused.")
+    # Count alone is not enough: ensure the raw rows belong to this exact batch.
+    cur.execute("""SELECT COUNT(*) FROM listings_temp t WHERE NOT EXISTS (
+        SELECT 1 FROM scrape_pipeline_ids i WHERE i.run_id=%s AND i.listing_id=t.id
+        AND i.outcome IN ('copied','scraped'))""", (run.id,))
+    if cur.fetchone()[0]:
+        raise PipelineError("Staging contains rows outside the active batch.")
+    cur.execute("SELECT COUNT(*) FROM listings_cleaned_temp c WHERE NOT EXISTS (SELECT 1 FROM listings_temp r WHERE r.id=c.id)")
+    if cur.fetchone()[0]:
+        raise PipelineError("Cleaned staging contains rows outside raw staging.")
+
+
+def publish(run, allow_large_drop=False):
+    conn = run.connection
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SET LOCAL lock_timeout='15s'")
+            # Block concurrent inventory/scoring writes while taking backups and replacing rows.
+            for table in ("listings", "listings_cleaned"):
+                if columns(cur, table):
+                    cur.execute(sql.SQL("LOCK TABLE {} IN ACCESS EXCLUSIVE MODE").format(sql.Identifier(table)))
+            check_publishable(cur, run, allow_large_drop)
+            log("Applying model classes to cleaned staging.")
+            ensure_columns(cur, "listings_cleaned_temp", {"class": "TEXT", "Score": "NUMERIC"})
+            cur.execute("""UPDATE listings_cleaned_temp AS listing SET class=mc.market_segment
+                FROM model_class AS mc WHERE LOWER(TRIM(listing.brand))=LOWER(TRIM(mc.brand))
+                AND LOWER(TRIM(listing.model))=LOWER(TRIM(mc.model)) AND mc.market_segment IS NOT NULL""")
+            for current, staged, history in (
+                ("listings", "listings_temp", "listings_alltime"),
+                ("listings_cleaned", "listings_cleaned_temp", "listings_cleaned_alltime"),
+            ):
+                log(f"Preserving existing fields and latest scores for {current}.")
+                preserve_current_fields(cur, current, staged)
+                # Initial baseline and every outgoing batch are archived before replacement.
+                archive(cur, run, current, history, "outgoing")
+                archive(cur, run, staged, history, "incoming")
+                replace_current(cur, current, staged)
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_listings_cleaned_id ON listings_cleaned(id)")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_listings_cleaned_brand_model ON listings_cleaned(brand,model)")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_listings_cleaned_price_eur ON listings_cleaned(price_eur)")
+            cur.execute("CREATE INDEX IF NOT EXISTS idx_listings_cleaned_mileage ON listings_cleaned(mileage)")
+            run.finish(cur, "publish")
+        conn.commit()
+    except BaseException:
+        try:
+            conn.rollback()
+        except psycopg.Error:
+            log("Database connection lost; rerun will check the stored publication checkpoint.")
+        log("Publication interrupted. Uncommitted changes roll back; a committed batch is skipped on retry.")
+        raise
+    log("COMMITTED: current tables, archives, scores and publication checkpoint are consistent.")
 
 
 def main():
-    conn = psycopg.connect(
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_HOST,
-        port=DB_PORT,
-        sslmode="require",
-    )
-
-    with conn.cursor() as cur:
-
-        # 1. Create the field if it doesn't exist
-        cur.execute("""
-            ALTER TABLE listings_cleaned_temp
-            ADD COLUMN IF NOT EXISTS class TEXT;
-        """)
-
-        # 2. Clear previous values so this is a clean rebuild
-        cur.execute("""
-            UPDATE listings_cleaned_temp
-            SET class = NULL;
-        """)
-
-        # 3. Match brand + model and copy market_segment
-        cur.execute("""
-            UPDATE listings_cleaned_temp AS l
-            SET class = mc.market_segment
-            FROM model_class AS mc
-            WHERE LOWER(TRIM(l.brand)) = LOWER(TRIM(mc.brand))
-              AND LOWER(TRIM(l.model)) = LOWER(TRIM(mc.model))
-              AND mc.market_segment IS NOT NULL;
-        """)
-
-        updated = cur.rowcount
-
-        # 4. Statistics
-        cur.execute("""
-            SELECT COUNT(*)
-            FROM listings_cleaned_temp
-            WHERE class IS NOT NULL;
-        """)
-        classified = cur.fetchone()[0]
-
-        cur.execute("""
-            SELECT COUNT(*)
-            FROM listings_cleaned_temp
-            WHERE class IS NULL;
-        """)
-        unresolved = cur.fetchone()[0]
-
-        cur.execute("""
-            SELECT COUNT(*)
-            FROM listings_cleaned_temp;
-        """)
-        total = cur.fetchone()[0]
-
-        # Keep every finished cleaned round.  This table is append-only.
-        cleaned_columns = align_columns(
-            cur,
-            "listings_cleaned_alltime",
-            "listings_cleaned_temp",
-        )
-        cur.execute("""
-            ALTER TABLE listings_cleaned_alltime
-            ADD COLUMN IF NOT EXISTS snapshot_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-        """)
-        cleaned_identifiers = sql.SQL(", ").join(
-            sql.Identifier(column) for column in cleaned_columns
-        )
-        cur.execute(
-            sql.SQL("INSERT INTO {} ({}, {}) SELECT {}, NOW() FROM {}").format(
-                sql.Identifier("listings_cleaned_alltime"),
-                cleaned_identifiers,
-                sql.Identifier("snapshot_at"),
-                cleaned_identifiers,
-                sql.Identifier("listings_cleaned_temp"),
-            )
-        )
-
-        # Publish the finished staging round only after cleaning and
-        # classification both succeeded.
-        ensure_table_exists(cur, "listings_cleaned", "listings_cleaned_temp")
-        cur.execute("TRUNCATE TABLE listings_cleaned")
-        cleaned_columns = align_columns(
-            cur,
-            "listings_cleaned",
-            "listings_cleaned_temp",
-            drop_extra_columns=True,
-        )
-        cleaned_identifiers = sql.SQL(", ").join(
-            sql.Identifier(column) for column in cleaned_columns
-        )
-        cur.execute(
-            sql.SQL("INSERT INTO {} ({}) SELECT {} FROM {}").format(
-                sql.Identifier("listings_cleaned"),
-                cleaned_identifiers,
-                cleaned_identifiers,
-                sql.Identifier("listings_cleaned_temp"),
-            )
-        )
-
-        ensure_table_exists(cur, "listings", "listings_temp")
-        cur.execute("TRUNCATE TABLE listings")
-        raw_columns = align_columns(
-            cur,
-            "listings",
-            "listings_temp",
-            drop_extra_columns=True,
-        )
-        raw_identifiers = sql.SQL(", ").join(
-            sql.Identifier(column) for column in raw_columns
-        )
-        cur.execute(
-            sql.SQL("INSERT INTO {} ({}) SELECT {} FROM {}").format(
-                sql.Identifier("listings"),
-                raw_identifiers,
-                raw_identifiers,
-                sql.Identifier("listings_temp"),
-            )
-        )
-
-        # Recreate the analytical indexes that existed on the local database.
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_listings_cleaned_brand_model ON listings_cleaned (brand, model)")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_listings_cleaned_price_eur ON listings_cleaned (price_eur)")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_listings_cleaned_mileage ON listings_cleaned (mileage)")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_listings_cleaned_alltime_brand_model ON listings_cleaned_alltime (brand, model)")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_listings_cleaned_alltime_price_eur ON listings_cleaned_alltime (price_eur)")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_listings_cleaned_alltime_mileage ON listings_cleaned_alltime (mileage)")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_listings_cleaned_alltime_snapshot_at ON listings_cleaned_alltime (snapshot_at)")
-
-    conn.commit()
-    conn.close()
-
-    print("\nDONE")
-    print("-" * 40)
-    print(f"Total listings:       {total:,}")
-    print(f"Classified listings:  {classified:,}")
-    print(f"Unclassified:         {unresolved:,}")
-    print(f"Rows updated:         {updated:,}")
-    print("-" * 40)
+    args_parser = parser("Publish a validated batch atomically, retaining history and scores.")
+    args_parser.add_argument("--allow-large-drop", action="store_true", help="Accept a reviewed >20%% inventory decline; other checks remain mandatory.")
+    args = args_parser.parse_args()
+    with stage_session("publish") as run:
+        if run is not None:
+            publish(run, args.allow_large_drop)
 
 
 if __name__ == "__main__":
-    main()
+    run_cli(main)

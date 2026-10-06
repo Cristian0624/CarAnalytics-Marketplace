@@ -1,15 +1,17 @@
 
 import re
-import sys
 import time
 import random
 import threading
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
-from pathlib import Path
 
-import psycopg
+from psycopg import sql
+from psycopg.types.json import Jsonb
+from pipeline_runtime import RAW_COLUMNS, PipelineError, log, names, run_cli, stage_session
+from listing_payload import public_metadata
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -19,14 +21,6 @@ from bs4 import BeautifulSoup
 # ============================================================
 
 BASE_URL = "https://999.md"
-
-DB_HOST = ""
-DB_PORT = ""
-DB_NAME = ""
-DB_USER = ""
-DB_PASSWORD = ""
-
-IDS_FILE = Path("listing_ids_test.txt")
 
 MAX_WORKERS = 6
 
@@ -43,11 +37,7 @@ MAX_RETRIES = 3
 RETRY_BACKOFF_SECONDS = 2.0
 MAX_BACKOFF_SECONDS = 30.0
 
-DB_BATCH_SIZE = 250
-
-# Progress files. They are reset at the beginning of a fresh run.
-SUCCESS_IDS_FILE = Path("phase2_success_ids.txt")
-FAILED_IDS_FILE = Path("phase2_failed_ids.txt")
+DB_BATCH_SIZE = 25
 
 # If this many recent requests fail, pause rather than continuing to send
 # traffic into a possibly unhealthy connection.
@@ -60,130 +50,7 @@ ETA_WARMUP = 50
 ETA_WINDOW = 250
 
 # Do not scrape category/search pages in this script.
-# The ONLY source of listing IDs is IDS_FILE.
-
-
-# ============================================================
-# DATABASE
-# ============================================================
-
-def ensure_database_exists():
-    """The managed Aiven database from test.py already exists."""
-    print(f"Using existing remote database: {DB_NAME}")
-
-
-def connect_database():
-    return psycopg.connect(
-        host=DB_HOST,
-        port=DB_PORT,
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        sslmode="require",
-    )
-
-
-def prepare_database(connection):
-    """
-    Make the target table exactly suitable for this scraper.
-
-    Existing rows are removed. Existing schema is preserved where
-    possible, and horsepower is added if necessary.
-    """
-    with connection.cursor() as cur:
-        cur.execute(
-            """
-            CREATE TABLE IF NOT EXISTS listings_temp (
-                id BIGINT PRIMARY KEY,
-                url TEXT NOT NULL,
-                brand TEXT,
-                model TEXT,
-                price NUMERIC,
-                currency TEXT,
-                generation TEXT,
-                year INTEGER,
-                mileage INTEGER,
-                engine TEXT,
-                horsepower INTEGER,
-                fuel_type TEXT,
-                gearbox TEXT,
-                state TEXT,
-                registration_country TEXT,
-                drivetrain TEXT,
-                body_type TEXT,
-                offer_type TEXT,
-                seller_type TEXT,                doors INTEGER,
-                seats INTEGER,
-                scraped_at TIMESTAMPTZ NOT NULL
-            )
-            """
-        )
-
-        cur.execute(
-            "ALTER TABLE listings_temp ADD COLUMN IF NOT EXISTS horsepower INTEGER"
-        )
-        cur.execute(
-            "ALTER TABLE listings_temp ADD COLUMN IF NOT EXISTS offer_type TEXT"
-        )
-        cur.execute(
-            "ALTER TABLE listings_temp ADD COLUMN IF NOT EXISTS seller_type TEXT"
-        )
-
-    connection.commit()
-
-    reset_progress_files()
-    print("Table listings_temp: ready; rows copied by scraper6_v2 are kept.")
-
-
-# ============================================================
-# IDS
-# ============================================================
-
-def load_ids():
-    """
-    Read listing IDs ONLY from listing_ids_full.txt.
-
-    No category scraping, Selenium, GraphQL, page discovery, or
-    ID generation happens anywhere in this program.
-    """
-    if not IDS_FILE.exists():
-        raise FileNotFoundError(
-            f"Could not find {IDS_FILE.resolve()}"
-        )
-
-    ids = []
-    seen = set()
-
-    with IDS_FILE.open("r", encoding="utf-8") as f:
-        for line_number, line in enumerate(f, start=1):
-            value = line.strip()
-
-            if not value:
-                continue
-
-            match = re.fullmatch(r"\d+", value)
-
-            if not match:
-                print(
-                    f"Warning: ignoring invalid ID on line "
-                    f"{line_number}: {value!r}"
-                )
-                continue
-
-            listing_id = int(value)
-
-            if listing_id in seen:
-                continue
-
-            seen.add(listing_id)
-            ids.append(listing_id)
-
-    if not ids:
-        print(f"No new listing IDs remain in {IDS_FILE}.")
-        return []
-
-    print(f"Loaded {len(ids):,} unique IDs from {IDS_FILE}")
-    return ids
+# Listing IDs and outcomes are durable database checkpoints.
 
 
 # ============================================================
@@ -199,6 +66,7 @@ class RequestController:
         self.interval = REQUEST_MIN_INTERVAL
         self.recent_failures = deque(maxlen=FAILURE_WINDOW)
         self.pause_until = 0.0
+        self.stopped = threading.Event()
 
     def wait(self):
         with self.lock:
@@ -213,8 +81,8 @@ class RequestController:
             gap = self.interval + random.uniform(0.0, REQUEST_JITTER)
             self.next_request_at = target + gap
 
-        if delay > 0:
-            time.sleep(delay)
+        if self.stopped.wait(max(0, delay)):
+            raise RuntimeError("Scrape stopped")
 
     def success(self):
         with self.lock:
@@ -262,36 +130,6 @@ class RequestController:
 
 
 REQUESTS_CONTROL = RequestController()
-
-_file_lock = threading.Lock()
-
-
-def reset_progress_files():
-    """A fresh run starts with clean progress files."""
-    for path in (SUCCESS_IDS_FILE, FAILED_IDS_FILE):
-        try:
-            path.unlink()
-        except FileNotFoundError:
-            pass
-
-
-def append_success_ids(ids):
-    if not ids:
-        return
-
-    with _file_lock:
-        with SUCCESS_IDS_FILE.open("a", encoding="utf-8") as f:
-            for listing_id in ids:
-                f.write(f"{listing_id}\n")
-
-
-def append_failure(listing_id, error):
-    with _file_lock:
-        with FAILED_IDS_FILE.open("a", encoding="utf-8") as f:
-            f.write(
-                f"{listing_id}\t{str(error).replace(chr(10), ' ')}\n"
-            )
-
 
 def parse_retry_after(response):
     value = response.headers.get("Retry-After")
@@ -647,11 +485,14 @@ def parse_listing_html(html, listing_id):
         "scraped_at": datetime.now(timezone.utc),
     }
 
+    metadata = public_metadata(html, listing_id)
+    listing.update({key: value for key, value in metadata.items() if value is not None})
+
     # Important diagnostic information.
     # If a normal car page contains no vehicle features at all,
     # treat it as a bad/non-listing response rather than inserting
     # a row full of NULLs.
-    if not features and not brand and not model and price is None:
+    if not features and not listing.get("brand") and not listing.get("model") and listing.get("price") is None:
         raise ValueError(
             "No vehicle data found in the HTML."
         )
@@ -704,13 +545,13 @@ def scrape_one(listing_id):
                     "listing": listing,
                 }
 
-            if status == 404:
+            if status in {404, 410}:
                 # A removed/invalid listing is normal and not a network issue.
                 return {
                     "ok": False,
                     "id": listing_id,
-                    "kind": "404",
-                    "error": "HTTP 404",
+                    "kind": str(status),
+                    "error": f"HTTP {status}",
                 }
 
             if status == 403:
@@ -810,7 +651,8 @@ def scrape_one(listing_id):
                 RETRY_BACKOFF_SECONDS * (2 ** (attempt - 1)),
             )
             delay += random.uniform(0.0, 0.75)
-            time.sleep(delay)
+            if REQUESTS_CONTROL.stopped.wait(delay):
+                return {"ok": False, "id": listing_id, "kind": "interrupted", "error": "Stopped"}
 
     return {
         "ok": False,
@@ -827,102 +669,36 @@ def scrape_one(listing_id):
 # DATABASE SAVE
 # ============================================================
 
-def save_batch(connection, listings):
+def save_batch(connection, listings, run):
     if not listings:
         return
-
-    rows = [
-        (
-            x["id"],
-            x["url"],
-            x["brand"],
-            x["model"],
-            x["price"],
-            x["currency"],
-            x["generation"],
-            x["year"],
-            x["mileage"],
-            x["engine"],
-            x["horsepower"],
-            x["fuel_type"],
-            x["gearbox"],
-            x["state"],
-            x["registration_country"],
-            x["drivetrain"],
-            x["body_type"],
-            x["offer_type"],
-            x["seller_type"],
-            x["doors"],
-            x["seats"],
-            x["scraped_at"],
-        )
-        for x in listings
-    ]
-
+    fields = list(RAW_COLUMNS)
+    updates = sql.SQL(", ").join(
+        sql.SQL("{}=COALESCE(EXCLUDED.{},listings_temp.{})").format(
+            sql.Identifier(field), sql.Identifier(field), sql.Identifier(field))
+        for field in fields if field != "id"
+    )
+    statement = sql.SQL("INSERT INTO listings_temp ({}) VALUES ({}) ON CONFLICT(id) DO UPDATE SET {}").format(
+        names(fields), sql.SQL(", ").join(sql.Placeholder() for _ in fields), updates)
+    rows = []
+    for listing in listings:
+        rows.append(tuple(Jsonb(listing.get(field)) if RAW_COLUMNS[field] == "JSONB" and listing.get(field) is not None
+                          else listing.get(field) for field in fields))
     with connection.cursor() as cur:
-        cur.executemany(
-            """
-            INSERT INTO listings_temp (
-                id,
-                url,
-                brand,
-                model,
-                price,
-                currency,
-                generation,
-                year,
-                mileage,
-                engine,
-                horsepower,
-                fuel_type,
-                gearbox,
-                state,
-                registration_country,
-                drivetrain,
-                body_type,
-                offer_type,
-                seller_type,
-                doors,
-                seats,
-                scraped_at
-            )
-            VALUES (
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-            )
-            ON CONFLICT (id)
-            DO UPDATE SET
-                url = EXCLUDED.url,
-                brand = EXCLUDED.brand,
-                model = EXCLUDED.model,
-                price = EXCLUDED.price,
-                currency = EXCLUDED.currency,
-                generation = EXCLUDED.generation,
-                year = EXCLUDED.year,
-                mileage = EXCLUDED.mileage,
-                engine = EXCLUDED.engine,
-                horsepower = EXCLUDED.horsepower,
-                fuel_type = EXCLUDED.fuel_type,
-                gearbox = EXCLUDED.gearbox,
-                state = EXCLUDED.state,
-                registration_country = EXCLUDED.registration_country,
-                drivetrain = EXCLUDED.drivetrain,
-                body_type = EXCLUDED.body_type,
-                offer_type = EXCLUDED.offer_type,
-                seller_type = EXCLUDED.seller_type,
-                doors = EXCLUDED.doors,
-                seats = EXCLUDED.seats,
-                scraped_at = EXCLUDED.scraped_at
-            """,
-            rows,
-        )
-
+        cur.executemany(statement, rows)
+        cur.executemany("UPDATE scrape_pipeline_ids SET outcome='scraped',error=NULL WHERE run_id=%s AND listing_id=%s",
+                        [(run.id, listing["id"]) for listing in listings])
     connection.commit()
+    log(f"Committed {len(listings)} details and their resume checkpoints.")
 
 
-# ============================================================
-# SCRAPE ALL IDS
-# ============================================================
+def record_failure(connection, run, listing_id, result):
+    # A definite 404 is accounted for; timeouts, blocks and parse failures must be retried.
+    outcome = "gone" if result.get("kind") in {"404", "410"} else "failed"
+    with connection.cursor() as cur:
+        cur.execute("UPDATE scrape_pipeline_ids SET outcome=%s,error=%s WHERE run_id=%s AND listing_id=%s",
+                    (outcome, result.get("error", "unknown")[:1000], run.id, listing_id))
+    connection.commit()
 
 
 def preflight_check():
@@ -957,7 +733,7 @@ def preflight_check():
         session.close()
 
 
-def scrape_all(connection, ids):
+def scrape_all(connection, ids, run):
     """Scrape IDs with bounded concurrency and frequent DB checkpoints."""
 
     total = len(ids)
@@ -973,13 +749,13 @@ def scrape_all(connection, ids):
     print("=" * 78)
     print("PHASE 2 ONLY: CONTROLLED LISTING SCRAPER")
     print("=" * 78)
-    print(f"IDs in TXT:          {total:,}")
+    print(f"Pending checkpoint IDs: {total:,}")
     print(f"HTTP workers:        {MAX_WORKERS}")
     print(f"Request spacing:     {REQUEST_MIN_INTERVAL:.2f}s + jitter")
     print(f"Connect timeout:     {HTTP_CONNECT_TIMEOUT}s")
     print(f"Read timeout:        {HTTP_READ_TIMEOUT}s")
     print(f"Bounded in-flight jobs: {MAX_WORKERS * 2}")
-    print("Fresh table: ON")
+    print("Resume: already committed IDs are skipped; current inventory is unchanged")
     print("Category/ID discovery: OFF")
     print("Selenium: OFF")
     print()
@@ -1031,7 +807,9 @@ def scrape_all(connection, ids):
             f"recent_failures={REQUESTS_CONTROL.failure_count()}"
         )
 
-    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+    REQUESTS_CONTROL.stopped.clear()
+    executor = ThreadPoolExecutor(max_workers=MAX_WORKERS)
+    try:
         submit_more(executor)
 
         while in_flight:
@@ -1055,10 +833,7 @@ def scrape_all(connection, ids):
 
             if not result["ok"]:
                 failed += 1
-                append_failure(
-                    listing_id,
-                    result.get("error", "unknown failure"),
-                )
+                record_failure(connection, run, listing_id, result)
 
                 print(
                     f"[{completed:,}/{total:,}] "
@@ -1071,20 +846,20 @@ def scrape_all(connection, ids):
                 successful += 1
                 pending.append(listing)
 
-                # Show the two new fields for the first few successful ads
+                # Show useful metadata presence for the first few successful ads
                 # so they can be verified before the long run continues.
                 if successful <= 5:
                     print(
                         f"CHECK: ID={listing['id']} | "
-                        f"offer_type={listing['offer_type']!r} | "
-                        f"seller_type={listing['seller_type']!r}"
+                        f"offer_type={listing.get('offer_type')!r} | "
+                        f"VIN={'yes' if listing.get('vin') else 'absent'} | "
+                        f"seller={'yes' if listing.get('seller_id') else 'absent'} | "
+                        f"image={'yes' if listing.get('image_url') else 'absent'}"
                     )
                 completion_times.append(time.monotonic())
 
                 if len(pending) >= DB_BATCH_SIZE:
-                    ids_to_mark = [x["id"] for x in pending]
-                    save_batch(connection, pending)
-                    append_success_ids(ids_to_mark)
+                    save_batch(connection, pending, run)
                     pending.clear()
 
                 if completed <= ETA_WARMUP or completed % 100 == 0:
@@ -1110,10 +885,20 @@ def scrape_all(connection, ids):
 
             submit_more(executor)
 
-    if pending:
-        ids_to_mark = [x["id"] for x in pending]
-        save_batch(connection, pending)
-        append_success_ids(ids_to_mark)
+    finally:
+        REQUESTS_CONTROL.stopped.set()
+        for future in in_flight:
+            future.cancel()
+        # Finish in-flight HTTP calls (bounded timeouts), but do not launch new ones.
+        executor.shutdown(wait=True, cancel_futures=True)
+        if pending:
+            try:
+                save_batch(connection, pending, run)
+            except Exception:
+                connection.rollback()
+                log("Last uncommitted details will be retried; earlier checkpoints are intact.")
+                raise
+
 
     print_progress()
 
@@ -1128,61 +913,23 @@ def scrape_all(connection, ids):
 # ============================================================
 
 def main():
-    print("=" * 78)
-    print("999.MD AD-ONLY SCRAPER")
-    print("=" * 78)
-    print("IDs source:", IDS_FILE.resolve())
-    print("Target DB:", DB_NAME)
-    print("Workers:", MAX_WORKERS)
-    print("Offer type + seller type: ON")
-    print()
-
-    start = time.time()
-
-    ensure_database_exists()
-
-    connection = connect_database()
-
-    try:
-        ids = load_ids()
-
-        prepare_database(connection)
-
+    with stage_session("details") as run:
+        if run is None:
+            return
+        ids = run.pending_ids()
+        log(f"{len(ids):,} detail pages pending/retrying. Successful records are already saved.")
         if ids:
             if not preflight_check():
-                raise RuntimeError(
-                    "999.md connectivity check failed. Phase 2 was not started."
-                )
-
-            successful, failed = scrape_all(
-                connection,
-                ids,
-            )
-        else:
-            successful = 0
-            failed = 0
-            print("No individual listings need scraping this round.")
-
-        elapsed = time.time() - start
-
-        print()
-        print("=" * 78)
-        print("FINISHED")
-        print("=" * 78)
-        print(f"IDs read from TXT: {len(ids):,}")
-        print(f"Successfully saved: {successful:,}")
-        print(f"Failed:             {failed:,}")
-        print(f"Elapsed:            {elapsed / 3600:.2f} hours")
-
-    except KeyboardInterrupt:
-        connection.rollback()
-        print("\nStopped by user.")
-        sys.exit(130)
-
-    finally:
-        connection.close()
-        print("PostgreSQL connection closed.")
+                raise PipelineError("999.md connectivity check failed; rerun later to resume.")
+            scrape_all(run.connection, ids, run)
+        remaining = run.pending_ids()
+        if remaining:
+            raise PipelineError(f"{len(remaining):,} detail requests remain unresolved. Rerun this stage; publication is blocked.")
+        with run.connection.cursor() as cur:
+            run.finish(cur, "details")
+        run.connection.commit()
+        log("All discovered IDs are accounted for. Detail stage complete.")
 
 
 if __name__ == "__main__":
-    main()
+    run_cli(main)

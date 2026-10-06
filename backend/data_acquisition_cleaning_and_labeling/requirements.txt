@@ -4,3 +4,5 @@ beautifulsoup4
 psycopg[binary]
 requests
 selenium
+python-dotenv
+SQLAlchemy
