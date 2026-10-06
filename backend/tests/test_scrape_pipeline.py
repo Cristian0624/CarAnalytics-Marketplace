@@ -371,6 +371,71 @@ class DatabaseTests(unittest.TestCase):
             cleaner.main()
         self.assertEqual(self.conn.execute("SELECT id FROM listings_cleaned_temp").fetchall(), [(987,)])
 
+    def clean_detail_rows(self, rows):
+        """Exercise the real details/cleaning stages in this test's isolated schema."""
+        self.seed_current()
+        with runtime.stage_session("discover") as run:
+            run.checkpoint_page(1, [row["id"] for row in rows], finished=True)
+            runtime.prepare_staging(run)
+        with runtime.stage_session("details") as run:
+            details.save_batch(run.connection, rows, run)
+            with run.connection.cursor() as cur:
+                run.finish(cur, "details")
+            run.connection.commit()
+        cleaner.main()
+
+    def test_cleaner_handles_placeholder_identity_without_removing_real_models(self):
+        changes = {
+            3: {"brand": "  ALTĂ   MARCĂ  "},
+            4: {"model": "Alt model"},
+            5: {"model": "Altele"},
+            6: {"generation": " TOATE\u00a0GENERAŢIILE "},
+            7: {"generation": "toate generatiile"},
+            8: {"generation": None},
+            9: {"brand": " Nissan ", "model": " Altima "},
+            10: {"brand": "Suzuki", "model": "Alto"},
+            11: {"brand": "Seat", "model": "Altea"},
+            12: {"brand": "\t "},
+            13: {"model": None},
+            14: {"generation": " I "},
+        }
+        rows = []
+        for listing_id, values in changes.items():
+            row = self.car(listing_id)
+            row.update(values)
+            rows.append(row)
+        self.clean_detail_rows(rows)
+        cleaned = self.conn.execute("SELECT id,brand,model,generation FROM listings_cleaned_temp ORDER BY id").fetchall()
+        self.assertEqual([row[0] for row in cleaned], [6,7,8,9,10,11,14])
+        self.assertTrue(all(row[3] is None for row in cleaned[:3]))
+        self.assertEqual(cleaned[3], (9, "Nissan", "Altima", "I"))
+        self.assertEqual(cleaned[-1][3], "I")
+        # Source rows and current inventory are not modified by cleaning.
+        self.assertEqual(self.conn.execute("SELECT brand FROM listings_temp WHERE id=3").fetchone()[0], "  ALTĂ   MARCĂ  ")
+        self.assertEqual(self.conn.execute("SELECT COUNT(*) FROM listings_temp").fetchone()[0], len(rows))
+        self.assertEqual(self.conn.execute("SELECT id FROM listings_cleaned ORDER BY id").fetchall(), [(1,),(2,)])
+
+    def test_engine_normalization_precedes_deduplication_and_handles_invalid_text(self):
+        engines = {3: "1.4 l", 4: "1.4", 5: "1,40 L", 6: "2.0", 7: "2,0 l",
+                   8: "1.4 / 1.6", 9: "N/A", 10: None}
+        rows = []
+        for listing_id, engine in engines.items():
+            row = self.car(listing_id)
+            row.update(engine=engine, mileage=100000 if listing_id <= 7 else 100000 + listing_id)
+            rows.append(row)
+        self.clean_detail_rows(rows)
+        cleaned = self.conn.execute("SELECT id,engine FROM listings_cleaned_temp ORDER BY id").fetchall()
+        self.assertEqual([row[0] for row in cleaned], [3,6,8,9,10])
+        self.assertEqual(float(cleaned[0][1]), 1.4)
+        self.assertEqual(float(cleaned[1][1]), 2.0)
+        self.assertTrue(all(row[1] is None for row in cleaned[2:]))
+        self.assertEqual(self.conn.execute("SELECT engine FROM listings_temp WHERE id=3").fetchone()[0], "1.4 l")
+        self.assertEqual(self.conn.execute("SELECT COUNT(*) FROM listings_temp").fetchone()[0], len(rows))
+        # Resume skips the committed cleaning stage and cannot remove additional rows.
+        self.conn.commit()
+        cleaner.main()
+        self.assertEqual(self.conn.execute("SELECT COUNT(*) FROM listings_cleaned_temp").fetchone()[0], 5)
+
     def test_next_batch_keeps_prior_history_and_requires_completed_run(self):
         self.prepare_batch()
         with self.assertRaises(runtime.PipelineError):

@@ -1,7 +1,55 @@
+from psycopg import sql
+
 from pipeline_runtime import PipelineError, columns, names, run_cli, stage_session
 
 MDL_PER_EUR = 20.02
 USD_PER_EUR = 1.16
+
+
+def normalize_vehicle_identity(cur):
+    """Keep meaningful brand/model values and represent unspecified generations as NULL."""
+    for field in ("brand", "model", "generation"):
+        cur.execute(sql.SQL("""
+            UPDATE listings_cleaned_temp
+            SET {field} = NULLIF(BTRIM(REGEXP_REPLACE(
+                REPLACE({field}, CHR(160), ' '), '[[:space:]]+', ' ', 'g')), '')
+        """).format(field=sql.Identifier(field)))
+
+    # Match complete labels, not substrings: models such as Altima and Alto are valid.
+    placeholder_labels = {
+        "brand": ("alta marca", "alte marci"),
+        "model": ("alt model", "alte modele", "altele"),
+        "generation": ("toate generatiile", "alta generatie", "alte generatii"),
+    }
+    for field, labels in placeholder_labels.items():
+        cur.execute(sql.SQL("""
+            UPDATE listings_cleaned_temp SET {field} = NULL
+            WHERE LOWER(TRANSLATE({field}, 'ăâîșşțţĂÂÎȘŞȚŢ', 'aaissttAAISSTT')) = ANY(%s)
+        """).format(field=sql.Identifier(field)), (list(labels),))
+        print(f"[CLEANER] NORMALIZED: {cur.rowcount:,} placeholder {field} values to NULL", flush=True)
+
+    cur.execute("""
+        DELETE FROM listings_cleaned_temp WHERE brand IS NULL OR model IS NULL
+    """)
+    print(f"[CLEANER] EXCLUDED: {cur.rowcount:,} rows (missing or placeholder brand/model)", flush=True)
+
+
+def normalize_engine(cur):
+    """Convert engine text before deduplication; malformed optional values stay unknown."""
+    cur.execute("SELECT COUNT(*) FROM listings_cleaned_temp WHERE engine IS NOT NULL")
+    before_count = cur.fetchone()[0]
+    cur.execute("""
+        ALTER TABLE listings_cleaned_temp ALTER COLUMN engine TYPE NUMERIC
+        USING CASE
+            WHEN REPLACE(REGEXP_REPLACE(engine::text, '[^0-9,.]', '', 'g'), ',', '.')
+                 ~ '^[0-9]+([.][0-9]+)?$'
+            THEN REPLACE(REGEXP_REPLACE(engine::text, '[^0-9,.]', '', 'g'), ',', '.')::NUMERIC
+            ELSE NULL
+        END
+    """)
+    cur.execute("SELECT COUNT(*) FROM listings_cleaned_temp WHERE engine IS NOT NULL")
+    unknown_count = before_count - cur.fetchone()[0]
+    print(f"[CLEANER] Engine values normalized before deduplication; {unknown_count:,} invalid/empty values became NULL", flush=True)
 
 
 def main():
@@ -74,6 +122,8 @@ def main():
             excluded_count = raw_count - after_count
             print(f"[CLEANER] EXCLUDED: {excluded_count:,} rows (initial filter: not Vând/Schimb, not Moldova-registered, state Nou, invalid/missing price)", flush=True)
             print(f"[CLEANER] AFTER:    {after_count:,} rows", flush=True)
+
+            normalize_vehicle_identity(cur)
 
             cur.execute("SELECT COUNT(*) FROM listings_cleaned_temp")
             before_count = cur.fetchone()[0]
@@ -190,6 +240,8 @@ def main():
             print("[CLEANER] EXCLUDED: 0 rows (EV/PHEV gearbox normalization)", flush=True)
             print(f"[CLEANER] AFTER:    {after_count:,} rows", flush=True)
 
+            normalize_engine(cur)
+
             # ============================================================
             # DUPLICATES
             # ============================================================
@@ -247,8 +299,6 @@ def main():
             print(f"[CLEANER] EXCLUDED: {exact_duplicates:,} rows (exact duplicates: all 18 identity fields identical)", flush=True)
             print(f"[CLEANER] AFTER:    {after_count:,} rows", flush=True)
 
-            cur.execute("""ALTER TABLE listings_cleaned_temp ALTER COLUMN engine TYPE NUMERIC
-                USING NULLIF(REPLACE(REGEXP_REPLACE(engine::text, '[^0-9,.]', '', 'g'), ',', '.'), '')::NUMERIC""")
             cur.execute('ALTER TABLE listings_cleaned_temp ADD COLUMN IF NOT EXISTS "Score" NUMERIC')
 
             print("[CLEANER] START: Create analytical indexes", flush=True)

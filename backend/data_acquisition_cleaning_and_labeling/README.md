@@ -168,6 +168,14 @@ current inventory does not need to be published again.
 
 ## Known limits
 
+Cleaning normalizes engine values before comparing the existing 18 duplicate identity fields,
+so `1.4 l`, `1.4`, and `1,4` do not create separate cleaned copies of otherwise identical rows.
+Invalid optional engine text becomes `NULL`. Identity labels are trimmed; missing/placeholder
+brands or models (`Altă marcă`, `Alt model`, `Altele`) are excluded from cleaned staging.
+`Toate generațiile` becomes a `NULL` generation for a valid brand/model, retaining that advert
+for model-level comparisons. Raw rows and historical snapshots keep their source values.
+These changes apply to the next cleaning stage; completed batches are skipped on resume.
+
 - The previously agreed reuse policy remains: existing ads are not re-fetched, so their
   price/details may be stale. Newly added metadata remains absent on reused rows unless they
   already had it. Snapshot time and original scrape/source timestamps are separate.
