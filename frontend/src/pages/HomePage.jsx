@@ -61,6 +61,8 @@ function HomePage() {
   const { user } = useAuth();
   const { t } = useTranslation();
 
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
   const [estimator, setEstimator] = useState(INITIAL_ESTIMATOR);
   const [options, setOptions] = useState(EMPTY_OPTIONS);
 
@@ -111,6 +113,62 @@ function HomePage() {
           block: "center",
         });
       }
+    });
+  }
+
+  useEffect(() => {
+    let ticking = false;
+  
+    function updateScrollProgress() {
+      const scrollTop =
+        window.scrollY || document.documentElement.scrollTop;
+  
+      const documentHeight =
+        document.documentElement.scrollHeight - window.innerHeight;
+  
+      const progress =
+        documentHeight > 0
+          ? Math.min(1, Math.max(0, scrollTop / documentHeight))
+          : 0;
+  
+      const progressCircle = document.querySelector(
+        ".scroll-top-ring-progress"
+      );
+  
+      if (progressCircle) {
+        const circumference = 150.8;
+  
+        progressCircle.style.strokeDashoffset =
+          circumference * (1 - progress);
+      }
+  
+      setShowScrollTop(scrollTop > 300);
+  
+      ticking = false;
+    }
+  
+    function handleScroll() {
+      if (!ticking) {
+        window.requestAnimationFrame(updateScrollProgress);
+        ticking = true;
+      }
+    }
+  
+    window.addEventListener("scroll", handleScroll, {
+      passive: true,
+    });
+  
+    updateScrollProgress();
+  
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  function scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
     });
   }
 
@@ -1001,7 +1059,54 @@ function HomePage() {
 
         </div>
       </footer>
+      {showScrollTop && (
+        <button
+          type="button"
+          className={`scroll-top-button ${
+            showScrollTop ? "is-visible" : ""
+          }`}
+          onClick={scrollToTop}
+          aria-label={t("home.scrollTop", "Scroll to top")}
+        >
+          <svg
+            className="scroll-top-ring"
+            viewBox="0 0 56 56"
+            aria-hidden="true"
+          >
+            <circle
+              className="scroll-top-ring-track"
+              cx="28"
+              cy="28"
+              r="24"
+            />
 
+            <circle
+              className="scroll-top-ring-progress"
+              cx="28"
+              cy="28"
+              r="24"
+            />
+          </svg>
+
+          <svg
+            className="scroll-top-icon"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 6L6 12" />
+            <path d="M12 6L18 12" />
+            <path d="M12 12L6 18" />
+            <path d="M12 12L18 18" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }

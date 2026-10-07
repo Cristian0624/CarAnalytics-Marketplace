@@ -40,12 +40,13 @@ function Header() {
         </div>
 
         <div className="header-right">
-
-        <div className="language-selector">
+          <div className="language-selector">
             <button
               type="button"
               className="language-button"
               onClick={() => setLanguageOpen((prev) => !prev)}
+              aria-expanded={languageOpen}
+              aria-haspopup="true"
             >
               <span className="language-button__content">
                 {i18n.language === "ro" && "🇲🇩"}
@@ -58,7 +59,11 @@ function Header() {
                   {i18n.language === "ru" && "RU"}
                 </span>
 
-                <span className={`chevron ${languageOpen ? "chevron-open" : ""}`}>
+                <span
+                  className={`chevron ${
+                    languageOpen ? "chevron-open" : ""
+                  }`}
+                >
                   ▾
                 </span>
               </span>
@@ -93,20 +98,33 @@ function Header() {
             )}
           </div>
 
-          <NavLink to="/" end className={navClass}>
+          <NavLink
+            to="/"
+            end
+            className={navClass}
+          >
             {t("header.home")}
           </NavLink>
 
-          <NavLink to="/listings" className={navClass}>
+          <NavLink
+            to="/listings"
+            className={navClass}
+          >
             {t("header.listings")}
           </NavLink>
 
-          <NavLink to="/anomaly-risk" className={navClass}>
+          <NavLink
+            to="/anomaly-risk"
+            className={navClass}
+          >
             {t("header.riskAnalysis")}
           </NavLink>
 
           {user && (
-            <NavLink to="/profile" className={navClass}>
+            <NavLink
+              to="/profile"
+              className={navClass}
+            >
               {t("header.profile")}
             </NavLink>
           )}
