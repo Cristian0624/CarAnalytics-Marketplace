@@ -1032,7 +1032,7 @@ function HomePage() {
         <div className="footer-content">
 
           <div className="footer-logo">
-            CarAnalytics
+            Face<span style={{ color: "var(--brand-teal)" }}>Auto</span>
           </div>
 
           <div className="footer-links">

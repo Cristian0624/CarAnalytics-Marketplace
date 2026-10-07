@@ -1,9 +1,10 @@
-﻿import { useLocation, Link, useNavigate } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useComparator } from "../context/ComparatorContext";
 import { getLogoFileName, getScoreClass } from "../utils/carCard";
 import SaveItemButton from "../components/SaveItemButton";
+import BackgroundTriangles from "../components/BackgroundTriangles";
 import { createSaved } from "../api/saved_items";
 import { assessAnomalyRisk } from "../api/anomaly_risk";
 import { buildRiskPayload } from "../utils/anomalyRisk";
@@ -68,6 +69,7 @@ export default function ComparatorPage() {
   if (comparedCars.length === 0) {
     return (
       <main className="comparator-page">
+        <BackgroundTriangles />
         <div className="comparator-header">
           <h1>{t("comparatorPage.title")}</h1>
           <button onClick={() => navigate(-1)} className="back-to-market-btn">
@@ -108,6 +110,7 @@ export default function ComparatorPage() {
 
   return (
     <main className="comparator-page" style={{ "--car-count": comparedCars.length }}>
+      <BackgroundTriangles />
       <div className="comparator-header">
         <h1>{t("comparatorPage.titleCount", { count: comparedCars.length })}</h1>
         <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>

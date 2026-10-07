@@ -26,16 +26,18 @@ function Header() {
           <Link
             to="/"
             className="header-brand"
-            aria-label="CarAnalytics"
+            aria-label="FaceAuto"
           >
             <div className="brand-icon">
               <img
                 src="/icon1.png"
-                alt="CarAnalytics logo"
+                alt="FaceAuto logo"
               />
             </div>
 
-            <span>CarAnalytics</span>
+            <span>
+              Face<span style={{ color: "var(--brand-teal)" }}>Auto</span>
+            </span>
           </Link>
         </div>
 

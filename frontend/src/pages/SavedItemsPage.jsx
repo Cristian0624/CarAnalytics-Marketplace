@@ -10,7 +10,7 @@ import {
   updateSaved,
 } from "../api/saved_items";
 import { useAuth } from "../context/AuthContext";
-import { getLogoFileName, getScoreClass } from "../utils/carCard";
+import { getLogoFileName, getScoreClass, getAnomalyScoreClass } from "../utils/carCard";
 import { useFavourites } from "../context/FavouritesContext";
 import {
   describeFilters,
@@ -404,11 +404,11 @@ function SavedCollection({ kind }) {
                           item.result.anomaly_score != null)
                       ) && (
                         <span
-                          className={`score-badge ${getScoreClass(
+                          className={`score-badge ${
                             kind === "risks"
-                              ? item.result.anomaly_score
-                              : item.snapshot.score
-                          )}`}
+                              ? getAnomalyScoreClass(item.result.anomaly_score)
+                              : getScoreClass(item.snapshot.score)
+                          }`}
                           style={{
                             fontSize: "14px",
                             padding: "4px 8px",

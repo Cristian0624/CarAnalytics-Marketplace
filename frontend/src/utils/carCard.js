@@ -17,3 +17,12 @@ export function getLogoFileName(brand) {
   
     return "score-green";
   }
+
+  export function getAnomalyScoreClass(score) {
+    const value = Number(score);
+  
+    if (value < 30) return "score-green";
+    if (value < 60) return "score-orange";
+  
+    return "score-red";
+  }
