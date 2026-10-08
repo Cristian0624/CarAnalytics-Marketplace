@@ -142,9 +142,22 @@ function CarCard({
 
     try {
       const data = await getRecommendationsForCar(currentCar.id);
+<<<<<<< HEAD
       const items = data.recommendations || [];
       viewCache.current[`${currentCar.id}:recommendations`] = items;
       setRecommendations(items);
+=======
+      const rawList = data.recommendations || [];
+      const sortedList = [...rawList].sort((a, b) => {
+        const scoreA = a.score !== null && a.score !== undefined ? Number(a.score) : -Infinity;
+        const scoreB = b.score !== null && b.score !== undefined ? Number(b.score) : -Infinity;
+        if (scoreB !== scoreA) {
+          return scoreB - scoreA;
+        }
+        return (b.similarity_score || 0) - (a.similarity_score || 0);
+      });
+      setRecommendations(sortedList);
+>>>>>>> origin/main
     } catch (err) {
       setViewError(t("carCard.errors.recommendations"));
     } finally {

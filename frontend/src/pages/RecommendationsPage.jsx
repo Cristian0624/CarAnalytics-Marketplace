@@ -112,6 +112,15 @@ function RecommendationsPage() {
         items = data.recommendations;
       }
 
+      items = [...items].sort((a, b) => {
+        const scoreA = a.score !== null && a.score !== undefined ? Number(a.score) : -Infinity;
+        const scoreB = b.score !== null && b.score !== undefined ? Number(b.score) : -Infinity;
+        if (scoreB !== scoreA) {
+          return scoreB - scoreA;
+        }
+        return (b.similarity_score || 0) - (a.similarity_score || 0);
+      });
+
       setRecommendations((current) => ({
         ...current,
         [carId]: items,
