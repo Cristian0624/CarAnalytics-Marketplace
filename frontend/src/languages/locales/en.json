@@ -344,10 +344,49 @@
       }
     },
     "reviews": {
+      "badge": "Feedback & Support",
+      "integratedTitle": "Community Reviews & Bug Reports",
+      "subtitle": "Help us improve FaceAuto. Share your platform experience or let us know if something isn't working right.",
       "title": "Community Reviews",
       "description": "We are building a new community of smart car buyers. Be the first to leave a review of our platform!",
       "write": "Write a Review",
-      "comingSoon": "The review form will be available soon!"
+      "comingSoon": "The review form will be available soon!",
+      "or": "or",
+      "bug": {
+        "title": "Report a Bug",
+        "description": "Found a glitch, incorrect car data, or broken layout? Send us a quick report so our team can fix it right away.",
+        "button": "Report a Bug",
+        "badge": "Quick Fix Support",
+        "modalTitle": "Report an Issue or Bug",
+        "modalSubtitle": "Describe the problem you encountered and our engineering team will investigate.",
+        "typeLabel": "Issue Category",
+        "typeOptions": {
+          "data": "Incorrect Vehicle Data",
+          "ui": "Visual or Interface Glitch",
+          "filter": "Search & Filter Issue",
+          "performance": "Slow Loading or Crash",
+          "other": "Other Bug"
+        },
+        "descriptionLabel": "What went wrong?",
+        "descriptionPlaceholder": "Please describe what happened, steps to reproduce, or which car listing had an issue...",
+        "emailLabel": "Your Email (optional)",
+        "emailPlaceholder": "name@example.com",
+        "submit": "Submit Bug Report",
+        "successTitle": "Report Received!",
+        "successMessage": "Thank you for helping us make FaceAuto better. We've logged your report for investigation.",
+        "close": "Close"
+      },
+      "reviewModal": {
+        "title": "Write a Community Review",
+        "subtitle": "Tell others how FaceAuto helped you evaluate car prices and find deals.",
+        "ratingLabel": "Your Rating",
+        "feedbackLabel": "Your Feedback",
+        "feedbackPlaceholder": "What do you like about FaceAuto? What could be improved?",
+        "submit": "Submit Review",
+        "successTitle": "Thank You!",
+        "successMessage": "Your review has been submitted to the community.",
+        "close": "Close"
+      }
     },
     "faq": {
       "title": "Frequently Asked Questions",
@@ -378,6 +417,7 @@
     }
   },
   "listings": {
+    "title": "Marketplace",
     "sort": {
       "label": "Sort:",
       "random": "Random",

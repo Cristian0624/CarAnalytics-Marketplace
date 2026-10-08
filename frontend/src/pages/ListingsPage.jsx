@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { searchListingsPaginated } from "../api/listings";
@@ -70,9 +70,51 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
   const [countLoading, setCountLoading] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const [sortLabel, setSortLabel] = useState(
-    t("listings.sort.random")
-  );
+
+  function getSortLabel() {
+    if (!query.sort_by) {
+      return t("listings.sort.random");
+    }
+    if (query.sort_by === "score") {
+      return query.sort_order === "desc"
+        ? t("listings.sort.scoreHighLow")
+        : t("listings.sort.scoreLowHigh");
+    }
+    if (query.sort_by === "price_eur") {
+      return query.sort_order === "asc"
+        ? t("listings.sort.priceLowHigh")
+        : t("listings.sort.priceHighLow");
+    }
+    if (query.sort_by === "year") {
+      return query.sort_order === "desc"
+        ? t("listings.sort.yearNewOld")
+        : t("listings.sort.yearOldNew");
+    }
+    if (query.sort_by === "mileage") {
+      return query.sort_order === "asc"
+        ? t("listings.sort.mileageLowHigh")
+        : t("listings.sort.mileageHighLow");
+    }
+    return t("listings.sort.random");
+  }
+
+  const sortLabel = getSortLabel();
+  const sortRef = useRef(null);
+
+  useEffect(() => {
+    if (!sortOpen) return;
+
+    function handleClickOutside(event) {
+      if (sortRef.current && !sortRef.current.contains(event.target)) {
+        setSortOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [sortOpen]);
 
   useEffect(() => {
     let ticking = false;
@@ -290,7 +332,6 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
       sort_order: undefined,
     });
 
-    setSortLabel(t("listings.sort.random"));
     setSortOpen(false);
   }
 
@@ -303,7 +344,7 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
     scrollToResults();
   }
 
-  function changeSort(sort_by, sort_order, label) {
+  function changeSort(sort_by, sort_order) {
     setQuery((prev) => ({
       ...prev,
       sort_by,
@@ -311,7 +352,6 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
       page: 1,
     }));
 
-    setSortLabel(label);
     setSortOpen(false);
   }
 
@@ -349,6 +389,7 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
 
       <main className="home-main">
         <ListingFilters
+          title={t("listings.title")}
           filters={filters}
           setFilters={setFilters}
           onSearch={handleSearch}
@@ -362,28 +403,21 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
           barExtras={
             <div
               className="lf-sort"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
+              ref={sortRef}
             >
-              <span
-                style={{
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  color: "var(--lf-ink)",
-                }}
-              >
-                {t("listings.sort.label")}
-              </span>
-
               <button
                 type="button"
-                className={`lf-toggle ${sortOpen ? "open" : ""}`}
+                className={`lf-toggle lf-sort-toggle ${sortOpen ? "open" : ""}`}
                 onClick={() => setSortOpen((v) => !v)}
+                title={sortLabel}
+                aria-expanded={sortOpen}
               >
-                {sortLabel}
+                <img
+                  src="/sort_button.png"
+                  alt=""
+                  className="lf-button-icon"
+                />
+                <span className="lf-btn-text">{sortLabel}</span>
                 <span
                   className="lf-arrow"
                   aria-hidden="true"

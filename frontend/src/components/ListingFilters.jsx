@@ -283,6 +283,7 @@ const RANGES = [
 ];
 
 export default function ListingFilters({
+  title = null,
   filters,
   setFilters,
   onSearch,
@@ -463,62 +464,136 @@ export default function ListingFilters({
 
   return (
     <section className="listing-filters">
-      <div className="lf-bar">
-        <button
-          type="button"
-          className={`lf-toggle ${open ? "open" : ""}`}
-          aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-        >
-          {t("listing-Filters.advanced")}
+      {title ? (
+        <div className="marketplace-head">
+          <div className="marketplace-head-left">
+            <h1 className="marketplace-head-title">{title}</h1>
+          </div>
 
-          {pills.length > 0 && (
-            <span className="lf-badge">
-              {pills.length}
-            </span>
-          )}
+          <div className="marketplace-head-right">
+            {barExtras}
 
-          <span
-            className="lf-arrow"
-            aria-hidden="true"
-          >
-            ▾
-          </span>
-        </button>
-
-        {barExtras}
-
-        <div className="lf-pills">
-          {pills.map((p, i) => (
-            <span
-              key={i}
-              className="filter-pill"
+            <button
+              type="button"
+              className={`lf-toggle lf-filter-toggle ${open ? "open" : ""}`}
+              aria-expanded={open}
+              onClick={() => setOpen((v) => !v)}
+              title={t("listing-Filters.advanced")}
             >
-              {p.label}
+              <img
+                src="/filter_button.png"
+                alt=""
+                className="lf-button-icon"
+              />
+              <span className="lf-btn-text">{t("listing-Filters.advanced")}</span>
 
-              <button
-                type="button"
-                aria-label={t("listing-Filters.remove", {
-                  value: p.label
-                })}
-                onClick={p.onRemove}
-              >
-                ×
-              </button>
-            </span>
-          ))}
+              {pills.length > 0 && (
+                <span className="lf-badge">
+                  {pills.length}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
-
-        {hasActiveFilters && (
+      ) : (
+        <div className="lf-bar">
           <button
             type="button"
-            className="lf-link"
-            onClick={onReset}
+            className={`lf-toggle lf-filter-toggle ${open ? "open" : ""}`}
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+            title={t("listing-Filters.advanced")}
           >
-            {t("listing-Filters.clearAll")}
+            <img
+              src="/filter_button.png"
+              alt=""
+              className="lf-button-icon"
+            />
+            <span className="lf-btn-text">{t("listing-Filters.advanced")}</span>
+
+            {pills.length > 0 && (
+              <span className="lf-badge">
+                {pills.length}
+              </span>
+            )}
+
+            <span
+              className="lf-arrow"
+              aria-hidden="true"
+            >
+              ▾
+            </span>
           </button>
-        )}
-      </div>
+
+          {barExtras}
+
+          <div className="lf-pills">
+            {pills.map((p, i) => (
+              <span
+                key={i}
+                className="filter-pill"
+              >
+                {p.label}
+
+                <button
+                  type="button"
+                  aria-label={t("listing-Filters.remove", {
+                    value: p.label
+                  })}
+                  onClick={p.onRemove}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+
+          {hasActiveFilters && (
+            <button
+              type="button"
+              className="lf-link"
+              onClick={onReset}
+            >
+              {t("listing-Filters.clearAll")}
+            </button>
+          )}
+        </div>
+      )}
+
+      {title && pills.length > 0 && (
+        <div className="lf-active-pills-bar">
+          <div className="lf-pills">
+            {pills.map((p, i) => (
+              <span
+                key={i}
+                className="filter-pill"
+              >
+                {p.label}
+
+                <button
+                  type="button"
+                  aria-label={t("listing-Filters.remove", {
+                    value: p.label
+                  })}
+                  onClick={p.onRemove}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+
+          {hasActiveFilters && (
+            <button
+              type="button"
+              className="lf-link"
+              onClick={onReset}
+            >
+              {t("listing-Filters.clearAll")}
+            </button>
+          )}
+        </div>
+      )}
 
       {open &&
         createPortal(

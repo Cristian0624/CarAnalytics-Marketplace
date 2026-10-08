@@ -27,6 +27,58 @@
 }
 
 /* ---------- Top filter bar ---------- */
+/* ---------- Marketplace Head & Bar ---------- */
+
+.marketplace-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  min-height: 64px;
+  padding: 12px 20px;
+  margin-bottom: 24px;
+
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--lf-line);
+  border-radius: 16px;
+  box-sizing: border-box;
+
+  box-shadow: 0 2px 12px rgba(19, 46, 42, 0.06);
+}
+
+.marketplace-head-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.marketplace-head-title {
+  margin: 0;
+  font-size: clamp(38px, 4.5vw, 56px);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  color: #17202A;
+  line-height: 1.1;
+}
+
+.marketplace-head-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.lf-active-pills-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: -10px;
+  margin-bottom: 20px;
+  padding: 4px 6px;
+}
 
 .lf-bar {
   display: flex;
@@ -46,7 +98,7 @@
 }
 
 
-/* Filters button */
+/* Filters & Sort buttons */
 
 .lf-toggle {
   flex: none;
@@ -56,32 +108,52 @@
   justify-content: center;
   gap: 8px;
 
-  height: 38px;
-  padding: 0 15px;
+  height: 40px;
+  padding: 0 16px;
 
-  border: 1px solid var(--lf-accent);
-  border-radius: 8px;
+  border: 1px solid var(--lf-line);
+  border-radius: 10px;
 
-  background: var(--lf-accent);
-  color: var(--lf-pearl);
+  background: #FFFFFF;
+  color: #17202A;
 
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
 
   cursor: pointer;
 
-  box-shadow: 0 1px 3px rgba(19, 46, 42, 0.08);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 
   transition:
     background 0.15s ease,
+    border-color 0.15s ease,
     color 0.15s ease,
     box-shadow 0.15s ease,
     transform 0.12s ease;
 }
 
+.lf-button-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: inline-block;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.lf-btn-text {
+  display: inline-block;
+  line-height: 1;
+}
+
 .lf-toggle:hover {
-  background: var(--lf-pearl);
+  background: #F8FAFC;
+  border-color: var(--lf-accent);
   color: var(--lf-accent);
+}
+
+.lf-toggle:hover .lf-button-icon {
+  transform: scale(1.08);
 }
 
 .lf-toggle:active {
@@ -89,42 +161,72 @@
 }
 
 .lf-toggle.open {
-  background: var(--lf-accent);
-  color: var(--lf-pearl);
+  background: #F0FDFA;
+  border-color: var(--lf-accent);
+  color: var(--lf-accent);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
 }
 
 .lf-toggle.open:hover {
-  background: #0F8A7D;
+  background: #CCFBF1;
 }
+
 .lf-badge {
-  min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px;
-  background: var(--lf-pearl); color: var(--lf-accent); font-size: 12px; font-weight: 700;
-  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--lf-accent);
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
-.lf-arrow { font-size: 11px; transition: transform .2s; }
-.lf-toggle.open .lf-arrow, .lf-arrow.up { transform: rotate(180deg); }
+
+.lf-arrow {
+  font-size: 11px;
+  transition: transform .2s ease;
+}
+
+.lf-toggle.open .lf-arrow,
+.lf-arrow.up {
+  transform: rotate(180deg);
+}
 
 .lf-sort {
   position: relative;
   flex: none;
 }
 
-.lf-sort .lf-toggle {
-  min-width: 110px;
-}
-
 .lf-sort-menu {
   position: absolute;
   top: calc(100% + 6px);
-  left: 0;
+  right: 0;
   min-width: 210px;
   z-index: 30;
   padding: 6px 0;
   border: 1px solid var(--lf-line);
-  border-radius: 8px;
+  border-radius: 10px;
   background: #fff;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.10);
   overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .marketplace-head {
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 12px 14px;
+  }
+  .marketplace-head-title {
+    font-size: 36px;
+  }
+  .marketplace-head-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
 }
 
 .lf-sort-menu button {

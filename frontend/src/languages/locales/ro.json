@@ -344,10 +344,49 @@
       }
     },
     "reviews": {
+      "badge": "Feedback & Suport",
+      "integratedTitle": "Recenzii & Raportare Erori",
+      "subtitle": "Ajută-ne să îmbunătățim FaceAuto. Împărtășește experiența ta sau anunță-ne dacă ceva nu funcționează corect.",
       "title": "Recenzii ale Comunității",
       "description": "Construim o nouă comunitate de cumpărători inteligenți de mașini. Fii primul care lasă o recenzie platformei noastre!",
       "write": "Scrie o recenzie",
-      "comingSoon": "Formularul pentru recenzii va fi disponibil în curând!"
+      "comingSoon": "Formularul pentru recenzii va fi disponibil în curând!",
+      "or": "sau",
+      "bug": {
+        "title": "Raportează o problemă",
+        "description": "Ai găsit o eroare, date incorecte despre un vehicul sau o problemă vizuală? Trimite-ne un raport rapid pentru a o rezolva.",
+        "button": "Raportează un bug",
+        "badge": "Rezolvare Rapidă",
+        "modalTitle": "Raportează o problemă sau eroare",
+        "modalSubtitle": "Descrie problema întâlnită, iar echipa noastră tehnică o va investiga rapid.",
+        "typeLabel": "Categorie problemă",
+        "typeOptions": {
+          "data": "Date incorecte despre vehicul",
+          "ui": "Eroare vizuală sau interfață",
+          "filter": "Problemă filtre & căutare",
+          "performance": "Încărcare lentă sau blocare",
+          "other": "Altă eroare"
+        },
+        "descriptionLabel": "Ce s-a întâmplat?",
+        "descriptionPlaceholder": "Te rugăm să descrii problema, pașii pentru reproducere sau link-ul/anunțul afectat...",
+        "emailLabel": "Email-ul tău (opțional)",
+        "emailPlaceholder": "nume@example.com",
+        "submit": "Trimite raportul",
+        "successTitle": "Raport recepționat!",
+        "successMessage": "Îți mulțumim pentru ajutor! Raportul tău a fost înregistrat pentru investigație.",
+        "close": "Închide"
+      },
+      "reviewModal": {
+        "title": "Scrie o recenzie a comunității",
+        "subtitle": "Spune-le celorlalți cum te-a ajutat FaceAuto să analizezi prețurile și ofertele auto.",
+        "ratingLabel": "Nota ta",
+        "feedbackLabel": "Părerea ta",
+        "feedbackPlaceholder": "Ce îți place la FaceAuto? Ce putem îmbunătăți?",
+        "submit": "Trimite recenzia",
+        "successTitle": "Mulțumim!",
+        "successMessage": "Recenzia ta a fost trimisă comunității.",
+        "close": "Închide"
+      }
     },
     "faq": {
       "title": "Întrebări Frecvente",
@@ -378,6 +417,7 @@
     }
   },
   "listings": {
+    "title": "Piață",
     "sort": {
       "label": "Afișare:",
       "random": "Aleatoriu",
