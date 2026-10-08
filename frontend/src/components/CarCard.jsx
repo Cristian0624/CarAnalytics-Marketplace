@@ -728,6 +728,7 @@ function CarCard({
                                     flex: 1,
                                     padding: "12px",
                                     background: "#f3f4f6",
+                                    color: "black",
                                     border: "1px solid #e5e7eb",
                                     borderRadius: "8px",
                                     cursor: "pointer",

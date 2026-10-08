@@ -12,7 +12,7 @@ from price_estimate_schemas import PriceEstimateRequest, PriceEstimateResponse
 
 
 MIN_DIRECT_COMPARABLES = 8
-MIN_ACCEPTABLE_POOL = 3
+MIN_ACCEPTABLE_POOL = 7
 MIN_EFFECTIVE_COMPARABLES = 5
 MIN_BARS, TARGET_BARS, MAX_BARS = 4, 6, 8
 
@@ -310,13 +310,13 @@ class PriceEstimateService:
         )
         if count == 0:
             mode = "no_comparables"
-            message = "Nu există anunțuri cu preț disponibil pentru marca, modelul și generația selectate."
+            message = "Nu există suficiente date pentru o estimare corectă. Nu există anunțuri cu preț disponibil în grupul selectat; sunt necesare minimum 7."
         elif count == 1:
             mode = "single_comparable"
-            message = "Există un singur anunț în grupul selectat; sunt necesare minimum 3 pentru estimarea prețului."
+            message = "Nu există suficiente date pentru o estimare corectă. Există un singur anunț în grupul selectat; sunt necesare minimum 7."
         elif count < MIN_ACCEPTABLE_POOL:
             mode = "very_limited"
-            message = f"Doar {count} anunțuri în grupul selectat; sunt necesare minimum 3 pentru estimarea prețului."
+            message = f"Nu există suficiente date pentru o estimare corectă. Doar {count} anunțuri în grupul selectat; sunt necesare minimum 7."
         else:
             mode = "direct" if close_count == count else "normal_fallback"
             message = (f"Estimare din {count} anunțuri cu aceeași marcă, același model și aceeași generație. "

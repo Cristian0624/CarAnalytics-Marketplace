@@ -10,7 +10,7 @@ import {
   updateSaved,
 } from "../api/saved_items";
 import { useAuth } from "../context/AuthContext";
-import { getLogoFileName, getScoreClass } from "../utils/carCard";
+import { getLogoFileName, getScoreClass, getAnomalyScoreClass } from "../utils/carCard";
 import { useFavourites } from "../context/FavouritesContext";
 import {
   describeFilters,
@@ -117,6 +117,15 @@ export default function SavedItemsPage({ kind }) {
       </div>
     </main>
   );
+}
+
+function RemovedListingBadge({ item }) {
+  const { t } = useTranslation();
+  return item.available === false ? (
+    <span className="saved-unavailable-badge">
+      {t("savedItems.badges.removedFromMarket")}
+    </span>
+  ) : null;
 }
 
 function ItemSummary({ kind, item }) {
@@ -337,6 +346,8 @@ function SavedCollection({ kind }) {
                   </time>
                 </div>
 
+                {kind === "favourites" && <RemovedListingBadge item={item} />}
+
                 <div
                   style={{
                     display: "flex",
@@ -404,11 +415,11 @@ function SavedCollection({ kind }) {
                           item.result.anomaly_score != null)
                       ) && (
                         <span
-                          className={`score-badge ${getScoreClass(
+                          className={`score-badge ${
                             kind === "risks"
-                              ? item.result.anomaly_score
-                              : item.snapshot.score
-                          )}`}
+                              ? getAnomalyScoreClass(item.result.anomaly_score)
+                              : getScoreClass(item.snapshot.score)
+                          }`}
                           style={{
                             fontSize: "14px",
                             padding: "4px 8px",
@@ -858,6 +869,7 @@ function SavedDetail({ kind, id }) {
               )}
 
               <div className="saved-listing">
+                <RemovedListingBadge item={item} />
                 <CarCard
                   car={
                     item.current_listing ??

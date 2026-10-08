@@ -26,31 +26,34 @@ function Header() {
           <Link
             to="/"
             className="header-brand"
-            aria-label="CarAnalytics"
+            aria-label="FaceAuto"
           >
             <div className="brand-icon">
               <img
                 src="/icon1.png"
-                alt="CarAnalytics logo"
+                alt="FaceAuto logo"
               />
             </div>
 
-            <span>CarAnalytics</span>
+            <span>
+              Face<span style={{ color: "var(--brand-teal)" }}>Auto</span>
+            </span>
           </Link>
         </div>
 
         <div className="header-right">
-
-        <div className="language-selector">
+          <div className="language-selector">
             <button
               type="button"
               className="language-button"
               onClick={() => setLanguageOpen((prev) => !prev)}
+              aria-expanded={languageOpen}
+              aria-haspopup="true"
             >
               <span className="language-button__content">
-                {i18n.language === "ro" && "🇲🇩"}
-                {i18n.language === "en" && "🇬🇧"}
-                {i18n.language === "ru" && "🇷🇺"}
+                {i18n.language === "ro" }
+                {i18n.language === "en"}
+                {i18n.language === "ru" }
 
                 <span>
                   {i18n.language === "ro" && "RO"}
@@ -58,7 +61,11 @@ function Header() {
                   {i18n.language === "ru" && "RU"}
                 </span>
 
-                <span className={`chevron ${languageOpen ? "chevron-open" : ""}`}>
+                <span
+                  className={`chevron ${
+                    languageOpen ? "chevron-open" : ""
+                  }`}
+                >
                   ▾
                 </span>
               </span>
@@ -71,7 +78,7 @@ function Header() {
                   className="language-dropdown-item"
                   onClick={() => changeLanguage("ro")}
                 >
-                  🇲🇩 <span>Română</span>
+                  <span>Română</span>
                 </button>
 
                 <button
@@ -79,7 +86,7 @@ function Header() {
                   className="language-dropdown-item"
                   onClick={() => changeLanguage("en")}
                 >
-                  🇬🇧 <span>English</span>
+                  <span>English</span>
                 </button>
 
                 <button
@@ -87,26 +94,39 @@ function Header() {
                   className="language-dropdown-item"
                   onClick={() => changeLanguage("ru")}
                 >
-                  🇷🇺 <span>Русский</span>
+                    <span>Русский</span>
                 </button>
               </div>
             )}
           </div>
 
-          <NavLink to="/" end className={navClass}>
+          <NavLink
+            to="/"
+            end
+            className={navClass}
+          >
             {t("header.home")}
           </NavLink>
 
-          <NavLink to="/listings" className={navClass}>
+          <NavLink
+            to="/listings"
+            className={navClass}
+          >
             {t("header.listings")}
           </NavLink>
 
-          <NavLink to="/anomaly-risk" className={navClass}>
+          <NavLink
+            to="/anomaly-risk"
+            className={navClass}
+          >
             {t("header.riskAnalysis")}
           </NavLink>
 
           {user && (
-            <NavLink to="/profile" className={navClass}>
+            <NavLink
+              to="/profile"
+              className={navClass}
+            >
               {t("header.profile")}
             </NavLink>
           )}

@@ -46,6 +46,10 @@ export async function getListing(listingID) {
     return apiRequest(`listings/${listingID}`);
 }
 
+export async function getListingYearRange(filters = {}) {
+    return apiRequest(`/listings/year-range${buildQueryString(filters)}`);
+}
+
 export async function getListingOptions({
     brand,
     model,

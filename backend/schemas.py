@@ -87,6 +87,12 @@ class PaginatedListingsResponse(BaseModel):
     pages: int
 
 
+class ListingYearRangeResponse(BaseModel):
+    year_min: int
+    year_max: int
+    present: bool
+
+
 class UserQueryCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

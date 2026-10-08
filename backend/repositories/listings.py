@@ -106,6 +106,14 @@ class ListingsRepository:
     def get_by_id(self, listing_id: int):
         return self.db.get(Listing, listing_id)
 
+    def get_vehicle_year_ranges(self, filters):
+        statement = self.filtered_statement(filters).order_by(None).with_only_columns(
+            Listing.brand, Listing.model, Listing.generation,
+            func.min(Listing.year).label("year_min"),
+            func.max(Listing.year).label("year_max"),
+        ).group_by(Listing.brand, Listing.model, Listing.generation)
+        return self.db.execute(statement).all()
+
     def get_options(self, brand=None, model=None, generation=None):
         """Return exact inventory values; only vehicle identity fields cascade."""
         def distinct(column, *conditions):

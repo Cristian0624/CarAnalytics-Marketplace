@@ -4,7 +4,7 @@ import logging
 
 import httpx
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.exc import IntegrityError
 
 from anomaly_risk_schemas import AnomalyRiskResponse
@@ -65,14 +65,41 @@ def create_favourite(db, user_id, payload):
 
 
 def current_favourite_listing(db, favourite):
-    if favourite.listing_url:
-        return db.scalar(select(Listing).where(Listing.url == favourite.listing_url)
-                         .order_by(Listing.id).limit(1))
-    listing = db.get(Listing, favourite.listing_id)
-    # Without a URL, never silently attach an obviously reused ID to another car.
-    if listing is not None and all(
-        getattr(listing, field) == favourite.snapshot.get(field)
-        for field in ("brand", "model", "generation", "year")
-    ):
-        return listing
-    return None
+    return current_favourite_listings(db, [favourite]).get(favourite.id)
+
+
+def current_favourite_listings(db, favourites):
+    """Resolve a page against the current cleaned inventory in one query.
+
+    Archive rows and saved snapshots preserve details, but never imply that an
+    ad still belongs to the latest published batch.
+    """
+    if not favourites:
+        return {}
+
+    urls = [item.listing_url for item in favourites if item.listing_url]
+    ids = [item.listing_id for item in favourites if not item.listing_url]
+    listings = db.scalars(select(Listing).where(or_(
+        Listing.url.in_(urls), Listing.id.in_(ids),
+    )).order_by(Listing.id)).all()
+
+    by_url = {}
+    by_id = {}
+    for listing in listings:
+        by_url.setdefault(listing.url, listing)
+        by_id[listing.id] = listing
+
+    current = {}
+    for favourite in favourites:
+        if favourite.listing_url:
+            listing = by_url.get(favourite.listing_url)
+        else:
+            listing = by_id.get(favourite.listing_id)
+            # Without a URL, do not attach a reused ID to a different car.
+            if listing is not None and not all(
+                getattr(listing, field) == favourite.snapshot.get(field)
+                for field in ("brand", "model", "generation", "year")
+            ):
+                listing = None
+        current[favourite.id] = listing
+    return current

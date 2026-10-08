@@ -17,7 +17,7 @@ export function priceEstimateComparisonMessage(comparison, t) {
   const count = comparison.total_used;
   if (count === 0) return tr("zeroListings");
   if (count === 1) return tr("oneListing");
-  if (count < 3) return tr("fewListings", { count });
+  if (count < 7) return tr("fewListings", { count });
   return [
     tr("estimateGroup", { count }), tr("estimateWeighting"),
     comparison.limited_market_data ? tr("estimateLimited") : "",

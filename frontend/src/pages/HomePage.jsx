@@ -3,15 +3,11 @@ import { useAuth } from "../context/AuthContext";
 import CarViewer from "../components/CarViewer";
 import "./HomePage.css";
 import { useEffect, useState, useRef } from "react";
-import { getListingOptions } from "../api/listings";
 import { estimatePrice } from "../api/price_estimate";
 import { priceEstimateComparisonMessage, priceEstimateErrorMessage, priceEstimateMileageBounds, priceEstimateYearBounds } from "../utils/priceEstimate";
 import Autocomplete from "../components/Autocomplete";
-import {
-  getPredictionBrands,
-  getPredictionModels,
-  getPredictionGenerations,
-} from "../api/predictions";
+import useVehicleOptions from "../hooks/useVehicleOptions";
+import { resolveVehicleOption } from "../utils/anomalyRisk";
 import { useTranslation } from "react-i18next";
 
 function formatPrice(value) {
@@ -61,8 +57,19 @@ function HomePage() {
   const { user } = useAuth();
   const { t } = useTranslation();
 
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
   const [estimator, setEstimator] = useState(INITIAL_ESTIMATOR);
-  const [options, setOptions] = useState(EMPTY_OPTIONS);
+  const brandRequest = useVehicleOptions();
+  const options = brandRequest.data ?? EMPTY_OPTIONS;
+  const brands = options.brand ?? [];
+  const selectedBrand = resolveVehicleOption(brands, estimator.brand);
+  const modelRequest = useVehicleOptions(selectedBrand, undefined, Boolean(selectedBrand));
+  const models = modelRequest.data?.model ?? [];
+  const selectedModel = selectedBrand ? resolveVehicleOption(models, estimator.model) : null;
+  const generationRequest = useVehicleOptions(selectedBrand, selectedModel, Boolean(selectedBrand && selectedModel));
+  const generations = generationRequest.data?.generation ?? [];
+  const selectedGeneration = resolveVehicleOption(generations, estimator.generation);
 
   const [estimate, setEstimate] = useState(null);
   const [estimateLoading, setEstimateLoading] = useState(false);
@@ -115,29 +122,68 @@ function HomePage() {
   }
 
   useEffect(() => {
-    async function loadOptions() {
-      try {
-        const result = await getListingOptions();
-
-        setOptions({
-          fuel_type: result.fuel_type || [],
-          engine: result.engine || [],
-          gearbox: result.gearbox || [],
-          drivetrain: result.drivetrain || [],
-          body_type: result.body_type || [],
-        });
-      } catch {
-        setEstimateError(t("home.estimator.errors.options"));
+    let ticking = false;
+  
+    function updateScrollProgress() {
+      const scrollTop =
+        window.scrollY || document.documentElement.scrollTop;
+  
+      const documentHeight =
+        document.documentElement.scrollHeight - window.innerHeight;
+  
+      const progress =
+        documentHeight > 0
+          ? Math.min(1, Math.max(0, scrollTop / documentHeight))
+          : 0;
+  
+      const progressCircle = document.querySelector(
+        ".scroll-top-ring-progress"
+      );
+  
+      if (progressCircle) {
+        const circumference = 150.8;
+  
+        progressCircle.style.strokeDashoffset =
+          circumference * (1 - progress);
+      }
+  
+      setShowScrollTop(scrollTop > 300);
+  
+      ticking = false;
+    }
+  
+    function handleScroll() {
+      if (!ticking) {
+        window.requestAnimationFrame(updateScrollProgress);
+        ticking = true;
       }
     }
+  
+    window.addEventListener("scroll", handleScroll, {
+      passive: true,
+    });
+  
+    updateScrollProgress();
+  
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
-    loadOptions();
-  }, [t]);
+  function scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
 
   function updateEstimator(name, value, moveNext = false) {
+    const brandChanged = name === "brand" && resolveVehicleOption(brands, value) !== selectedBrand;
+    const modelChanged = name === "model" && resolveVehicleOption(models, value) !== selectedModel;
     setEstimator((current) => ({
       ...current,
       [name]: value,
+      ...(brandChanged ? { model: "", generation: "" } : modelChanged ? { generation: "" } : {}),
     }));
 
     setEstimate(null);
@@ -149,34 +195,11 @@ function HomePage() {
   }
 
   function handleBrandChange(value) {
-    setEstimator((current) => ({
-      ...current,
-      brand: value,
-      model: "",
-      generation: "",
-    }));
-
-    setEstimate(null);
-    setEstimateError("");
-
-    if (value) {
-      focusNextField("brand");
-    }
+    updateEstimator("brand", value, true);
   }
 
   function handleModelChange(value) {
-    setEstimator((current) => ({
-      ...current,
-      model: value,
-      generation: "",
-    }));
-
-    setEstimate(null);
-    setEstimateError("");
-
-    if (value) {
-      focusNextField("model");
-    }
+    updateEstimator("model", value, true);
   }
 
   function handleGenerationChange(value) {
@@ -188,9 +211,9 @@ function HomePage() {
     const mileage = parseNumber(estimator.mileage);
 
     if (
-      !estimator.brand ||
-      !estimator.model ||
-      !estimator.generation ||
+      !selectedBrand ||
+      !selectedModel ||
+      !selectedGeneration ||
       year === null ||
       mileage === null ||
       !estimator.fuel_type ||
@@ -209,9 +232,9 @@ function HomePage() {
         : parseNumber(estimator.engine);
 
     const payload = {
-      brand: estimator.brand,
-      model: estimator.model,
-      generation: estimator.generation,
+      brand: selectedBrand,
+      model: selectedModel,
+      generation: selectedGeneration,
 
       year,
       mileage,
@@ -261,8 +284,24 @@ function HomePage() {
               <p className="hero-subtitle">
                 {t("home.hero.loggedInSubtitle")}
               </p>
+            </>
+          ) : (
+            <>
+              <h1 className="hero-title">
+                {t("home.hero.guestTitle")}
+              </h1>
 
-              <div className="hero-buttons">
+              <p className="hero-subtitle">
+                {t("home.hero.guestSubtitle")}
+              </p>
+            </>
+          )}
+        </div>
+
+        <div className="hero-image-placeholder">
+          <div className="hero-buttons">
+            {user ? (
+              <>
                 <Link to="/listings" className="btn-primary">
                   {t("home.hero.browseMarket")}
                 </Link>
@@ -277,19 +316,9 @@ function HomePage() {
                 >
                   {t("home.hero.estimateRisk")}
                 </Link>
-              </div>
-            </>
-          ) : (
-            <>
-              <h1 className="hero-title">
-                {t("home.hero.guestTitle")}
-              </h1>
-
-              <p className="hero-subtitle">
-                {t("home.hero.guestSubtitle")}
-              </p>
-
-              <div className="hero-buttons">
+              </>
+            ) : (
+              <>
                 <Link to="/listings" className="btn-primary">
                   {t("home.hero.browseMarket")}
                 </Link>
@@ -304,18 +333,22 @@ function HomePage() {
                 >
                   {t("home.hero.estimateRisk")}
                 </Link>
-              </div>
-            </>
-          )}
-        </div>
-
-        <div className="hero-image-placeholder">
-          <CarViewer />
+              </>
+            )}
+          </div>
         </div>
       </section>
 
       {/* PRICE ESTIMATOR */}
       <section className="home-estimator-section">
+
+        <div className="estimator-car-image">
+          <img
+            src="/r8.png"
+            alt="Audi R8"
+            className="floating-car"
+          />
+        </div>
 
         <div className="home-estimator-header">
           <span className="home-estimator-badge">
@@ -348,14 +381,10 @@ function HomePage() {
                 onSelect={(value) => {
                   handleBrandChange(value);
                 }}
-                fetchSuggestions={async (query) => {
-                  try {
-                    const data = await getPredictionBrands(query);
-                    return data.brands || [];
-                  } catch {
-                    return [];
-                  }
-                }}
+                options={brands}
+                loading={brandRequest.loading}
+                error={brandRequest.error}
+                label={t("home.estimator.fields.brand")}
                 placeholder={t("home.estimator.placeholders.brand")}
               />
             </div>
@@ -373,24 +402,13 @@ function HomePage() {
                 onSelect={(value) => {
                   handleModelChange(value);
                 }}
-                fetchSuggestions={async (query) => {
-                  if (!estimator.brand) {
-                    return [];
-                  }
-
-                  try {
-                    const data = await getPredictionModels(
-                      estimator.brand,
-                      query
-                    );
-
-                    return data.models || [];
-                  } catch {
-                    return [];
-                  }
-                }}
+                key={`model/${selectedBrand}`}
+                options={models}
+                loading={modelRequest.loading}
+                error={modelRequest.error}
+                label={t("home.estimator.fields.model")}
                 placeholder={t("home.estimator.placeholders.model")}
-                disabled={!estimator.brand}
+                disabled={!selectedBrand}
               />
             </div>
 
@@ -407,25 +425,13 @@ function HomePage() {
                 onSelect={(value) => {
                   handleGenerationChange(value);
                 }}
-                fetchSuggestions={async (query) => {
-                  if (!estimator.brand || !estimator.model) {
-                    return [];
-                  }
-
-                  try {
-                    const data = await getPredictionGenerations(
-                      estimator.brand,
-                      estimator.model,
-                      query
-                    );
-
-                    return data.generations || [];
-                  } catch {
-                    return [];
-                  }
-                }}
+                key={`generation/${selectedBrand}/${selectedModel}`}
+                options={generations}
+                loading={generationRequest.loading}
+                error={generationRequest.error}
+                label={t("home.estimator.fields.generation")}
                 placeholder={t("home.estimator.placeholders.generation")}
-                disabled={!estimator.model}
+                disabled={!selectedBrand || !selectedModel}
               />
             </div>
 
@@ -644,9 +650,9 @@ function HomePage() {
 
           </div>
 
-          {estimateError && (
+          {(estimateError || brandRequest.error) && (
             <div className="home-estimate-error">
-              {estimateError}
+              {estimateError || t("home.estimator.errors.options")}
             </div>
           )}
 
@@ -974,7 +980,7 @@ function HomePage() {
         <div className="footer-content">
 
           <div className="footer-logo">
-            CarAnalytics
+            Face<span style={{ color: "var(--brand-teal)" }}>Auto</span>
           </div>
 
           <div className="footer-links">
@@ -1001,7 +1007,54 @@ function HomePage() {
 
         </div>
       </footer>
+      {showScrollTop && (
+        <button
+          type="button"
+          className={`scroll-top-button ${
+            showScrollTop ? "is-visible" : ""
+          }`}
+          onClick={scrollToTop}
+          aria-label={t("home.scrollTop", "Scroll to top")}
+        >
+          <svg
+            className="scroll-top-ring"
+            viewBox="0 0 56 56"
+            aria-hidden="true"
+          >
+            <circle
+              className="scroll-top-ring-track"
+              cx="28"
+              cy="28"
+              r="24"
+            />
 
+            <circle
+              className="scroll-top-ring-progress"
+              cx="28"
+              cy="28"
+              r="24"
+            />
+          </svg>
+
+          <svg
+            className="scroll-top-icon"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M12 6L6 12" />
+            <path d="M12 6L18 12" />
+            <path d="M12 12L6 18" />
+            <path d="M12 12L18 18" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }

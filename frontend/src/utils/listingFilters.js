@@ -205,8 +205,13 @@ export function listingFilterError(form, t = defaultTranslate) {
 }
 
 export function updateListingFilter(current, field, value) {
-  return {
+  const next = {
     ...current,
     [field]: value,
   };
+  if (["brandText", "modelText", "generationText"].includes(field) && current[field] !== value) {
+    next.year_min = "";
+    next.year_max = "";
+  }
+  return next;
 }

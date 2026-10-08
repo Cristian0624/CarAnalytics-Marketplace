@@ -57,7 +57,14 @@ def _create_engine():
         ssl_ctx = ssl.create_default_context()
         ssl_ctx.check_hostname = False
         ssl_ctx.verify_mode = ssl.CERT_NONE
-        return create_engine(pg8000_url, connect_args={"ssl_context": ssl_ctx})
+        return create_engine(
+            pg8000_url,
+            connect_args={"ssl_context": ssl_ctx},
+            pool_size=5,
+            max_overflow=5,
+            pool_pre_ping=True,
+            pool_recycle=300,
+        )
 
 engine = _create_engine()
 

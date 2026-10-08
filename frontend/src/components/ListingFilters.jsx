@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import "./ListingFilters.css";
 import VehicleTree from "./VehicleTree";
+import useListingYearRange from "../hooks/useListingYearRange";
 import {
   listingFilterError,
   updateListingFilter
@@ -91,9 +92,13 @@ function RangeSlider({
   maxValue,
   onChange,
   unit = "",
-  label
+  label,
+  present = true
 }) {
   const { t } = useTranslation();
+
+  const isYear = label === t("listing-Filters.year");
+  const formatValue = isYear ? String : fmt;
 
   const lo =
     minValue === "" || minValue == null
@@ -105,7 +110,7 @@ function RangeSlider({
       ? max
       : Math.min(max, Number(maxValue));
 
-  const pct = (v) => ((v - min) / (max - min)) * 100;
+  const pct = (v) => max === min ? 0 : ((v - min) / (max - min)) * 100;
 
   const commit = (a, b) =>
     onChange(
@@ -117,13 +122,13 @@ function RangeSlider({
     <div className="rs">
       <div className="rs-values">
         <span>
-          {fmt(lo)} {unit}
+          {formatValue(lo)} {unit}
         </span>
 
         <span>
-          {hi >= max && label === t("listing-Filters.year")
+          {hi >= max && isYear && present
             ? t("listing-Filters.present")
-            : `${fmt(hi)}${hi >= max ? "+" : ""}`}
+            : `${formatValue(hi)}${hi >= max && !isYear ? "+" : ""}`}
           {unit && ` ${unit}`}
         </span>
       </div>
@@ -133,7 +138,7 @@ function RangeSlider({
           className="rs-fill"
           style={{
             left: `${pct(lo)}%`,
-            right: `${100 - pct(hi)}%`
+            right: `${max === min ? 0 : 100 - pct(hi)}%`
           }}
         />
 
@@ -143,6 +148,7 @@ function RangeSlider({
           max={max}
           step={step}
           value={lo}
+          disabled={max <= min}
           aria-label={t("listing-Filters.minimum", { label })}
           onChange={(e) =>
             commit(
@@ -158,6 +164,7 @@ function RangeSlider({
           max={max}
           step={step}
           value={hi}
+          disabled={max <= min}
           aria-label={t("listing-Filters.maximum", { label })}
           onChange={(e) =>
             commit(
@@ -293,6 +300,7 @@ export default function ListingFilters({
   const [open, setOpen] = useState(initiallyOpen);
   const [more, setMore] = useState(false);
   const [drop, setDrop] = useState(null);
+  const yearRange = useListingYearRange(filters);
 
   // Local draft: rapid input (sliders, typing) only re-renders this panel.
   // The parent (page + results grid) syncs on a debounce, and searches commit.
@@ -403,7 +411,8 @@ export default function ListingFilters({
     min,
     max,
     step,
-    unit
+    unit,
+    present = true
   ) => (
     <Group title={title}>
       <RangeSlider
@@ -550,10 +559,11 @@ export default function ListingFilters({
                     {slider(
                       t("listing-Filters.year"),
                       R.year,
-                      1990,
-                      2026,
+                      Math.min(yearRange.year_min, Number(filters.year_min) || yearRange.year_min),
+                      Math.max(yearRange.year_max, Number(filters.year_max) || yearRange.year_max),
                       1,
-                      ""
+                      "",
+                      yearRange.present
                     )}
 
                     {slider(

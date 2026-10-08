@@ -321,7 +321,7 @@
       }
     },
     "whyUs": {
-      "title": "Why Choose CarAnalytics?",
+      "title": "Why Choose FaceAuto?",
       "dataDriven": {
         "title": "Data-Driven",
         "alt": "Data-Driven icon",
@@ -630,6 +630,7 @@
     },
     "badges": {
       "favourite": "★ FAVORITE",
+      "removedFromMarket": "Removed from market",
       "risk": "ANALYSIS",
       "search": "SEARCH",
       "comparison": "COMPARISON"
@@ -681,7 +682,7 @@
       "searchDescription": "Listings are updated when you open the search.",
       "riskNotice": "This is the saved result. Reanalyzing creates a new analysis and keeps the original one.",
       "favouriteAvailable": "The listing is still in the database. Below you can see the current data.",
-      "favouriteUnavailable": "The listing is no longer in the database. Below you can see the data saved with it.",
+      "favouriteUnavailable": "The listing is no longer in the latest batch of listings. Below you can see the data saved with it.",
       "notes": "Notes: {{notes}}",
       "savedComparison": "Saved comparison",
       "comparisonInstruction": "Click the button above to resume the detailed comparison."
@@ -1261,9 +1262,9 @@
     "fuelOption": "The fuel type is not recognised. Select an option from the list.",
     "categoryOption": "Select {{field}} from the options available for the chosen car.",
     "comparisonLoad": "Comparison data could not be loaded. Please try again later.",
-    "zeroListings": "There are no listings with an available price for the selected brand, model and generation.",
-    "oneListing": "There is only one listing in the selected group; at least 3 are required to estimate the price.",
-    "fewListings": "Only {{count}} listings in the selected group; at least 3 are required to estimate the price.",
+    "zeroListings": "There is not enough data for an accurate estimate. No listings with an available price were found in the selected group; at least 7 are required.",
+    "oneListing": "There is not enough data for an accurate estimate. Only one listing was found in the selected group; at least 7 are required.",
+    "fewListings": "There is not enough data for an accurate estimate. Only {{count}} listings were found in the selected group; at least 7 are required.",
     "estimateGroup": "Estimate from {{count}} listings with the same brand, model and generation.",
     "estimateLimited": "Limited market data; indicative estimate.",
     "askingDisclaimer": "Asking prices do not guarantee the final sale price.",

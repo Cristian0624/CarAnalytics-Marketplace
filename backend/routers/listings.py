@@ -9,7 +9,7 @@ from models import User
 from repositories.listings import ListingsRepository
 from repositories.user_queries import UserQueriesRepository
 from routers.users import get_current_user
-from schemas import ListingResponse, PaginatedListingsResponse, UserQueryCreate, UserQueryResponse, UserQueryUpdate
+from schemas import ListingResponse, PaginatedListingsResponse, ListingYearRangeResponse, UserQueryCreate, UserQueryResponse, UserQueryUpdate
 from services.listings import ListingsService, UserQueriesService
 from price_estimate_schemas import ListingOptionsResponse
 
@@ -113,6 +113,14 @@ def get_listing_options(
     if generation is not None and (brand is None or model is None):
         raise HTTPException(status_code=422, detail="brand and model are required when selecting generation")
     return service.get_options(brand, model, generation)
+
+
+@router.get("/listings/year-range", response_model=ListingYearRangeResponse)
+def get_listing_year_range(
+    filters: Annotated[ListingFilters, Depends()],
+    service: Annotated[ListingsService, Depends(get_listings_service)],
+):
+    return service.get_year_range(filters)
 
 
 @router.get("/listings/{listing_id}", response_model=ListingResponse)

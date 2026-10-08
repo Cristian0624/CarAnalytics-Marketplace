@@ -5,6 +5,8 @@
 }
 
 .comparator-header {
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -38,6 +40,8 @@
 }
 
 .comparator-empty {
+  position: relative;
+  z-index: 1;
   text-align: center;
   background: white;
   padding: 60px 20px;
@@ -59,6 +63,8 @@
 }
 
 .comparator-table-wrapper {
+  position: relative;
+  z-index: 1;
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
