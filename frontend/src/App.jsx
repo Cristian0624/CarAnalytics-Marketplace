@@ -11,6 +11,8 @@ import AnomalyRiskPage from "./pages/AnomalyRiskPage";
 import SavedItemsPage from "./pages/SavedItemsPage";
 import MyListingsPage from "./pages/MyListingsPage";
 import ComparatorPage from "./pages/ComparatorPage";
+import AboutUsPage from "./pages/AboutUsPage";
+import FeaturesPage from "./pages/FeaturesPage";
 import { FavouritesProvider } from "./context/FavouritesContext";
 import { ComparatorProvider } from "./context/ComparatorContext";
 
@@ -22,6 +24,8 @@ function App() {
 
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutUsPage />} />
+        <Route path="/features" element={<FeaturesPage />} />
         <Route path="/listings" element={<ListingsPage />} />
         <Route path="/comparator" element={<ComparatorPage />} />
         <Route path="/login" element={<LoginPage />} />

@@ -29,7 +29,8 @@
     "riskAnalysis": "Analiza Risc",
     "profile": "Profilul meu",
     "login": "Autentificare",
-    "register": "Înregistrare"
+    "register": "Înregistrare",
+    "about": "Despre Noi"
   },
   "estimator": {
     "title": "Estimează prețul mașinii",
@@ -1288,5 +1289,247 @@
       "fuel_type": "Combustibil",
       "body_type": "Caroserie"
     }
+  },
+  "aboutUs": {
+    "badge": "DESPRE NOI",
+    "titlePrefix": "Echipa din spatele",
+    "subtitle": "Am creat FaceAuto cu un obiectiv clar: să aducem transparență totală, precizie matematică și siguranță pe piața auto din Republica Moldova și nu numai.",
+    "mission": {
+      "eyebrow": "MISIUNEA NOASTRĂ",
+      "title": "Date reale în loc de presupuneri",
+      "description": "Cumpărarea unei mașini second-hand nu ar trebui să fie o loterie. Analizăm mii de anunțuri, prețuri mediane, rulaje și configurații tehnice pentru a oferi fiecărui cumpărător și vânzător o evaluare obiectivă, instantanee și ușor de înțeles."
+    },
+    "vision": {
+      "eyebrow": "CE CONSTRUIM",
+      "title": "Tehnologie completă pentru piața auto",
+      "description": "De la algoritmul de scor al ofertelor și estimatorul inteligent de preț, până la detecția avansată a anomaliilor de risc, recomandări personalizate și compararea detaliată a mașinilor — toate instrumentele sunt gândite să lucreze împreună."
+    },
+    "teamBadge": "ECHIPA FACEAUTO",
+    "teamTitle": "Oamenii care au construit platforma",
+    "teamSubtitle": "Suntem 5 studenți de la programul Inginerie Software (Filiera Anglofonă) pasionați de algoritmi de date și experiențe web moderne.",
+    "members": {
+      "maxim": {
+        "role": "Team Lead & Frontend",
+        "tags": [
+          "Team Lead",
+          "Frontend"
+        ],
+        "description": "A coordonat direcția tehnică, organizarea sprinturilor și arhitectura generală a proiectului, dezvoltând în același timp componente complexe de frontend și experiența vizuală a utilizatorilor."
+      },
+      "dan": {
+        "role": "Backend & Frontend",
+        "tags": [
+          "Backend",
+          "Frontend"
+        ],
+        "description": "A dezvoltat logica de backend pentru procesarea și evaluarea datelor din piață și a construit interfețe interactive esențiale, pagini dinamice și componente de analiză în frontend."
+      },
+      "cristian": {
+        "role": "Backend & Frontend",
+        "tags": [
+          "Backend",
+          "Frontend"
+        ],
+        "description": "A proiectat și implementat rutele API de backend, autentificarea, gestiunea sesiunilor și integrarea multi-limbă, asigurând comunicarea full-stack dintre server și aplicația React."
+      },
+      "mihai": {
+        "role": "Backend & QA",
+        "tags": [
+          "Backend",
+          "QA (Quality Assurance)"
+        ],
+        "description": "A dezvoltat servicii și endpoint-uri de backend pentru procesarea ofertelor auto și a coordonat procesul de Quality Assurance (QA), scriind teste automate și validând stabilitatea și acuratețea întregii platforme."
+      },
+      "marius": {
+        "role": "Backend, Frontend & DBA",
+        "tags": [
+          "Backend",
+          "Frontend",
+          "DBA (Database Administrator)"
+        ],
+        "description": "A administrat și optimizat baza de date relațională (DBA), pipeline-urile de achiziție și curățare a datelor și a dezvoltat servicii complexe de backend și module analitice în frontend."
+      }
+    },
+    "backHome": "Înapoi la Pagina Principală"
+  },
+  "featuresPage": {
+    "badge": "FUNCȚIONALITĂȚI EXPLICATE INTERACTIV",
+    "titlePrefix": "Cum funcționează",
+    "subtitle": "Explorează interactiv fiecare algoritm din spatele platformei FaceAuto. Modifică parametrii în timp real și vezi exact cum calculăm scorurile, riscurile și estimările de preț.",
+    "nav": {
+      "scoring": "Algoritmul de Scor",
+      "risk": "Detecția Anomaliilor",
+      "estimator": "Estimatorul de Preț",
+      "pipeline": "Fluxul Platformei"
+    },
+    "scoring": {
+      "tag": "ALGORITMUL DE SCOR AL OFERTEI (0 – 100, BAZĂ 50.0)",
+      "title": "Evaluare Dinamică cu Depreciere pe 10.000 km și Praguri Progresive",
+      "description": "Fiecare anunț pornește de la un scor de bază de 50.0 puncte (pe scara 0–100). Algoritmul filtrează mai întâi extremele pieței (păstrând intervalul P10–P90), calculează prețul așteptat ajustat la rulaj și aplică trepte progresive și penalizări anti-fraudă.",
+      "points": {
+        "groupingTitle": "Grupare Ierarhică în 3 Niveluri (L1 → L2 → Fereastră ±2 ani)",
+        "groupingDesc": "L1 grupează după marcă, model, generație, an, capacitate motor, combustibil și cutie (min. 5 mașini). Dacă sunt sub 5, cade pe L2 (marcă, model, generație, an), iar pentru mașini rare aplică o fereastră glisantă de ±2 ani.",
+        "depreciationTitle": "Rată Dinamică de Depreciere la 10.000 km (dep_per_10k)",
+        "depreciationDesc": "Din mașinile aflate la ±5% de prețul median se extrage rulajul de referință (baseline_mileage), iar din diferența de preț între jumătatea cu rulaj mic și cea cu rulaj mare se calculează deprecierea reală în €/10.000 km (sau 5% din mediană fallback).",
+        "tiersTitle": "Trepte Progresive Neliniare & Penalizare „Prea Ieftin” (>35%)",
+        "tiersDesc": "Dacă mașina e mai ieftină decât Expected Price: +1.3 pct/% (0–10%), +1.0 pct/% (10–20%), +0.5 pct/% (20–30%), platou 0 pct (30–35%, max +28 pct), iar peste 35% ieftinire scade cu −2.0 pct/% (semnal de defect ascuns). Dacă e mai scumpă: −1.0 pct/% (0–15%), −1.3 pct/% (15–25%), −1.6 pct/% (25–35%) și −2.0 pct/% (>35%).",
+        "penaltiesTitle": "Penalizări Rulaj Suspect, Taxi & Plafonări Anti-Scam",
+        "penaltiesDesc": "Rulaj sub (vârstă × 6.000 km) sau valori spam (111.111, 123.456 etc.): −15 pct (≤3 ani) sau −30 pct (>3 ani). Dacă e și >20% sub prețul așteptat + rulaj suspect → plafonare la max 20.0 pct (Scam Cap). Rulaj >45.000 km/an (regim Taxi) → −20 pct. Mașini avariate / fără acte → plafonare la max 10.0 pct."
+      },
+      "tryButton": "Vezi scorurile în Piața Auto",
+      "simTitle": "Simulator Exact eval.py (Bază 50.0 / 100)",
+      "scoreLabel": "Scor Final",
+      "yearsOld": "ani",
+      "damagedToggle": "Stare avariată / defect / piese / fără acte (Plafonare max 10.0)",
+      "sliders": {
+        "marketPrice": "Preț Median Grup (med_price P10–P90)",
+        "askingPrice": "Preț Cerut în Anunț (price_eur)",
+        "year": "An Fabricație",
+        "depPer10k": "Depreciere / 10k km",
+        "mileage": "Kilometraj Anunț (mileage)",
+        "expectedMileage": "Rulaj Referință (baseline_mileage)"
+      },
+      "stats": {
+        "expectedPrice": "Preț Așteptat",
+        "priceDiffPct": "Abatere (price_diff_pct)",
+        "tierMod": "Modificator Trepte"
+      },
+      "subscores": {
+        "finalBar": "Scor Final (0–100)"
+      },
+      "flags": {
+        "lowMileage": "Rulaj suspect sub pragul vârstei",
+        "scamCap": "Plafonare Anti-Scam activată",
+        "taxi": "Penalizare uzură intensă / Taxi",
+        "tooCheap": "Penalizare >35% sub prețul așteptat",
+        "damagedCap": "Plafonare vehicul avariat / fără acte",
+        "clean": "Nicio penalizare activă — calcul pur pe trepte de preț și rulaj"
+      }
+    },
+    "risk": {
+      "tag": "ANALIZA RISCULUI & ANOMALII (0 – 100)",
+      "title": "Detecția Statistică a Ofertelor Suspecte",
+      "description": "Spre deosebire de scorul de ofertă, Analiza Riscului caută semnale de alarmă statistice folosind distribuția pe percentile (P10, P25, P50 Mediană, P75, P90).",
+      "points": {
+        "percentilesTitle": "Intervalul Central P25–P75 și P10–P90",
+        "percentilesDesc": "Măsurăm exact unde se plasează prețul și rulajul față de distribuția reală a anunțurilor din baza de date.",
+        "overrideTitle": "Regula de Prag Extrem (>45% abatere)",
+        "overrideDesc": "Dacă prețul sau rulajul deviază cu peste 45% față de mediană (pe un grup de min. 25 mașini), scorul de anomalie urcă automat la 80–100.",
+        "specsTitle": "Verificarea Configurației Tehnice",
+        "specsDesc": "Detectăm combinații atipice sau inexistente (ex. cutie, tracțiune sau motorizare neobservată pe acea generație)."
+      },
+      "tryButton": "Testează Analiza Riscului",
+      "simTitle": "Simulator Distribuție Percentile",
+      "anomalyScore": "Scor Anomalie",
+      "components": {
+        "price": "Anomalie Preț",
+        "mileage": "Anomalie Rulaj",
+        "spec": "Anomalie Configurație"
+      },
+      "scenarios": {
+        "balanced": {
+          "label": "Ofertă Normală",
+          "explanation": "Prețul și kilometrajul se află în zona centrală P25–P75 (verde), iar configurația tehnică este comună pentru această generație."
+        },
+        "cheapExtreme": {
+          "label": "Preț Suspect (-52%)",
+          "explanation": "Alertă: Prețul este sub percentila P10 și cu peste 45% sub mediană. Se activează regula de Override Extrem (scor 86/100) — risc ridicat de defecte ascunse sau anunț fals."
+        },
+        "mileageAnomaly": {
+          "label": "Rulaj Neobișnuit",
+          "explanation": "Prețul este normal, însă kilometrajul declarat este cu 64% sub mediana mașinilor de aceeași vârstă — semnal pentru verificarea istoricului VIN."
+        },
+        "rareSpec": {
+          "label": "Configurație Atipică",
+          "explanation": "Combinația de motorizare, cutie și tracțiune apare în mai puțin de 2% din anunțurile observate — poate indica o eroare de completare în anunț."
+        }
+      }
+    },
+    "estimator": {
+      "tag": "ESTIMATORUL INTELIGENT DE PREȚ",
+      "title": "Percentile Ponderate Exponențial (P20–P30, P40–P60, P70–P80)",
+      "description": "Estimatorul selectează anunțurile deduplicate din aceeași marcă, model și generație (minimum 7 oferte eligibile) și calculează percentile ponderate continuu.",
+      "points": {
+        "minSupportTitle": "Deduplicare & Prag Minim (Min. 7 anunțuri, ESS ≥ 5)",
+        "minSupportDesc": "Eliminăm duplicatele după amprenta tehnică și verificăm atât numărul total (≥7), cât și dimensiunea efectivă a eșantionului (Effective Sample Size).",
+        "weightingTitle": "Ponderare Exponențială după Distanță",
+        "weightingDesc": "Fiecare mașină comparabilă primește o pondere w = exp(−Δan/3) × exp(−Δkm/100.000) × (0.95 + 0.05 × scor_configurație).",
+        "bandsTitle": "Percentile Ponderate Exacte",
+        "bandsDesc": "Vânzare Rapidă folosește intervalul P20–P30, Prețul Normal folosește P40–P60 (cu P50 ca preț de piață), iar Prețul de Încercare folosește P70–P80."
+      },
+      "tryButton": "Deschide Estimatorul pe Homepage",
+      "simTitle": "Simulator Percentile Ponderate",
+      "baseMarket": "Mediană Piață (P50)",
+      "metrics": {
+        "estimatedTime": "Timp Estimat de Vânzare",
+        "days": "zile",
+        "buyerInterest": "Atractivitate Cumpărători"
+      },
+      "strategies": {
+        "fast": {
+          "title": "Vânzare Rapidă",
+          "explanation": "Intervalul de percentile P20–P30: poziționează oferta în cea mai competitivă treime a pieței pentru vânzare rapidă."
+        },
+        "normal": {
+          "title": "Preț Normal",
+          "explanation": "Intervalul central P40–P60 în jurul medianei ponderate P50: reflectă valoarea echilibrată pentru anul și rulajul introdus."
+        },
+        "higher": {
+          "title": "Preț de Încercare",
+          "explanation": "Intervalul superior P70–P80: destinat mașinilor cu dotări de top, rulaj foarte mic sau cu marjă de negociere."
+        }
+      }
+    },
+    "pipeline": {
+      "tag": "ECOSISTEMUL COMPLET",
+      "title": "Toate Instrumentele într-un Flux Unificat",
+      "subtitle": "Apasă pe fiecare etapă pentru a vedea cum lucrează împreună modulele platformei.",
+      "openRecommendations": "Deschide Recomandările",
+      "openComparator": "Deschide Comparatorul",
+      "openSaved": "Vezi Profilul și Salvările",
+      "steps": {
+        "0": {
+          "shortTitle": "Filtrare & Căutare",
+          "title": "1. Filtrare Avansată pe Marcă, Model, Generație și Clasă",
+          "description": "Explorezi mii de anunțuri curate și validate. Poți filtra simultan după buget, an, rulaj, capacitate motor, cai putere, cutie, tracțiune și scor algoritmic.",
+          "badges": [
+            "Arbore Auto Ierarhic",
+            "Numărare Instantanee",
+            "Sortare după Scor"
+          ]
+        },
+        "1": {
+          "shortTitle": "Recomandări Similare",
+          "title": "2. Motor de Recomandare a Alternativelor Similare",
+          "description": "Ai găsit o mașină interesantă? Algoritmul nostru de recomandări identifică automat cele mai apropiate alternative din aceeași clasă, buget și categorie de rulaj.",
+          "badges": [
+            "Matching pe Clasă",
+            "Proximitate Preț & Km",
+            "Alternative Instantanee"
+          ]
+        },
+        "2": {
+          "shortTitle": "Comparator 3 Mașini",
+          "title": "3. Comparare Side-by-Side pentru Până la 3 Mașini",
+          "description": "Adaugi până la 3 vehicule în comparator și analizezi în paralel prețul, scorul de ofertă, scorul de anomalie (risc) și toate specificațiile tehnice.",
+          "badges": [
+            "Până la 3 Mașini",
+            "Scor + Risc în Paralel",
+            "Salvare Comparație"
+          ]
+        },
+        "3": {
+          "shortTitle": "Salvare & Monitorizare",
+          "title": "4. Salvarea Filtrelor, Analizelor de Risc și Favoritelor",
+          "description": "În contul tău poți salva căutări personalizate, rapoarte istorice de analiză a riscului (cu opțiune de Reanalizare pe piața actuală), comparații și anunțuri favorite.",
+          "badges": [
+            "Anunțuri Favorite",
+            "Reanalizare Risc",
+            "Filtre Salvate"
+          ]
+        }
+      }
+    },
+    "backHome": "Înapoi la Pagina Principală"
   }
 }

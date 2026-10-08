@@ -42,8 +42,8 @@ h2 {
   flex: 1.25;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
+  align-items: center;
+  text-align: center;
 }
 
 .hero-title {
@@ -56,7 +56,8 @@ h2 {
 
 .hero-badge {
   display: inline-block;
-  margin: 0 0 18px 0;
+  align-self: center;
+  margin: 0 auto 18px;
   background-color: var(--sage);
   color: var(--brunswick-dark);
   font-weight: 700;
@@ -67,6 +68,7 @@ h2 {
 }
 
 .hero-subtitle {
+  text-align: center;
   font-size: 1.15rem;
   line-height: 1.65;
   color: var(--brand-muted);
