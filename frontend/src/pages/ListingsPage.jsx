@@ -203,31 +203,37 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
       return;
     }
 
-    setCountLoading(true);
+    // Debounced: every keystroke/slider tick restarts the timer, so only
+    // one count request fires after the user pauses.
+    const timer = setTimeout(() => {
+      if (!current) return;
+      setCountLoading(true);
 
-    searchListingsPaginated(
-      listingFiltersToApi(filters),
-      1,
-      1
-    )
-      .then((response) => {
-        if (current) {
-          setFilterCount(response.total);
-        }
-      })
-      .catch(() => {
-        if (current) {
-          setFilterCount(0);
-        }
-      })
-      .finally(() => {
-        if (current) {
-          setCountLoading(false);
-        }
-      });
+      searchListingsPaginated(
+        listingFiltersToApi(filters),
+        1,
+        1
+      )
+        .then((response) => {
+          if (current) {
+            setFilterCount(response.total);
+          }
+        })
+        .catch(() => {
+          if (current) {
+            setFilterCount(0);
+          }
+        })
+        .finally(() => {
+          if (current) {
+            setCountLoading(false);
+          }
+        });
+    }, 400);
 
     return () => {
       current = false;
+      clearTimeout(timer);
     };
   }, [filters]);
 

@@ -432,9 +432,7 @@
 
   box-sizing: border-box;
 
-  background: rgba(19, 46, 42, 0.52);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
+  background: rgba(23, 32, 42, 0.55);
 
   animation: lfFade 0.2s ease;
 
