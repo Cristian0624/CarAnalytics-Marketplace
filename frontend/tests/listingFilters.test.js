@@ -56,3 +56,40 @@ test("retired same_model flag cannot broaden a reopened saved search", () => {
   // Keep invalid historical combinations visible for correction, never silently drop one.
   assert.match(listingFilterError(listingFiltersToForm({ ...original, class: ["D"] })), /fie modelul/);
 });
+
+test("older generations have no implicit year cutoff and explicit older ranges round trip", () => {
+  const form = {
+    ...emptyListingFilters(), brandText: "Mercedes", modelText: "S-Class",
+    generationText: "W116 (1972 - 1980)",
+  };
+  const filters = listingFiltersToApi(form);
+  assert.equal(filters.year_min, undefined);
+  assert.equal(filters.year_max, undefined);
+  assert.deepEqual(filters.generation, ["W116 (1972 - 1980)"]);
+
+  const olderRange = { ...filters, year_min: 1972, year_max: 1980 };
+  assert.deepEqual(listingFiltersToApi(listingFiltersToForm(olderRange)), olderRange);
+});
+
+test("changing vehicles resets a narrowed year range while other filter edits preserve it", () => {
+  const form = {
+    ...emptyListingFilters(), brandText: "Mercedes", modelText: "S-Class",
+    generationText: "W116 (1972 - 1980)", year_min: "1975", year_max: "1978",
+    price_max: "20000",
+  };
+  for (const [field, value] of [
+    ["brandText", "Mercedes, Toyota"], ["modelText", "S-Class, Yaris"],
+    ["generationText", "W116 (1972 - 1980), III (2011 - 2020)"],
+    ["generationText", ""], ["brandText", ""],
+  ]) {
+    const next = updateListingFilter(form, field, value);
+    assert.equal(next.year_min, "");
+    assert.equal(next.year_max, "");
+    assert.equal(next.price_max, "20000");
+  }
+  for (const [field, value] of [["price_max", "15000"], ["modelText", "S-Class"]]) {
+    const next = updateListingFilter(form, field, value);
+    assert.equal(next.year_min, "1975");
+    assert.equal(next.year_max, "1978");
+  }
+});

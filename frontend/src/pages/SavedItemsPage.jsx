@@ -119,6 +119,15 @@ export default function SavedItemsPage({ kind }) {
   );
 }
 
+function RemovedListingBadge({ item }) {
+  const { t } = useTranslation();
+  return item.available === false ? (
+    <span className="saved-unavailable-badge">
+      {t("savedItems.badges.removedFromMarket")}
+    </span>
+  ) : null;
+}
+
 function ItemSummary({ kind, item }) {
   const { t } = useTranslation();
 
@@ -336,6 +345,8 @@ function SavedCollection({ kind }) {
                     {savedDate(item.created_at)}
                   </time>
                 </div>
+
+                {kind === "favourites" && <RemovedListingBadge item={item} />}
 
                 <div
                   style={{
@@ -858,6 +869,7 @@ function SavedDetail({ kind, id }) {
               )}
 
               <div className="saved-listing">
+                <RemovedListingBadge item={item} />
                 <CarCard
                   car={
                     item.current_listing ??

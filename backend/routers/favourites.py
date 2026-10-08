@@ -9,7 +9,7 @@ from routers.users import get_current_user
 from saved_items_models import FavouriteListing
 from saved_items_schemas import FavouriteCreate, FavouriteDetail, FavouriteResponse, FavouriteUpdate, SavedPage
 from schemas import ListingResponse
-from services.saved_items import create_favourite, current_favourite_listing, require_owned
+from services.saved_items import create_favourite, current_favourite_listing, current_favourite_listings, require_owned
 
 router = APIRouter(prefix="/favourites", tags=["favourites"])
 
@@ -19,20 +19,27 @@ def add_favourite(payload: FavouriteCreate, user: User = Depends(get_current_use
     return create_favourite(db, user.id, payload)
 
 
-@router.get("", response_model=SavedPage[FavouriteResponse])
+def favourite_detail(item, current):
+    return FavouriteDetail(
+        **FavouriteResponse.model_validate(item).model_dump(), available=current is not None,
+        current_listing=ListingResponse.model_validate(current) if current is not None else None,
+    )
+
+
+@router.get("", response_model=SavedPage[FavouriteDetail])
 def list_favourites(page: int = Query(1, ge=1), limit: int = Query(20, ge=1, le=100),
                      user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    return SavedItemsRepository(db, FavouriteListing).page(user.id, page, limit)
+    result = SavedItemsRepository(db, FavouriteListing).page(user.id, page, limit)
+    current = current_favourite_listings(db, result["items"])
+    result["items"] = [favourite_detail(item, current.get(item.id)) for item in result["items"]]
+    return result
 
 
 @router.get("/{item_id}", response_model=FavouriteDetail)
 def get_favourite(item_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     item = require_owned(SavedItemsRepository(db, FavouriteListing), item_id, user.id)
     current = current_favourite_listing(db, item)
-    return FavouriteDetail(
-        **FavouriteResponse.model_validate(item).model_dump(), available=current is not None,
-        current_listing=ListingResponse.model_validate(current) if current is not None else None,
-    )
+    return favourite_detail(item, current)
 
 
 @router.patch("/{item_id}", response_model=FavouriteResponse)

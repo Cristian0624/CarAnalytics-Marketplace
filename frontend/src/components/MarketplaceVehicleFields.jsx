@@ -1,67 +1,10 @@
-import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { getListingOptions } from "../api/listings";
+import useVehicleOptions from "../hooks/useVehicleOptions";
 import { resolveVehicleOption } from "../utils/anomalyRisk";
 import Autocomplete from "./Autocomplete";
 
 const EMPTY_OPTIONS = [];
 
-function useVehicleOptions(brand, model, enabled = true) {
-  const key = JSON.stringify([brand, model]);
-  const [state, setState] = useState({
-    key: null,
-    data: null,
-    error: false
-  });
-  const [retry, setRetry] = useState(0);
-
-  useEffect(() => {
-    if (!enabled) return;
-
-    let current = true;
-
-    setState({
-      key,
-      data: null,
-      error: false
-    });
-
-    getListingOptions({ brand, model })
-      .then((data) => {
-        if (current) {
-          setState({
-            key,
-            data,
-            error: false
-          });
-        }
-      })
-      .catch(() => {
-        if (current) {
-          setState({
-            key,
-            data: null,
-            error: true
-          });
-        }
-      });
-
-    return () => {
-      current = false;
-    };
-  }, [brand, model, enabled, key, retry]);
-
-  const active = enabled && state.key === key;
-
-  return {
-    data: active ? state.data : null,
-    error: active && state.error,
-    loading:
-      enabled &&
-      (!active || (!state.data && !state.error)),
-    retry: () => setRetry((value) => value + 1)
-  };
-}
 
 export function FilterHint({ children }) {
   return (

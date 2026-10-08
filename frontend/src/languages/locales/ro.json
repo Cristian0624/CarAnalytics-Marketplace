@@ -630,6 +630,7 @@
     },
     "badges": {
       "favourite": "★ FAVORIT",
+      "removedFromMarket": "Scos De Pe Piață",
       "risk": "ANALIZĂ",
       "search": "CĂUTARE",
       "comparison": "COMPARARE"
@@ -681,7 +682,7 @@
       "searchDescription": "Anunțurile se actualizează la deschiderea căutării.",
       "riskNotice": "Acesta este rezultatul salvat. Reanalizarea creează o analiză nouă și o păstrează pe cea originală.",
       "favouriteAvailable": "Anunțul este prezent în baza de date. Mai jos vezi datele actuale.",
-      "favouriteUnavailable": "Anunțul nu mai este în baza de date. Mai jos vezi datele păstrate la salvare.",
+      "favouriteUnavailable": "Anunțul nu mai apare în ultimul lot de anunțuri. Mai jos vezi datele păstrate la salvare.",
       "notes": "Notițe: {{notes}}",
       "savedComparison": "Comparare salvată",
       "comparisonInstruction": "Apasă butonul de mai sus pentru a relua comparația detaliată."
@@ -1261,9 +1262,9 @@
     "fuelOption": "Tipul de combustibil nu este recunoscut. Selectează o opțiune din listă.",
     "categoryOption": "Selectează {{field}} din opțiunile disponibile pentru mașina aleasă.",
     "comparisonLoad": "Datele de comparație nu au putut fi încărcate. Încearcă din nou mai târziu.",
-    "zeroListings": "Nu există anunțuri cu preț disponibil pentru marca, modelul și generația selectate.",
-    "oneListing": "Există un singur anunț în grupul selectat; sunt necesare minimum 3 pentru estimarea prețului.",
-    "fewListings": "Doar {{count}} anunțuri în grupul selectat; sunt necesare minimum 3 pentru estimarea prețului.",
+    "zeroListings": "Nu există suficiente date pentru o estimare corectă. Nu există anunțuri cu preț disponibil în grupul selectat; sunt necesare minimum 7.",
+    "oneListing": "Nu există suficiente date pentru o estimare corectă. Există un singur anunț în grupul selectat; sunt necesare minimum 7.",
+    "fewListings": "Nu există suficiente date pentru o estimare corectă. Doar {{count}} anunțuri în grupul selectat; sunt necesare minimum 7.",
     "estimateGroup": "Estimare din {{count}} anunțuri cu aceeași marcă, același model și aceeași generație.",
     "estimateLimited": "Date de piață limitate; estimare orientativă.",
     "askingDisclaimer": "Prețuri cerute, fără garanția vânzării.",

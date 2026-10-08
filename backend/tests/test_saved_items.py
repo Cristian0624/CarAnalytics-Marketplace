@@ -273,6 +273,52 @@ class SavedItemsTests(unittest.TestCase):
         self.assertIn("Generation (29)", generations)
         self.assertNotIn("F30", generations)
 
+    def test_selected_vehicle_year_range_uses_widest_generation_dates(self):
+        with self.engine.begin() as connection:
+            connection.execute(insert(Listing.__table__), [
+                {"id": 30, "brand": "Mercedes", "model": "S-Class",
+                 "generation": "W116 (1972 - 1980)", "year": 1976, "engine": "2.8"},
+                {"id": 31, "brand": "Toyota", "model": "Yaris",
+                 "generation": "III (2011 - 2020)", "year": 2015, "engine": "1.0"},
+                {"id": 32, "brand": "Toyota", "model": "Yaris",
+                 "generation": "IV (2020 - prezent)", "year": 2024, "engine": "1.0"},
+            ])
+        selections = [
+            ("brand", "Mercedes"), ("brand", "Toyota"),
+            ("model", "S-Class"), ("model", "Yaris"),
+            ("generation", "W116 (1972 - 1980)"), ("generation", "III (2011 - 2020)"),
+        ]
+        response = self.client.get("/listings/year-range", params=selections)
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json(), {"year_min": 1972, "year_max": 2020, "present": False})
+
+        # Existing year/price/mileage filters cannot restrict the slider itself.
+        response = self.client.get("/listings/year-range", params=selections + [
+            ("year_min", "2010"), ("price_max", "1"), ("mileage_max", "1"),
+        ])
+        self.assertEqual(response.json(), {"year_min": 1972, "year_max": 2020, "present": False})
+
+        from datetime import date
+        selections[-1] = ("generation", "IV (2020 - prezent)")
+        response = self.client.get("/listings/year-range", params=selections)
+        self.assertEqual(response.json(), {"year_min": 1972, "year_max": date.today().year, "present": True})
+
+        # Yaris without a generation includes all its generations and Present.
+        response = self.client.get("/listings/year-range", params=selections[:-1])
+        self.assertEqual(response.json(), {"year_min": 1972, "year_max": date.today().year, "present": True})
+
+        response = self.client.get("/listings/year-range", params={"brand": "Mercedes"})
+        self.assertEqual(response.json(), {"year_min": 1972, "year_max": date.today().year, "present": True})
+
+    def test_year_range_handles_empty_and_undated_generation_selections(self):
+        from datetime import date
+        response = self.client.get("/listings/year-range", params={"brand": "Unknown brand"})
+        self.assertEqual(response.json(), {"year_min": 1886, "year_max": date.today().year, "present": True})
+        response = self.client.get("/listings/year-range", params={
+            "brand": "Toyota", "model": "Auris", "generation": "II",
+        })
+        self.assertEqual(response.json(), {"year_min": 2013, "year_max": 2013, "present": False})
+
     def test_historical_search_remains_editable_and_retired_flag_does_not_broaden_it(self):
         original = self.create_search()
         with self.engine.begin() as connection:
@@ -348,16 +394,22 @@ class SavedItemsTests(unittest.TestCase):
 
     def test_favourite_survives_listing_removal_and_id_reuse(self):
         item = self.create_favourite()
+        self.assertTrue(self.client.get("/favourites").json()["items"][0]["available"])
         with self.engine.begin() as connection:
             connection.execute(delete(Listing.__table__).where(Listing.id == 1))
         detail = self.client.get(f"/favourites/{item['id']}").json()
         self.assertFalse(detail["available"])
         self.assertIsNone(detail["current_listing"])
         self.assertEqual(float(detail["snapshot"]["price_eur"]), 7600)
+        saved = self.client.get("/favourites").json()["items"][0]
+        self.assertFalse(saved["available"])
+        self.assertIsNone(saved["current_listing"])
+        self.assertEqual(saved["snapshot"], detail["snapshot"])
         with self.engine.begin() as connection:
             connection.execute(insert(Listing.__table__), {"id": 1, "url": "https://example.test/other",
                                                           "brand": "Ford", "model": "Focus"})
         self.assertFalse(self.client.get(f"/favourites/{item['id']}").json()["available"])
+        self.assertFalse(self.client.get("/favourites").json()["items"][0]["available"])
         self.assertEqual(self.client.delete(f"/favourites/{item['id']}").status_code, 204)
 
     def test_favourite_finds_same_url_after_id_change_and_keeps_snapshot(self):
@@ -369,7 +421,52 @@ class SavedItemsTests(unittest.TestCase):
         self.assertEqual(detail["current_listing"]["id"], 10)
         self.assertEqual(float(detail["snapshot"]["price_eur"]), 7600)
         self.assertEqual(float(detail["current_listing"]["price_eur"]), 7000)
+        saved = self.client.get("/favourites").json()["items"][0]
+        self.assertTrue(saved["available"])
+        self.assertEqual(saved["current_listing"], detail["current_listing"])
         self.assertEqual(self.client.post("/favourites", json={"listing_id": 10}).status_code, 409)
+
+    def test_favourite_availability_refreshes_when_listing_returns(self):
+        item = self.create_favourite()
+        with self.engine.begin() as connection:
+            connection.execute(delete(Listing.__table__).where(Listing.id == 1))
+        self.assertFalse(self.client.get("/favourites").json()["items"][0]["available"])
+        with self.engine.begin() as connection:
+            connection.execute(insert(Listing.__table__), {
+                "id": 10, "url": item["listing_url"], "brand": "Toyota", "model": "Auris",
+                "generation": "II", "year": 2013, "price_eur": 7100,
+            })
+        saved = self.client.get("/favourites").json()["items"][0]
+        self.assertTrue(saved["available"])
+        self.assertEqual(float(saved["current_listing"]["price_eur"]), 7100)
+        self.assertEqual(float(saved["snapshot"]["price_eur"]), 7600)
+
+    def test_favourite_page_checks_availability_in_one_inventory_query(self):
+        self.create_favourite()
+        self.assertEqual(self.client.post("/favourites", json={"listing_id": 2}).status_code, 201)
+        queries = []
+
+        def record_inventory_query(connection, cursor, statement, parameters, context, executemany):
+            if "FROM listings_cleaned" in statement:
+                queries.append(statement)
+
+        event.listen(self.engine, "before_cursor_execute", record_inventory_query)
+        try:
+            saved = self.client.get("/favourites").json()
+        finally:
+            event.remove(self.engine, "before_cursor_execute", record_inventory_query)
+        self.assertEqual(len(queries), 1)
+        self.assertEqual(saved["total"], 2)
+        self.assertTrue(all(item["available"] for item in saved["items"]))
+
+    def test_favourite_without_url_does_not_attach_reused_id(self):
+        with self.engine.begin() as connection:
+            connection.execute(update(Listing.__table__).where(Listing.id == 1).values(url=None))
+        self.create_favourite()
+        self.assertTrue(self.client.get("/favourites").json()["items"][0]["available"])
+        with self.engine.begin() as connection:
+            connection.execute(update(Listing.__table__).where(Listing.id == 1).values(model="Yaris"))
+        self.assertFalse(self.client.get("/favourites").json()["items"][0]["available"])
 
     def test_deleting_user_cascades_all_saved_items(self):
         self.create_search()

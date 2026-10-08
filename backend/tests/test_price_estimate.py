@@ -253,14 +253,14 @@ class ServiceTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(result.estimate_available)
 
     async def test_wrong_brand_model_and_generation_never_enter_the_pool(self):
-        rows = [listing(i) for i in range(1, 5)]
+        rows = [listing(i) for i in range(1, 8)]
         rows += [listing(20, brand="Audi"), listing(21, model="520"),
                  listing(22, generation="Other"), listing(23, generation=None)]
         result = await self.run_estimate(rows)
-        self.assertEqual(result.comparison.total_used, 4)
+        self.assertEqual(result.comparison.total_used, 7)
 
     async def test_small_rare_group_gets_an_explicitly_limited_estimate(self):
-        for count in (3, 4, 5, 7):
+        for count in (7, 8):
             rows = [listing(i, mileage=800000, engine="6", gearbox="Mecanică") for i in range(1, count + 1)]
             result = await self.run_estimate(rows)
             self.assertTrue(result.estimate_available)
@@ -268,12 +268,17 @@ class ServiceTests(unittest.IsolatedAsyncioTestCase):
             self.assertIn("Date de piață limitate", result.comparison.message)
             self.assertEqual(result.comparison.near_engine_count, 0)
 
-    async def test_zero_to_two_never_invent_three_price_ranges(self):
-        for count, mode in ((0, "no_comparables"), (1, "single_comparable"), (2, "very_limited")):
+    async def test_fewer_than_seven_never_invent_price_ranges(self):
+        for count in range(7):
+            mode = "no_comparables" if count == 0 else "single_comparable" if count == 1 else "very_limited"
             with patch("services.price_estimate.weighted_percentile") as estimator:
                 result = await self.run_estimate([listing(i) for i in range(1, count + 1)])
                 estimator.assert_not_called()
             self.assertFalse(result.estimate_available)
+            self.assertIsNone(result.estimate)
+            self.assertIsNone(result.market_stats)
+            self.assertIsNone(result.distribution)
+            self.assertIn("minimum 7", result.comparison.message)
             self.assertEqual(result.comparison.comparison_mode, mode)
             self.assertEqual(result.reference_price, 14100 if count == 1 else None)
 
@@ -281,11 +286,11 @@ class ServiceTests(unittest.IsolatedAsyncioTestCase):
         data = payload(brand="Bentley", model="Bentayga", generation="I (2015 - prezent)", engine=6, body_type="SUV")
         rows = [listing(i, brand="Bentley", model="Bentayga", generation=data["generation"],
                         year=2016 + i, mileage=i * 50000, engine="4", body_type="SUV", price_eur=str(80000 + i * 10000))
-                for i in range(1, 5)]
+                for i in range(1, 8)]
         rows += [listing(i, brand="BMW", model="X5", engine="4", price_eur="30000") for i in range(100, 140)]
         result = await self.run_estimate(rows, data)
         self.assertTrue(result.estimate_available)
-        self.assertEqual(result.comparison.total_used, 4)
+        self.assertEqual(result.comparison.total_used, 7)
         self.assertGreaterEqual(result.estimate.market_price, 90000)
 
     async def test_broad_configuration_variants_are_not_deleted_as_price_outliers(self):
@@ -299,10 +304,10 @@ class ServiceTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_missing_specifications_do_not_exclude_an_existing_price(self):
         rows = [listing(i, year=None, mileage=None, engine=None, fuel_type=None,
-                        gearbox=None, drivetrain=None, body_type=None) for i in range(1, 5)]
+                        gearbox=None, drivetrain=None, body_type=None) for i in range(1, 8)]
         result = await self.run_estimate(rows)
         self.assertTrue(result.estimate_available)
-        self.assertEqual(result.comparison.total_used, 4)
+        self.assertEqual(result.comparison.total_used, 7)
         self.assertIsNone(result.market_stats.average_year)
         self.assertIsNone(result.market_stats.average_mileage)
         self.assertTrue(result.comparison.limited_market_data)
@@ -319,9 +324,9 @@ class ServiceTests(unittest.IsolatedAsyncioTestCase):
             result = await self.run_estimate([listing(i, price_eur=price) for i in range(1, 10)])
             self.assertEqual(result.comparison.total_used, 0)
         for engine in (None, "NaN", "garbage", "6", "0"):
-            result = await self.run_estimate([listing(i, engine=engine) for i in range(1, 5)])
+            result = await self.run_estimate([listing(i, engine=engine) for i in range(1, 8)])
             self.assertTrue(result.estimate_available)
-            self.assertEqual(result.comparison.total_used, 4)
+            self.assertEqual(result.comparison.total_used, 7)
 
     async def test_ev_and_hybrid_targets_accept_all_generation_variants(self):
         for fuel, engine in (("Electricitate", None), ("Electricitate", 0), ("Hybrid", 2)):
@@ -427,12 +432,13 @@ class RouteIntegrationTests(unittest.TestCase):
         request = payload(**vehicle, year=2002, mileage=270000, year_min=2000, year_max=2004,
                           mileage_min=240000, mileage_max=300000)
         result = self.client.post("/price-estimate", json=request).json()
-        self.assertTrue(result["estimate_available"])
+        self.assertFalse(result["estimate_available"])
+        self.assertIsNone(result["estimate"])
         self.assertEqual(result["comparison"]["total_used"], 6)
         self.assertEqual(result["search"]["effective_year_max"], 2005)
         self.assertEqual(result["search"]["mileage_min"], 110000)
 
-    def test_three_listings_can_support_a_limited_estimate_without_other_models(self):
+    def test_three_listings_cannot_be_supplemented_with_other_models(self):
         with Session(self.engine) as db:
             db.execute(delete(Listing).where(Listing.id.between(4, 8)))
             for i in range(100, 140):
@@ -441,7 +447,8 @@ class RouteIntegrationTests(unittest.TestCase):
                 db.add(Listing(**row))
             db.commit()
         result = self.client.post("/price-estimate", json=payload()).json()
-        self.assertTrue(result["estimate_available"])
+        self.assertFalse(result["estimate_available"])
+        self.assertIsNone(result["estimate"])
         self.assertEqual(result["comparison"]["total_used"], 3)
         self.assertTrue(result["comparison"]["limited_market_data"])
         self.assertEqual(result["comparison"]["similar_model_count"], 0)
@@ -455,7 +462,7 @@ class RouteIntegrationTests(unittest.TestCase):
         generation = f"III ({year - 1} - prezent)"
         with Session(self.engine) as db:
             db.execute(delete(Listing))
-            for i in range(1, 5):
+            for i in range(1, 8):
                 row = listing(i, year=year, generation=generation)
                 row["class_"] = row.pop("class")
                 db.add(Listing(**row))

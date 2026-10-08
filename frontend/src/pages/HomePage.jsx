@@ -3,15 +3,11 @@ import { useAuth } from "../context/AuthContext";
 import CarViewer from "../components/CarViewer";
 import "./HomePage.css";
 import { useEffect, useState, useRef } from "react";
-import { getListingOptions } from "../api/listings";
 import { estimatePrice } from "../api/price_estimate";
 import { priceEstimateComparisonMessage, priceEstimateErrorMessage, priceEstimateMileageBounds, priceEstimateYearBounds } from "../utils/priceEstimate";
 import Autocomplete from "../components/Autocomplete";
-import {
-  getPredictionBrands,
-  getPredictionModels,
-  getPredictionGenerations,
-} from "../api/predictions";
+import useVehicleOptions from "../hooks/useVehicleOptions";
+import { resolveVehicleOption } from "../utils/anomalyRisk";
 import { useTranslation } from "react-i18next";
 
 function formatPrice(value) {
@@ -64,7 +60,16 @@ function HomePage() {
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   const [estimator, setEstimator] = useState(INITIAL_ESTIMATOR);
-  const [options, setOptions] = useState(EMPTY_OPTIONS);
+  const brandRequest = useVehicleOptions();
+  const options = brandRequest.data ?? EMPTY_OPTIONS;
+  const brands = options.brand ?? [];
+  const selectedBrand = resolveVehicleOption(brands, estimator.brand);
+  const modelRequest = useVehicleOptions(selectedBrand, undefined, Boolean(selectedBrand));
+  const models = modelRequest.data?.model ?? [];
+  const selectedModel = selectedBrand ? resolveVehicleOption(models, estimator.model) : null;
+  const generationRequest = useVehicleOptions(selectedBrand, selectedModel, Boolean(selectedBrand && selectedModel));
+  const generations = generationRequest.data?.generation ?? [];
+  const selectedGeneration = resolveVehicleOption(generations, estimator.generation);
 
   const [estimate, setEstimate] = useState(null);
   const [estimateLoading, setEstimateLoading] = useState(false);
@@ -172,30 +177,13 @@ function HomePage() {
     });
   }
 
-  useEffect(() => {
-    async function loadOptions() {
-      try {
-        const result = await getListingOptions();
-
-        setOptions({
-          fuel_type: result.fuel_type || [],
-          engine: result.engine || [],
-          gearbox: result.gearbox || [],
-          drivetrain: result.drivetrain || [],
-          body_type: result.body_type || [],
-        });
-      } catch {
-        setEstimateError(t("home.estimator.errors.options"));
-      }
-    }
-
-    loadOptions();
-  }, [t]);
-
   function updateEstimator(name, value, moveNext = false) {
+    const brandChanged = name === "brand" && resolveVehicleOption(brands, value) !== selectedBrand;
+    const modelChanged = name === "model" && resolveVehicleOption(models, value) !== selectedModel;
     setEstimator((current) => ({
       ...current,
       [name]: value,
+      ...(brandChanged ? { model: "", generation: "" } : modelChanged ? { generation: "" } : {}),
     }));
 
     setEstimate(null);
@@ -207,34 +195,11 @@ function HomePage() {
   }
 
   function handleBrandChange(value) {
-    setEstimator((current) => ({
-      ...current,
-      brand: value,
-      model: "",
-      generation: "",
-    }));
-
-    setEstimate(null);
-    setEstimateError("");
-
-    if (value) {
-      focusNextField("brand");
-    }
+    updateEstimator("brand", value, true);
   }
 
   function handleModelChange(value) {
-    setEstimator((current) => ({
-      ...current,
-      model: value,
-      generation: "",
-    }));
-
-    setEstimate(null);
-    setEstimateError("");
-
-    if (value) {
-      focusNextField("model");
-    }
+    updateEstimator("model", value, true);
   }
 
   function handleGenerationChange(value) {
@@ -246,9 +211,9 @@ function HomePage() {
     const mileage = parseNumber(estimator.mileage);
 
     if (
-      !estimator.brand ||
-      !estimator.model ||
-      !estimator.generation ||
+      !selectedBrand ||
+      !selectedModel ||
+      !selectedGeneration ||
       year === null ||
       mileage === null ||
       !estimator.fuel_type ||
@@ -267,9 +232,9 @@ function HomePage() {
         : parseNumber(estimator.engine);
 
     const payload = {
-      brand: estimator.brand,
-      model: estimator.model,
-      generation: estimator.generation,
+      brand: selectedBrand,
+      model: selectedModel,
+      generation: selectedGeneration,
 
       year,
       mileage,
@@ -406,14 +371,10 @@ function HomePage() {
                 onSelect={(value) => {
                   handleBrandChange(value);
                 }}
-                fetchSuggestions={async (query) => {
-                  try {
-                    const data = await getPredictionBrands(query);
-                    return data.brands || [];
-                  } catch {
-                    return [];
-                  }
-                }}
+                options={brands}
+                loading={brandRequest.loading}
+                error={brandRequest.error}
+                label={t("home.estimator.fields.brand")}
                 placeholder={t("home.estimator.placeholders.brand")}
               />
             </div>
@@ -431,24 +392,13 @@ function HomePage() {
                 onSelect={(value) => {
                   handleModelChange(value);
                 }}
-                fetchSuggestions={async (query) => {
-                  if (!estimator.brand) {
-                    return [];
-                  }
-
-                  try {
-                    const data = await getPredictionModels(
-                      estimator.brand,
-                      query
-                    );
-
-                    return data.models || [];
-                  } catch {
-                    return [];
-                  }
-                }}
+                key={`model/${selectedBrand}`}
+                options={models}
+                loading={modelRequest.loading}
+                error={modelRequest.error}
+                label={t("home.estimator.fields.model")}
                 placeholder={t("home.estimator.placeholders.model")}
-                disabled={!estimator.brand}
+                disabled={!selectedBrand}
               />
             </div>
 
@@ -465,25 +415,13 @@ function HomePage() {
                 onSelect={(value) => {
                   handleGenerationChange(value);
                 }}
-                fetchSuggestions={async (query) => {
-                  if (!estimator.brand || !estimator.model) {
-                    return [];
-                  }
-
-                  try {
-                    const data = await getPredictionGenerations(
-                      estimator.brand,
-                      estimator.model,
-                      query
-                    );
-
-                    return data.generations || [];
-                  } catch {
-                    return [];
-                  }
-                }}
+                key={`generation/${selectedBrand}/${selectedModel}`}
+                options={generations}
+                loading={generationRequest.loading}
+                error={generationRequest.error}
+                label={t("home.estimator.fields.generation")}
                 placeholder={t("home.estimator.placeholders.generation")}
-                disabled={!estimator.model}
+                disabled={!selectedBrand || !selectedModel}
               />
             </div>
 
@@ -702,9 +640,9 @@ function HomePage() {
 
           </div>
 
-          {estimateError && (
+          {(estimateError || brandRequest.error) && (
             <div className="home-estimate-error">
-              {estimateError}
+              {estimateError || t("home.estimator.errors.options")}
             </div>
           )}
 
