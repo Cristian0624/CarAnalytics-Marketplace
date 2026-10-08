@@ -388,6 +388,43 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
       <BackgroundTriangles />
 
       <main className="home-main">
+        <header className="guide-header">
+          <h1>
+            {t("listings.guide.title")}
+          </h1>
+
+          <p className="guide-subtitle">
+            {t("listings.guide.subtitle")}
+          </p>
+
+          <ul className="guide-legend">
+            <li>
+              <span className="legend-dot legend-high" aria-hidden="true" />
+              {t("listings.guide.legend.high")}
+            </li>
+            <li>
+              <span className="legend-dot legend-mid" aria-hidden="true" />
+              {t("listings.guide.legend.mid")}
+            </li>
+            <li>
+              <span className="legend-dot legend-low" aria-hidden="true" />
+              {t("listings.guide.legend.low")}
+            </li>
+          </ul>
+
+          <div className="guide-hints">
+            <span className="guide-hints-title">
+              {t("listings.guide.hintsTitle")}
+            </span>
+
+            <ol>
+              <li>{t("listings.guide.hints.0")}</li>
+              <li>{t("listings.guide.hints.1")}</li>
+              <li>{t("listings.guide.hints.2")}</li>
+            </ol>
+          </div>
+        </header>
+
         <ListingFilters
           title={t("listings.title")}
           filters={filters}

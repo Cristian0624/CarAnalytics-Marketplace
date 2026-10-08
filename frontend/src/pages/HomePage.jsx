@@ -384,7 +384,7 @@ function HomePage() {
       </section>
 
       {/* PRICE ESTIMATOR */}
-      <section className="home-estimator-section">
+      <section className="home-estimator-section" id="estimator">
 
         <div className="estimator-car-image">
           <img
@@ -405,6 +405,13 @@ function HomePage() {
 
           <p>
             {t("home.estimator.description")}
+          </p>
+
+          <p className="home-estimator-crosslink">
+            {t("home.estimator.riskCtaPrefix")}{" "}
+            <Link to="/anomaly-risk">
+              {t("home.estimator.riskCtaLink")}
+            </Link>
           </p>
         </div>
 

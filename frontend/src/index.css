@@ -8,6 +8,15 @@
   --brand-offwhite: #F5F7F6;
   --brand-surface: #FFFFFF;
   --brand-border: #DFE5E4;
+  /* Legacy aliases (HomePage and older components). Same 3-color system. */
+  --brunswick: var(--brand-charcoal);
+  --brunswick-dark: var(--brand-charcoal);
+  --sage: var(--brand-teal);
+  --sage-dark: var(--brand-teal-dark);
+  --pearl: var(--brand-offwhite);
+  --pearl-light: var(--brand-surface);
+  --page-bg: var(--brand-offwhite);
+  --ink-soft: var(--brand-muted);
   --text: #54666E;
   --text-h: #17202A;
   --bg: #fff;
