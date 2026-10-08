@@ -266,7 +266,10 @@ function CarCard({
             <strong>€{formatNumber(currentCar.price_eur)}</strong>
 
             {currentCar.score !== null && currentCar.score !== undefined && (
-              <span className={`score-badge ${getScoreClass(score)}`}>
+              <span
+                className={`score-badge ${getScoreClass(score)}`}
+                title={t("carCard.scoreTooltip", { score: score.toFixed(0) })}
+              >
                 {score.toFixed(0)}
               </span>
             )}

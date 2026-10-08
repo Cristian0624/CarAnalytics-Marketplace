@@ -637,7 +637,7 @@ export default function FeaturesPage() {
               </li>
             </ul>
 
-            <Link to="/#price-estimator" className="feature-inline-btn">
+            <Link to="/#estimator" className="feature-inline-btn">
               {t("featuresPage.estimator.tryButton")} →
             </Link>
           </div>

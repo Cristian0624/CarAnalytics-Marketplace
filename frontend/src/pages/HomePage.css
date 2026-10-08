@@ -198,6 +198,7 @@ h2 {
   padding-top: 175px;
   padding-bottom: 90px;
   position: relative;
+  scroll-margin-top: 70px;
 }
 
 .estimator-car-image {

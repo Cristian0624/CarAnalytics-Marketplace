@@ -142,7 +142,14 @@
         "Microautobus": "Minibus",
         "Platformă deschisă": "Flatbed"
       }
-    }
+    },
+    "steps": [
+      "Enter the listing details",
+      "We compare the offer with the market",
+      "You get the score, the risks and what to check"
+    ],
+    "estimatorCtaPrefix": "Just want to know what a car is worth?",
+    "estimatorCtaLink": "Use the Price estimator."
   },
   "createListing": {
     "loading": "Loading...",
@@ -300,7 +307,9 @@
         "higherAsking": "Higher Asking Price",
         "noDataTitle": "There is not enough market data.",
         "noDataDescription": "Not enough comparable listings were found for this configuration."
-      }
+      },
+      "riskCtaPrefix": "Have a listing to check?",
+      "riskCtaLink": "Try the Risk analysis."
     },
     "features": {
       "title": "Unmatched Market Intelligence",
@@ -407,6 +416,21 @@
     },
     "errors": {
       "load": "We could not load the listings."
+    },
+    "guide": {
+      "title": "Which deals are truly worth it?",
+      "subtitle": "Every listing gets a score from 0 to 100 showing how good the deal is compared to the market, based on price, mileage and other risk signals. The higher the score, the better the deal looks.",
+      "legend": {
+        "high": "Green (60+) — great deal",
+        "mid": "Orange (30–59) — check the details",
+        "low": "Red (under 30) — weak deal"
+      },
+      "hintsTitle": "How to use this page",
+      "hints": [
+        "Filter listings in Advanced filters.",
+        "Use Sort to choose how results are ordered.",
+        "Select up to 3 cars and press Open comparison to see them side by side."
+      ]
     }
   },
   "login": {
@@ -1097,7 +1121,8 @@
     "errors": {
       "recommendations": "Could not load recommendations.",
       "risk": "Could not load the risk analysis."
-    }
+    },
+    "scoreTooltip": "Deal score: {{score}}/100"
   },
   "favouriteButton": {
     "remove": "Remove from favorites",

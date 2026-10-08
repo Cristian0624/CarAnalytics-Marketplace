@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { assessAnomalyRisk } from "../api/anomaly_risk";
 import { getListingOptions } from "../api/listings";
 import { buildRiskPayload, resolveVehicleOption, riskErrorMessage } from "../utils/anomalyRisk";
@@ -227,6 +228,24 @@ export default function AnomalyRiskPage() {
         <h1>{t("risk.title")}</h1>
         <p>{t("risk.description")}</p>
       </header>
+
+      <ol className="risk-steps">
+        {[0, 1, 2].map((index) => (
+          <li key={index}>
+            <span className="risk-step-number" aria-hidden="true">
+              {index + 1}
+            </span>
+            {t(`risk.steps.${index}`)}
+          </li>
+        ))}
+      </ol>
+
+      <p className="risk-crosslink">
+        {t("risk.estimatorCtaPrefix")}{" "}
+        <Link to={{ pathname: "/", hash: "#estimator" }}>
+          {t("risk.estimatorCtaLink")}
+        </Link>
+      </p>
 
         <form className="risk-form" onSubmit={submit} onInvalid={(event) => localizeInputValidity(event, t)} onInput={clearInputValidity} aria-busy={loading}>
         <div className="risk-form-heading">

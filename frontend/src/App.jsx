@@ -1,4 +1,5 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import Header from "./components/Header";
 import HomePage from "./pages/HomePage";
 import ListingsPage from "./pages/ListingsPage";
@@ -16,11 +17,27 @@ import FeaturesPage from "./pages/FeaturesPage";
 import { FavouritesProvider } from "./context/FavouritesContext";
 import { ComparatorProvider } from "./context/ComparatorContext";
 
+function ScrollToHash() {
+  const { hash, pathname } = useLocation();
+
+  useEffect(() => {
+    if (!hash) return;
+    // Wait a tick so the target page has rendered.
+    const timer = setTimeout(() => {
+      document.querySelector(hash)?.scrollIntoView({ behavior: "smooth" });
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [hash, pathname]);
+
+  return null;
+}
+
 function App() {
   return (
     <ComparatorProvider>
     <FavouritesProvider><div>
       <Header />
+      <ScrollToHash />
 
       <Routes>
         <Route path="/" element={<HomePage />} />
