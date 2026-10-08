@@ -514,8 +514,18 @@ def get_recommendations_by_attributes(
         )
         scored_items.append((tolerance_dist, item))
 
-    # Sort primarily by lowest tolerance deviation (closest price & mileage), secondarily by similarity score
-    scored_items.sort(key=lambda x: (x[0], -x[1].similarity_score))
+    # Sort primarily by descending score (highest/best score first),
+    # secondarily by similarity score (highest relevance first),
+    # and tertiarily by lowest tolerance deviation (closest price & mileage)
+    scored_items.sort(
+        key=lambda x: (
+            x[1].score is not None,
+            float(x[1].score) if x[1].score is not None else -float("inf"),
+            x[1].similarity_score,
+            -x[0],
+        ),
+        reverse=True,
+    )
     ranked_items = [x[1] for x in scored_items]
 
     target_url = f"https://999.md/ro/{exclude_id}" if exclude_id else None

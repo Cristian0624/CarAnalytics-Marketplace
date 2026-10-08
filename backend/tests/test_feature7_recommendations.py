@@ -120,6 +120,11 @@ class TestFeature7VehicleRecommendationEngine(unittest.TestCase):
         self.assertGreater(len(meganes), 0, "Must include comparable models like Renault Megane")
         self.assertEqual(len(out_of_budget), 0, "All returned vehicles must strictly be within ±15% budget")
 
+        # Verify descending score order (best score first)
+        scores = [float(r["score"]) for r in recommendations if r.get("score") is not None]
+        for i in range(len(scores) - 1):
+            self.assertGreaterEqual(scores[i], scores[i + 1], "Recommendations must be sorted by descending score")
+
     def test_case_2_self_exclusion(self):
         """
         Case 2: Self Exclusion

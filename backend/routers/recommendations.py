@@ -23,7 +23,7 @@ router = APIRouter(
     "/recommendations/{car_id}",
     response_model=RecommendationResponse,
     summary="Get car recommendations for a specific listing",
-    description="Recommends similar cars from the database within strict 10% price and 20% mileage tolerances, sorted by lowest tolerance deviation.",
+    description="Recommends similar cars from the database within strict 10% price and 20% mileage tolerances, sorted in descending score order (best score first).",
 )
 def get_recommendations_by_id(
     car_id: int,
