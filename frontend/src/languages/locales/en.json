@@ -29,7 +29,8 @@
     "riskAnalysis": "Risk Analysis",
     "profile": "My Profile",
     "login": "Login",
-    "register": "Register"
+    "register": "Register",
+    "about": "About Us"
   },
   "estimator": {
     "title": "Estimate car price",
@@ -440,6 +441,7 @@
       "mileageHighLow": "Mileage: high → low"
     },
     "saveFilters": "Save filters",
+    "compareButton": "Compare",
     "mySearch": "My search",
     "loading": "Loading cars...",
     "errorRetry": "Try again",
@@ -458,7 +460,7 @@
     },
     "guide": {
       "title": "Which deals are truly worth it?",
-      "subtitle": "Every listing gets a score from 0 to 100 showing how good the deal is compared to the market, based on price, mileage and other risk signals. The higher the score, the better the deal looks.",
+      "subtitle": "Each listing receives a score from 0 to 80 showing how advantageous the deal is compared to the market, taking into account price, mileage, and other risk signals. The higher the score, the better the deal.",
       "legend": {
         "high": "Green (60+) — great deal",
         "mid": "Orange (30–59) — check the details",
@@ -468,7 +470,7 @@
       "hints": [
         "Filter listings in Advanced filters.",
         "Use Sort to choose how results are ordered.",
-        "Select up to 3 cars and press Open comparison to see them side by side."
+        "Select up to 3 cars and press Compare to see them side by side."
       ]
     }
   },
@@ -1353,5 +1355,247 @@
       "fuel_type": "Fuel",
       "body_type": "Body"
     }
+  },
+  "aboutUs": {
+    "badge": "ABOUT US",
+    "titlePrefix": "The Team Behind",
+    "subtitle": "We built FaceAuto with a clear goal: to bring total transparency, mathematical precision, and confidence to the automotive market.",
+    "mission": {
+      "eyebrow": "OUR MISSION",
+      "title": "Real data instead of guesswork",
+      "description": "Buying a used car shouldn’t feel like a lottery. We analyze thousands of listings, market medians, mileages, and technical configurations to give every buyer and seller an objective, instant, and clear evaluation."
+    },
+    "vision": {
+      "eyebrow": "WHAT WE BUILD",
+      "title": "End-to-end automotive market intelligence",
+      "description": "From our algorithmic deal scoring and instant price estimator to advanced anomaly risk detection, smart recommendations, and side-by-side car comparison — every tool is engineered to work seamlessly together."
+    },
+    "teamBadge": "FACEAUTO TEAM",
+    "teamTitle": "Meet the people who built the platform",
+    "teamSubtitle": "We are 5 Software Engineering (English-Taught Programme) students passionate about data algorithms and modern web experiences.",
+    "members": {
+      "maxim": {
+        "role": "Team Lead & Frontend",
+        "tags": [
+          "Team Lead",
+          "Frontend"
+        ],
+        "description": "Led the technical direction, workflow coordination, and overall architecture of the project while building complex frontend views and a cohesive user experience."
+      },
+      "dan": {
+        "role": "Backend & Frontend",
+        "tags": [
+          "Backend",
+          "Frontend"
+        ],
+        "description": "Developed core backend data processing and valuation logic while crafting key interactive interfaces, dynamic pages, and analytical components across the frontend."
+      },
+      "cristian": {
+        "role": "Backend & Frontend",
+        "tags": [
+          "Backend",
+          "Frontend"
+        ],
+        "description": "Designed and implemented backend API routers, authentication flows, state management, and multi-language integration across the full-stack React application."
+      },
+      "mihai": {
+        "role": "Backend & QA",
+        "tags": [
+          "Backend",
+          "QA (Quality Assurance)"
+        ],
+        "description": "Engineered backend services and API endpoints for vehicle data processing and led Quality Assurance (QA), writing automated tests and validating edge cases and platform stability."
+      },
+      "marius": {
+        "role": "Backend, Frontend & DBA",
+        "tags": [
+          "Backend",
+          "Frontend",
+          "DBA (Database Administrator)"
+        ],
+        "description": "Managed and optimized the relational database (DBA) and data acquisition pipelines while developing core backend services and analytical frontend modules."
+      }
+    },
+    "backHome": "Back to Homepage"
+  },
+  "featuresPage": {
+    "badge": "INTERACTIVE FEATURE BREAKDOWN",
+    "titlePrefix": "How",
+    "subtitle": "Interactively explore every algorithm powering FaceAuto. Adjust the live sliders and scenarios to see exactly how we compute deal scores, anomaly risks, and price estimates.",
+    "nav": {
+      "scoring": "Deal Scoring",
+      "risk": "Anomaly Detection",
+      "estimator": "Price Estimator",
+      "pipeline": "Platform Workflow"
+    },
+    "scoring": {
+      "tag": "DEAL SCORING ALGORITHM (0 – 100, BASELINE 50.0)",
+      "title": "Dynamic Valuation with per-10,000 km Depreciation & Progressive Tiers",
+      "description": "Every listing starts at a neutral baseline of 50.0 points (on a 0–100 scale). The algorithm first filters P10–P90 price outliers, computes a mileage-adjusted Expected Price, and applies non-linear progressive tiers and anti-fraud caps.",
+      "points": {
+        "groupingTitle": "3-Level Hierarchical Grouping (L1 → L2 → ±2 Year Sliding Window)",
+        "groupingDesc": "L1 groups by brand, model, generation, year, engine_size, fuel_type, and gearbox (min. 5 cars). If fewer than 5 exist, it falls back to L2 (brand, model, generation, year), and for rare cars applies a ±2 year sliding window.",
+        "depreciationTitle": "Dynamic Mileage Depreciation Rate (dep_per_10k)",
+        "depreciationDesc": "Baseline mileage is taken from cars within ±5% of the group median price, and the real €/10,000 km depreciation rate is derived from the price delta between low-mileage and high-mileage halves (or 5% of median fallback).",
+        "tiersTitle": "Non-Linear Tiers & 'Too-Good-To-Be-True' Penalty (>35%)",
+        "tiersDesc": "When cheaper than Expected Price: +1.3 pts/% (0–10%), +1.0 pt/% (10–20%), +0.5 pts/% (20–30%), 0 pts plateau (30–35%, max +28 pts), and −2.0 pts/% beyond 35% discount. When overpriced: −1.0 pt/% (0–15%), −1.3 pts/% (15–25%), −1.6 pts/% (25–35%), and −2.0 pts/% (>35%).",
+        "penaltiesTitle": "Suspicious Mileage, Taxi & Anti-Scam Hard Caps",
+        "penaltiesDesc": "Mileage below (age × 6,000 km) or spam placeholders (111,111, 123,456, etc.): −15 pts (≤3 yrs) or −30 pts (>3 yrs). If also >20% cheaper than expected → capped at max 20.0 pts (Scam Cap). Mileage >45,000 km/yr (Taxi) → −20 pts. Damaged / salvage / missing papers → capped at max 10.0 pts."
+      },
+      "tryButton": "Explore Scored Listings",
+      "simTitle": "Exact eval.py Simulator (Baseline 50.0 / 100)",
+      "scoreLabel": "Final Score",
+      "yearsOld": "yrs",
+      "damagedToggle": "Damaged / salvage / parts / papers issue (Hard-cap max 10.0)",
+      "sliders": {
+        "marketPrice": "Group Median Price (med_price P10–P90)",
+        "askingPrice": "Listing Asking Price (price_eur)",
+        "year": "Manufacturing Year",
+        "depPer10k": "Depreciation / 10k km",
+        "mileage": "Listing Mileage (mileage)",
+        "expectedMileage": "Group Baseline Mileage (baseline_mileage)"
+      },
+      "stats": {
+        "expectedPrice": "Expected Price",
+        "priceDiffPct": "Deviation (price_diff_pct)",
+        "tierMod": "Tier Modifier"
+      },
+      "subscores": {
+        "finalBar": "Final Score (0–100)"
+      },
+      "flags": {
+        "lowMileage": "Suspiciously low mileage for age",
+        "scamCap": "Anti-Scam Hard Cap triggered",
+        "taxi": "High-intensity / Taxi usage penalty",
+        "tooCheap": "Penalty for >35% below expected price",
+        "damagedCap": "Damaged / salvage vehicle hard cap",
+        "clean": "No penalties triggered — pure progressive price & mileage calculation"
+      }
+    },
+    "risk": {
+      "tag": "RISK & ANOMALY DETECTION (0 – 100)",
+      "title": "Statistical Detection of Suspicious Listings",
+      "description": "Unlike Deal Scoring, Risk Analysis looks for statistical red flags using percentile distributions (P10, P25, P50 Median, P75, P90).",
+      "points": {
+        "percentilesTitle": "P25–P75 Central & P10–P90 Ranges",
+        "percentilesDesc": "Measures exactly where asking price and mileage fall within the real database distribution.",
+        "overrideTitle": "Extreme Override Rule (>45% Deviation)",
+        "overrideDesc": "If price or mileage deviates by more than 45% from the median (with 25+ comparable cars), the anomaly score automatically escalates to 80–100.",
+        "specsTitle": "Technical Configuration Verification",
+        "specsDesc": "Flags rare or unobserved combinations of engine, gearbox, drivetrain, or body style for that generation."
+      },
+      "tryButton": "Try Risk Analysis",
+      "simTitle": "Percentile Distribution Sandbox",
+      "anomalyScore": "Anomaly Score",
+      "components": {
+        "price": "Price Anomaly",
+        "mileage": "Mileage Anomaly",
+        "spec": "Spec Anomaly"
+      },
+      "scenarios": {
+        "balanced": {
+          "label": "Balanced Offer",
+          "explanation": "Asking price and mileage sit comfortably inside the central P25–P75 green zone, with a standard technical configuration."
+        },
+        "cheapExtreme": {
+          "label": "Suspiciously Cheap (-52%)",
+          "explanation": "Alert: Price falls below P10 and more than 45% below the median. The Extreme Override rule triggers (score 86/100) — high risk of hidden defects or scam."
+        },
+        "mileageAnomaly": {
+          "label": "Unusual Mileage",
+          "explanation": "Price is normal, but the reported mileage is 64% below the median for cars of the same age — a clear signal to inspect the VIN history."
+        },
+        "rareSpec": {
+          "label": "Atypical Configuration",
+          "explanation": "The engine, gearbox, and drivetrain combination appears in fewer than 2% of observed listings — possible listing entry error."
+        }
+      }
+    },
+    "estimator": {
+      "tag": "SMART PRICE ESTIMATOR",
+      "title": "Exponentially Weighted Percentiles (P20–P30, P40–P60, P70–P80)",
+      "description": "The estimator selects deduplicated listings from the same brand, model, and generation (minimum 7 eligible cars) and interpolates continuous weighted percentiles.",
+      "points": {
+        "minSupportTitle": "Deduplication & Minimum Pool (Min. 7 Cars, ESS ≥ 5)",
+        "minSupportDesc": "Removes duplicates by technical fingerprint and verifies both pool size (≥7) and Effective Sample Size.",
+        "weightingTitle": "Exponential Distance Weighting",
+        "weightingDesc": "Each comparable receives weight w = exp(−Δyear/3) × exp(−Δkm/100,000) × (0.95 + 0.05 × config_score).",
+        "bandsTitle": "Weighted Percentile Price Bands",
+        "bandsDesc": "Quick Sale uses P20–P30, Normal Market Price uses P40–P60 (with P50 as market reference), and Higher Asking uses P70–P80."
+      },
+      "tryButton": "Open Homepage Estimator",
+      "simTitle": "Weighted Percentile Strategy Simulator",
+      "baseMarket": "Market Median (P50)",
+      "metrics": {
+        "estimatedTime": "Estimated Time to Sell",
+        "days": "days",
+        "buyerInterest": "Buyer Demand Index"
+      },
+      "strategies": {
+        "fast": {
+          "title": "Quick Sale",
+          "explanation": "Weighted P20–P30 percentile band: positions the vehicle in the most competitive third of the market for fast liquidity."
+        },
+        "normal": {
+          "title": "Normal Price",
+          "explanation": "Central P40–P60 percentile band around the P50 weighted median: reflects balanced market value for the car's year and mileage."
+        },
+        "higher": {
+          "title": "Higher Asking",
+          "explanation": "Upper P70–P80 percentile band: suited for pristine condition, rare specifications, or negotiation headroom."
+        }
+      }
+    },
+    "pipeline": {
+      "tag": "COMPLETE ECOSYSTEM",
+      "title": "All Tools Connected in One Seamless Workflow",
+      "subtitle": "Click each stage below to see how FaceAuto’s modules work together.",
+      "openRecommendations": "Open Recommendations",
+      "openComparator": "Open Comparator",
+      "openSaved": "View Profile & Saved Items",
+      "steps": {
+        "0": {
+          "shortTitle": "Search & Filter",
+          "title": "1. Advanced Filtering by Brand, Model, Generation & Class",
+          "description": "Browse thousands of cleaned and validated listings. Filter simultaneously by budget, year, mileage, engine size, horsepower, gearbox, drivetrain, and deal score.",
+          "badges": [
+            "Hierarchical Vehicle Tree",
+            "Live Result Counter",
+            "Sort by Deal Score"
+          ]
+        },
+        "1": {
+          "shortTitle": "Smart Recommendations",
+          "title": "2. Similarity-Based Car Recommendation Engine",
+          "description": "Found a car you like? Our recommendation engine automatically finds the closest alternatives matching vehicle class, price bracket, and mileage.",
+          "badges": [
+            "Vehicle Class Matching",
+            "Price & Mileage Proximity",
+            "Instant Alternatives"
+          ]
+        },
+        "2": {
+          "shortTitle": "3-Car Comparator",
+          "title": "3. Side-by-Side Comparison for Up to 3 Cars",
+          "description": "Add up to 3 vehicles to the comparator to evaluate asking price, deal score, anomaly risk score, and full technical specifications side by side.",
+          "badges": [
+            "Up to 3 Vehicles",
+            "Score + Risk Side-by-Side",
+            "Save Comparisons"
+          ]
+        },
+        "3": {
+          "shortTitle": "Save & Monitor",
+          "title": "4. Saved Filters, Risk Reports & Favorite Listings",
+          "description": "Save custom search filters, historical risk assessments (with one-click Reanalyze against fresh market data), comparisons, and favorite cars in your account.",
+          "badges": [
+            "Favorite Listings",
+            "One-Click Reanalyze",
+            "Saved Searches"
+          ]
+        }
+      }
+    },
+    "backHome": "Back to Homepage"
   }
 }

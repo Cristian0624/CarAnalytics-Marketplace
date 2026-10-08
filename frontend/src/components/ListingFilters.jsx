@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import "./ListingFilters.css";
@@ -294,14 +294,67 @@ export default function ListingFilters({
   barExtras = null,
   resultCount = null,
   countLoading = false,
-  sortingActive = false
+  sortingActive = false,
+  floating = false,
+  floatingCompare = null
 }) {
   const { t } = useTranslation();
 
   const [open, setOpen] = useState(initiallyOpen);
   const [more, setMore] = useState(false);
   const [drop, setDrop] = useState(null);
+  const [isPoppedOut, setIsPoppedOut] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+  const inlineRef = useRef(null);
+  const exitTimerRef = useRef(null);
   const yearRange = useListingYearRange(filters);
+
+  useEffect(() => {
+    if (!floating) return;
+
+    const el = inlineRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsPoppedOut((currentPopped) => {
+            if (currentPopped) {
+              setIsExiting(true);
+              clearTimeout(exitTimerRef.current);
+              exitTimerRef.current = setTimeout(() => {
+                setIsPoppedOut(false);
+                setIsExiting(false);
+              }, 220);
+              return true;
+            }
+            return false;
+          });
+        } else {
+          if (entry.boundingClientRect.top < 0) {
+            clearTimeout(exitTimerRef.current);
+            setIsExiting(false);
+            setIsPoppedOut(true);
+          } else {
+            clearTimeout(exitTimerRef.current);
+            setIsExiting(false);
+            setIsPoppedOut(false);
+          }
+        }
+      },
+      {
+        threshold: 0,
+        rootMargin: "0px"
+      }
+    );
+
+    observer.observe(el);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(exitTimerRef.current);
+    };
+  }, [floating]);
 
   // Local draft: rapid input (sliders, typing) only re-renders this panel.
   // The parent (page + results grid) syncs on a debounce, and searches commit.
@@ -463,8 +516,78 @@ export default function ListingFilters({
   }
 
   return (
-    <section className="listing-filters">
-      {title ? (
+    <section className={`listing-filters ${floating ? "is-floating" : ""}`}>
+      {floating ? (
+        <>
+          <div className="lf-actions-wrapper" ref={inlineRef}>
+            <div
+              className={`lf-actions-container ${
+                isPoppedOut ? "is-floating" : "is-inline"
+              } ${isPoppedOut ? (isExiting ? "is-exiting" : "is-entering") : ""}`}
+            >
+              <button
+                type="button"
+                className={`lf-toggle lf-filter-toggle lf-floating-btn ${open ? "open" : ""}`}
+                aria-expanded={open}
+                onClick={() => setOpen((v) => !v)}
+                title={t("listing-Filters.advanced")}
+              >
+                <img
+                  src="/filter_button.png"
+                  alt=""
+                  className="lf-button-icon"
+                />
+                <span className="lf-btn-text">{t("listing-Filters.advanced")}</span>
+
+                {pills.length > 0 && (
+                  <span className="lf-badge">
+                    {pills.length}
+                  </span>
+                )}
+              </button>
+
+              {barExtras}
+
+              {floatingCompare}
+            </div>
+          </div>
+
+          {pills.length > 0 && (
+            <div className="lf-active-pills-bar">
+              <div className="lf-pills">
+                {pills.map((p, i) => (
+                  <span
+                    key={i}
+                    className="filter-pill"
+                  >
+                    {p.label}
+
+                    <button
+                      type="button"
+                      aria-label={t("listing-Filters.remove", {
+                        value: p.label
+                      })}
+                      onClick={p.onRemove}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  className="lf-link"
+                  onClick={onReset}
+                >
+                  {t("listing-Filters.clearAll")}
+                </button>
+              )}
+            </div>
+          )}
+        </>
+      ) : title ? (
         <div className="marketplace-head">
           <div className="marketplace-head-left">
             <h1 className="marketplace-head-title">{title}</h1>
@@ -527,41 +650,6 @@ export default function ListingFilters({
 
           {barExtras}
 
-          <div className="lf-pills">
-            {pills.map((p, i) => (
-              <span
-                key={i}
-                className="filter-pill"
-              >
-                {p.label}
-
-                <button
-                  type="button"
-                  aria-label={t("listing-Filters.remove", {
-                    value: p.label
-                  })}
-                  onClick={p.onRemove}
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
-
-          {hasActiveFilters && (
-            <button
-              type="button"
-              className="lf-link"
-              onClick={onReset}
-            >
-              {t("listing-Filters.clearAll")}
-            </button>
-          )}
-        </div>
-      )}
-
-      {title && pills.length > 0 && (
-        <div className="lf-active-pills-bar">
           <div className="lf-pills">
             {pills.map((p, i) => (
               <span

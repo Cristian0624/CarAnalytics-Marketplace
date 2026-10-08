@@ -226,7 +226,6 @@ export default function AnomalyRiskPage() {
       <div className="risk-container">
       <header className="risk-heading">
         <h1>{t("risk.title")}</h1>
-        <p>{t("risk.description")}</p>
       </header>
 
       <ol className="risk-steps">

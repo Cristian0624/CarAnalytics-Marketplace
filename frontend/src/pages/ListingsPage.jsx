@@ -70,6 +70,19 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
   const [countLoading, setCountLoading] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [guideModalOpen, setGuideModalOpen] = useState(false);
+
+  useEffect(() => {
+    function handleKeyDown(event) {
+      if (event.key === "Escape") {
+        setGuideModalOpen(false);
+      }
+    }
+    if (guideModalOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [guideModalOpen]);
 
   function getSortLabel() {
     if (!query.sort_by) {
@@ -388,45 +401,61 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
       <BackgroundTriangles />
 
       <main className="home-main">
-        <header className="guide-header">
-          <h1>
-            {t("listings.guide.title")}
-          </h1>
+        <header className="marketplace-page-header">
+          <div className="marketplace-title-wrapper">
+            <h1 className="marketplace-page-title">
+              {t("listings.title")}
+            </h1>
 
-          <p className="guide-subtitle">
+            <button
+              type="button"
+              className="marketplace-guide-btn"
+              onClick={() => setGuideModalOpen(true)}
+              aria-label={t("listings.guide.hintsTitle")}
+              title={t("listings.guide.hintsTitle")}
+            >
+              ?
+            </button>
+          </div>
+
+          <p className="marketplace-page-subtitle">
             {t("listings.guide.subtitle")}
           </p>
-
-          <ul className="guide-legend">
-            <li>
-              <span className="legend-dot legend-high" aria-hidden="true" />
-              {t("listings.guide.legend.high")}
-            </li>
-            <li>
-              <span className="legend-dot legend-mid" aria-hidden="true" />
-              {t("listings.guide.legend.mid")}
-            </li>
-            <li>
-              <span className="legend-dot legend-low" aria-hidden="true" />
-              {t("listings.guide.legend.low")}
-            </li>
-          </ul>
-
-          <div className="guide-hints">
-            <span className="guide-hints-title">
-              {t("listings.guide.hintsTitle")}
-            </span>
-
-            <ol>
-              <li>{t("listings.guide.hints.0")}</li>
-              <li>{t("listings.guide.hints.1")}</li>
-              <li>{t("listings.guide.hints.2")}</li>
-            </ol>
-          </div>
         </header>
 
+        {guideModalOpen && (
+          <div className="guide-modal-overlay" onClick={() => setGuideModalOpen(false)}>
+            <div className="guide-modal-card" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+              <button
+                type="button"
+                className="guide-modal-close"
+                onClick={() => setGuideModalOpen(false)}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+
+              <div className="guide-modal-header">
+                <h3 className="guide-modal-title">
+                  {t("listings.guide.hintsTitle")}
+                </h3>
+              </div>
+
+              <ol className="guide-modal-hints">
+                {Array.isArray(t("listings.guide.hints", { returnObjects: true }))
+                  ? t("listings.guide.hints", { returnObjects: true }).map((hint, idx) => (
+                      <li key={idx}>{hint}</li>
+                    ))
+                  : [0, 1, 2].map((idx) => (
+                      <li key={idx}>{t(`listings.guide.hints.${idx}`)}</li>
+                    ))}
+              </ol>
+            </div>
+          </div>
+        )}
+
         <ListingFilters
-          title={t("listings.title")}
+          floating={true}
           filters={filters}
           setFilters={setFilters}
           onSearch={handleSearch}
@@ -634,17 +663,41 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
               )}
             </div>
           }
+          floatingCompare={
+            <Link 
+              to="/comparator" 
+              state={{ savedFilters: query.filters, savedPage: query.page }} 
+              className="floating-compare-btn"
+              title={t("comparatorPage.openComparison", { count: comparedCars.length })}
+            >
+              <svg
+                className="compare-arrows-icon"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M20 7H4" />
+                <path d="m16 3 4 4-4 4" />
+                <path d="M4 17h16" />
+                <path d="m8 21-4-4 4-4" />
+              </svg>
+              <span className="compare-btn-text">
+                {t("listings.compareButton", "Compare")}
+              </span>
+              {comparedCars.length > 0 && (
+                <span className="compare-count-badge">
+                  {comparedCars.length}
+                </span>
+              )}
+            </Link>
+          }
         />
 
-        <div className="comparator-action-row">
-          <Link 
-            to="/comparator" 
-            state={{ savedFilters: query.filters, savedPage: query.page }} 
-            className="comparator-banner-btn"
-          >
-            {t("comparatorPage.openComparison", { count: comparedCars.length })}
-          </Link>
-        </div>
 
         <div
           id="listings-results-start"

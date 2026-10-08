@@ -9,7 +9,7 @@
 }
 .risk-page * { box-sizing: border-box; }
 .risk-container { max-width: 1126px; margin: 0 auto; }
-.risk-heading { text-align: center; max-width: 740px; margin: 32px auto 40px; }
+.risk-heading { text-align: center; max-width: 740px; margin: 32px auto 28px; }
 .risk-steps {
   list-style: none;
   display: flex;
@@ -66,7 +66,7 @@
     flex-direction: column;
   }
 }
-.risk-heading h1 { color: var(--brand-charcoal); font-size: clamp(32px, 4vw, 52px); font-weight: 800; letter-spacing: -1.5px; line-height: 1.13; margin: 22px 0 18px; }
+.risk-heading h1 { color: var(--brand-charcoal); font-size: clamp(32px, 4vw, 52px); font-weight: 800; letter-spacing: -1.5px; line-height: 1.13; margin: 22px 0 0; }
 .risk-heading p { color: var(--brand-muted); line-height: 1.7; font-size: 18px; }
 .risk-form { border: 1px solid var(--brand-border); border-radius: 24px; background: var(--brand-surface); padding: 36px; box-shadow: 0 12px 32px rgb(23 32 42 / 8%); }
 .risk-form-heading { display: flex; justify-content: space-between; align-items: start; gap: 16px; margin-bottom: 30px; padding-bottom: 26px; border-bottom: 1px solid var(--brand-border); }

@@ -1287,17 +1287,13 @@ function HomePage() {
           </div>
 
           <div className="footer-links">
-            <a href="#">
+            <Link to="/about">
               {t("home.footer.about")}
-            </a>
+            </Link>
 
-            <a href="#">
+            <Link to="/features">
               {t("home.footer.features")}
-            </a>
-
-            <a href="#">
-              {t("home.footer.pricing")}
-            </a>
+            </Link>
 
             <a href="#">
               {t("home.footer.terms")}

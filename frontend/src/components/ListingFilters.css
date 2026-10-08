@@ -910,3 +910,231 @@
 }
 @media (prefers-reduced-motion: reduce) { .lf-panel { animation: none; } }
 
+/* ---------- Actions Bar: Inline & Floating ---------- */
+.listing-filters.is-floating {
+  margin-bottom: 0;
+}
+
+.listing-filters.is-floating .lf-active-pills-bar {
+  margin-top: 0;
+  margin-bottom: 14px;
+}
+
+.lf-actions-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 44px;
+  margin: 6px 0 18px;
+}
+
+/* --- Inline Mode (centered between description and listings) --- */
+.lf-actions-container.is-inline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.lf-actions-container.is-inline .lf-toggle,
+.lf-actions-container.is-inline .floating-compare-btn {
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 12px;
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  font-weight: 700;
+  font-size: 14px;
+  color: #17202A;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.lf-actions-container.is-inline .lf-toggle:hover,
+.lf-actions-container.is-inline .floating-compare-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+  border-color: #14B8A6;
+  color: #17202A;
+}
+
+.lf-actions-container.is-inline .lf-sort {
+  position: relative;
+}
+
+.lf-actions-container.is-inline .lf-sort-menu {
+  top: calc(100% + 8px);
+  bottom: auto;
+  left: 0;
+  border-radius: 12px;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.15);
+  border: 1px solid #E2E8F0;
+  animation: sortDropdownFade 0.15s ease-out;
+  z-index: 1050;
+}
+
+@keyframes sortDropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Floating Mode (popped out vertically on bottom left) --- */
+.lf-actions-container.is-floating {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.lf-actions-container.is-floating.is-entering {
+  animation: popInLeft 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.lf-actions-container.is-floating.is-exiting {
+  animation: popOutLeftExit 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+}
+
+@keyframes popInLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-24px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes popOutLeftExit {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-24px) scale(0.96);
+  }
+}
+
+.lf-actions-container.is-floating .lf-toggle,
+.lf-actions-container.is-floating .floating-compare-btn {
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid #CBD5E1;
+  background: #FFFFFF;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.16), 0 2px 6px rgba(15, 23, 42, 0.08);
+  font-weight: 700;
+  font-size: 14px;
+  color: #17202A;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.lf-actions-container.is-floating .lf-toggle:hover,
+.lf-actions-container.is-floating .floating-compare-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.22);
+  border-color: #14B8A6;
+  color: #17202A;
+}
+
+.lf-actions-container.is-floating .lf-sort {
+  position: relative;
+}
+
+.lf-actions-container.is-floating .lf-sort-menu {
+  top: auto;
+  bottom: 0;
+  left: calc(100% + 10px);
+  right: auto;
+  border-radius: 12px;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.2);
+  border: 1px solid #E2E8F0;
+  animation: sortPopupRight 0.18s ease-out;
+  z-index: 1050;
+}
+
+@keyframes sortPopupRight {
+  from {
+    transform: translateX(-8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes sortPopupUp {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .lf-actions-wrapper {
+    min-height: 40px;
+    margin: 4px 0 14px;
+  }
+
+  .lf-actions-container.is-inline {
+    gap: 8px;
+  }
+
+  .lf-actions-container.is-inline .lf-toggle,
+  .lf-actions-container.is-inline .floating-compare-btn {
+    height: 40px;
+    padding: 0 12px;
+    font-size: 13px;
+    gap: 6px;
+  }
+
+  .lf-actions-container.is-floating {
+    bottom: 16px;
+    left: 12px;
+    gap: 8px;
+  }
+
+  .lf-actions-container.is-floating .lf-toggle,
+  .lf-actions-container.is-floating .floating-compare-btn {
+    height: 40px;
+    padding: 0 12px;
+    font-size: 13px;
+    gap: 6px;
+  }
+
+  .lf-actions-container.is-floating .lf-sort-menu {
+    left: 0;
+    bottom: calc(100% + 8px);
+    animation: sortPopupUp 0.18s ease-out;
+  }
+}
+
+
