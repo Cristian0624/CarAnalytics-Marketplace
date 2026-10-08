@@ -284,8 +284,24 @@ function HomePage() {
               <p className="hero-subtitle">
                 {t("home.hero.loggedInSubtitle")}
               </p>
+            </>
+          ) : (
+            <>
+              <h1 className="hero-title">
+                {t("home.hero.guestTitle")}
+              </h1>
 
-              <div className="hero-buttons">
+              <p className="hero-subtitle">
+                {t("home.hero.guestSubtitle")}
+              </p>
+            </>
+          )}
+        </div>
+
+        <div className="hero-image-placeholder">
+          <div className="hero-buttons">
+            {user ? (
+              <>
                 <Link to="/listings" className="btn-primary">
                   {t("home.hero.browseMarket")}
                 </Link>
@@ -300,19 +316,9 @@ function HomePage() {
                 >
                   {t("home.hero.estimateRisk")}
                 </Link>
-              </div>
-            </>
-          ) : (
-            <>
-              <h1 className="hero-title">
-                {t("home.hero.guestTitle")}
-              </h1>
-
-              <p className="hero-subtitle">
-                {t("home.hero.guestSubtitle")}
-              </p>
-
-              <div className="hero-buttons">
+              </>
+            ) : (
+              <>
                 <Link to="/listings" className="btn-primary">
                   {t("home.hero.browseMarket")}
                 </Link>
@@ -327,18 +333,22 @@ function HomePage() {
                 >
                   {t("home.hero.estimateRisk")}
                 </Link>
-              </div>
-            </>
-          )}
-        </div>
-
-        <div className="hero-image-placeholder">
-          <CarViewer />
+              </>
+            )}
+          </div>
         </div>
       </section>
 
       {/* PRICE ESTIMATOR */}
       <section className="home-estimator-section">
+
+        <div className="estimator-car-image">
+          <img
+            src="/r8.png"
+            alt="Audi R8"
+            className="floating-car"
+          />
+        </div>
 
         <div className="home-estimator-header">
           <span className="home-estimator-badge">
