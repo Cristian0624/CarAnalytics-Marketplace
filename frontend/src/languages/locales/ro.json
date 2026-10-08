@@ -47,9 +47,9 @@
   },
   "risk": {
     "title": "Vezi oferta dincolo de preț.",
-    "description": "Compară prețul, kilometrajul și configurația cu datele pieței. Află ce merită verificat înainte să cumperi.",
+    "description": "Ai găsit un anunț și nu ești sigur că merită? Introdu datele din anunț, inclusiv prețul cerut, iar noi comparăm oferta cu piața și îți arătăm scorul ei, semnalele de risc și ce merită verificat înainte să cumperi.",
     "aboutCar": "Despre mașină",
-    "formDescription": "Datele din anunț sunt suficiente pentru a începe.",
+    "formDescription": "Completează ce știi din anunț. Marca, modelul și prețul cerut sunt obligatorii; cu cât adaugi mai multe detalii, cu atât analiza e mai precisă.",
     "required": "Obligatoriu",
     "offerData": "Datele ofertei",
     "brand": "Marcă",
@@ -141,7 +141,14 @@
         "Microautobus": "Microautobus",
         "Platformă deschisă": "Platformă deschisă"
       }
-    }
+    },
+    "steps": [
+      "Introdu datele din anunț",
+      "Comparăm oferta cu piața",
+      "Primești scorul, riscurile și ce să verifici"
+    ],
+    "estimatorCtaPrefix": "Vrei doar să afli cât valorează o mașină?",
+    "estimatorCtaLink": "Folosește Estimarea prețului."
   },
   "createListing": {
     "loading": "Se încarcă...",
@@ -299,7 +306,9 @@
         "higherAsking": "Preț cerut mai ridicat",
         "noDataTitle": "Nu există suficiente date de piață.",
         "noDataDescription": "Nu au fost găsite suficiente anunțuri comparabile pentru această configurație."
-      }
+      },
+      "riskCtaPrefix": "Ai un anunț de verificat?",
+      "riskCtaLink": "Încearcă Analiza de risc."
     },
     "features": {
       "title": "Inteligență de Piață Inegalabilă",
@@ -406,6 +415,21 @@
     },
     "errors": {
       "load": "Nu am putut încărca anunțurile."
+    },
+    "guide": {
+      "title": "Ce oferte merită cu adevărat?",
+      "subtitle": "Fiecare anunț primește un scor de la 0 la 100 care arată cât de avantajoasă este oferta față de piață, ținând cont de preț, kilometraj și alte semnale de risc. Cu cât scorul e mai mare, cu atât oferta arată mai bine.",
+      "legend": {
+        "high": "Verde (60+) — ofertă avantajoasă",
+        "mid": "Portocaliu (30–59) — verifică detaliile",
+        "low": "Roșu (sub 30) — ofertă slabă"
+      },
+      "hintsTitle": "Cum folosești pagina",
+      "hints": [
+        "Filtrează ofertele din Filtre avansate.",
+        "Alege din Afișare cum sunt ordonate rezultatele.",
+        "Selectează până la 3 mașini și apasă Deschide comparare ca să le vezi una lângă alta."
+      ]
     }
   },
   "login": {
@@ -1096,7 +1120,8 @@
     "errors": {
       "recommendations": "Nu am putut încărca recomandările.",
       "risk": "Nu am putut încărca analiza riscului."
-    }
+    },
+    "scoreTooltip": "Scor ofertă: {{score}}/100"
   },
   "favouriteButton": {
     "remove": "Elimină din favorite",
