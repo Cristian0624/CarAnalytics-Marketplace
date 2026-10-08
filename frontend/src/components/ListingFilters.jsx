@@ -294,15 +294,28 @@ export default function ListingFilters({
   const [more, setMore] = useState(false);
   const [drop, setDrop] = useState(null);
 
+  // Local draft: rapid input (sliders, typing) only re-renders this panel.
+  // The parent (page + results grid) syncs on a debounce, and searches commit.
+  const [draft, setDraft] = useState(filters);
+
+  useEffect(() => {
+    setDraft(filters);
+  }, [filters]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setFilters(draft), 350);
+    return () => clearTimeout(timer);
+  }, [draft, setFilters]);
+
   const update = (field, value) =>
-    setFilters((c) => updateListingFilter(c, field, value));
+    setDraft((c) => updateListingFilter(c, field, value));
 
-  const filterError = listingFilterError(filters, t);
+  const filterError = listingFilterError(draft, t);
 
-  const hasClasses = Boolean(filters.class?.length);
+  const hasClasses = Boolean(draft.class?.length);
 
   const classDisabled =
-    Boolean(filters.modelText?.trim()) && !hasClasses;
+    Boolean(draft.modelText?.trim()) && !hasClasses;
 
   useEffect(() => {
     if (!open) return;
@@ -323,16 +336,17 @@ export default function ListingFilters({
   }, [open]);
 
   function clearFields(changes) {
-    Object.entries(changes).forEach(([f, v]) => update(f, v));
-    onSearch?.({ ...filters, ...changes });
+    const next = { ...draft, ...changes };
+    setDraft(next);
+    onSearch?.(next);
   }
 
   const pills = [];
 
   const vehicle = [
-    filters.brandText,
-    filters.modelText,
-    filters.generationText
+    draft.brandText,
+    draft.modelText,
+    draft.generationText
   ].filter(Boolean);
 
   if (vehicle.length) {
@@ -348,28 +362,28 @@ export default function ListingFilters({
   }
 
   ARRAY_FIELDS.forEach((f) =>
-    (filters[f] ?? []).forEach((val) =>
+    (draft[f] ?? []).forEach((val) =>
       pills.push({
         label: val,
         onRemove: () =>
           clearFields({
-            [f]: filters[f].filter((x) => x !== val)
+            [f]: draft[f].filter((x) => x !== val)
           })
       })
     )
   );
 
   RANGES.forEach((r) => {
-    if (filters[r.min] || filters[r.max]) {
+    if (draft[r.min] || draft[r.max]) {
       const maxLabel =
-        filters[r.max] ||
+        draft[r.max] ||
         (r.labelKey === "year"
           ? t("listing-Filters.present")
           : t("listing-Filters.noLimit"));
 
       pills.push({
         label: `${t(`listing-Filters.${r.labelKey}`)}: ${
-          filters[r.min] || 0
+          draft[r.min] || 0
         }–${maxLabel}${r.unit ? ` ${r.unit}` : ""}`,
         onRemove: () =>
           clearFields({
@@ -398,8 +412,8 @@ export default function ListingFilters({
         max={max}
         step={step}
         unit={unit}
-        minValue={filters[r.min]}
-        maxValue={filters[r.max]}
+        minValue={draft[r.min]}
+        maxValue={draft[r.max]}
         onChange={(a, b) => {
           update(r.min, a);
           update(r.max, b);
@@ -412,8 +426,8 @@ export default function ListingFilters({
     <Group title={title}>
       <RangeInput
         step={step}
-        minValue={filters[r.min]}
-        maxValue={filters[r.max]}
+        minValue={draft[r.min]}
+        maxValue={draft[r.max]}
         onMinChange={(v) => update(r.min, v)}
         onMaxChange={(v) => update(r.max, v)}
       />
@@ -434,7 +448,7 @@ export default function ListingFilters({
       });
 
   function apply() {
-    onSearch?.();
+    onSearch?.(draft);
     setOpen(false);
   }
 
@@ -516,7 +530,7 @@ export default function ListingFilters({
                   </h3>
 
                   <VehicleTree
-                    filters={filters}
+                    filters={draft}
                     update={update}
                     lockModels={hasClasses}
                   />
@@ -555,7 +569,7 @@ export default function ListingFilters({
                   <div className="lf-drops">
                     {DROPS.map((d) => {
                       const selected =
-                        filters[d.key] ?? [];
+                        draft[d.key] ?? [];
 
                       const isOpen =
                         drop === d.key;
@@ -672,7 +686,7 @@ export default function ListingFilters({
                         <Chips
                           options={DRIVETRAINS}
                           selected={
-                            filters.drivetrains
+                            draft.drivetrains
                           }
                           onChange={(v) =>
                             update(
@@ -690,7 +704,7 @@ export default function ListingFilters({
                       >
                         <Chips
                           options={STATES}
-                          selected={filters.state}
+                          selected={draft.state}
                           onChange={(v) =>
                             update("state", v)
                           }
@@ -705,7 +719,7 @@ export default function ListingFilters({
                         <Chips
                           options={SELLER_TYPES}
                           selected={
-                            filters.seller_type
+                            draft.seller_type
                           }
                           onChange={(v) =>
                             update(
@@ -726,7 +740,7 @@ export default function ListingFilters({
                             REGISTRATION_COUNTRIES
                           }
                           selected={
-                            filters.registration_country
+                            draft.registration_country
                           }
                           onChange={(v) =>
                             update(
@@ -753,7 +767,7 @@ export default function ListingFilters({
                           options={CAR_CLASSES}
                           disabled={classDisabled}
                           selected={
-                            filters.class
+                            draft.class
                           }
                           onChange={(v) =>
                             update("class", v)

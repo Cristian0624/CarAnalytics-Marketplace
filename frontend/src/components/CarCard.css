@@ -435,7 +435,7 @@
   letter-spacing: 0.5px;
   margin: 0 0 16px 0;
   text-align: center;
-  border-bottom: 1px solid var(--brand-border);
+  border-bottom: 2px solid var(--brand-teal);
   padding-bottom: 12px;
 }
 
@@ -542,8 +542,8 @@
   margin-top: 8px;
   font-size: 14px;
   text-transform: uppercase;
-  color: var(--brand-muted);
-  font-weight: 600;
+  color: var(--brand-teal-dark);
+  font-weight: 700;
 }
 
 .score-circle {
@@ -703,10 +703,7 @@
 
   box-sizing: border-box;
 
-  background: rgba(19, 46, 42, 0.18);
-
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
+  background: rgba(23, 32, 42, 0.55);
 
   animation: carOverlayIn 0.2s ease forwards;
 }

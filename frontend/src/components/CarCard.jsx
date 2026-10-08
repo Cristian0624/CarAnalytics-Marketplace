@@ -52,13 +52,8 @@ function CarCard({
   const [riskResult, setRiskResult] = useState(null);
   const [loadingView, setLoadingView] = useState(false);
   const [viewError, setViewError] = useState("");
-
-  useEffect(() => {
-    if (!expanded) {
-      setViewMode(null);
-      setCurrentCar(car);
-    }
-  }, [expanded, car]);
+  // Cache fetched views per car so toggling tabs never refetches.
+  const viewCache = useRef({});
 
   // Handle outside click when expanded
   useEffect(() => {
@@ -135,12 +130,21 @@ function CarCard({
 
     setViewMode("recommendations");
     setVisibleCount(12);
-    setLoadingView(true);
     setViewError("");
+
+    const cached = viewCache.current[`${currentCar.id}:recommendations`];
+    if (cached) {
+      setRecommendations(cached);
+      return;
+    }
+
+    setLoadingView(true);
 
     try {
       const data = await getRecommendationsForCar(currentCar.id);
-      setRecommendations(data.recommendations || []);
+      const items = data.recommendations || [];
+      viewCache.current[`${currentCar.id}:recommendations`] = items;
+      setRecommendations(items);
     } catch (err) {
       setViewError(t("carCard.errors.recommendations"));
     } finally {
@@ -157,8 +161,15 @@ function CarCard({
     }
 
     setViewMode("risk");
-    setLoadingView(true);
     setViewError("");
+
+    const cachedRisk = viewCache.current[`${currentCar.id}:risk`];
+    if (cachedRisk) {
+      setRiskResult(cachedRisk);
+      return;
+    }
+
+    setLoadingView(true);
 
     try {
       const payloadForm = {
@@ -179,6 +190,7 @@ function CarCard({
       payload.listing_id = currentCar.id;
 
       const res = await assessAnomalyRisk(payload);
+      viewCache.current[`${currentCar.id}:risk`] = res;
       setRiskResult(res);
     } catch (err) {
       setViewError(t("carCard.errors.risk"));
@@ -227,7 +239,7 @@ function CarCard({
             <img
               src={`/logos/${getLogoFileName(currentCar.brand)}`}
               alt={currentCar.brand}
-              className="collapsed-car-logo"
+              className="collapsed-car-logo" loading="lazy" decoding="async"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.style.display = "none";
@@ -320,7 +332,7 @@ function CarCard({
                   <img
                     src="/999-logo.png"
                     alt="999.md"
-                    className="button-logo-999"
+                    className="button-logo-999" loading="lazy" decoding="async"
                   />
                   <span>{t("carCard.openOriginalListing")}</span>
                 </button>
@@ -387,7 +399,7 @@ function CarCard({
                   <img
                     src={`/logos/${getLogoFileName(currentCar.brand)}`}
                     alt={currentCar.brand}
-                    className="expanded-car-logo"
+                    className="expanded-car-logo" loading="lazy" decoding="async"
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.style.display = "none";
@@ -657,7 +669,7 @@ function CarCard({
                                               c.brand
                                             )}`}
                                             alt={c.brand}
-                                            className="collapsed-car-logo"
+                                            className="collapsed-car-logo" loading="lazy" decoding="async"
                                             onError={(ev) => {
                                               ev.target.onerror = null;
                                               ev.target.style.display = "none";
@@ -763,11 +775,11 @@ function CarCard({
                         <div
                           className="risk-container"
                           style={{
-                            background: "#f9fafb",
+                            background: "var(--brand-teal-tint)",
                             padding: "16px",
                             borderRadius: "12px",
                             marginTop: "16px",
-                            border: "1px solid #eee"
+                            border: "1px solid var(--brand-teal)"
                           }}
                         >
                           <AnomalyRiskResults
@@ -792,4 +804,5 @@ function CarCard({
 }
 
 export default CarCard;
+
 

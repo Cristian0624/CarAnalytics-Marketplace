@@ -51,8 +51,8 @@ min-height: 80vh; padding: 48px 24px 80px; text-align: left; font-family: 'Inter
 .favourite-action small { color: #991b1b; }
 .favourite-star { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; height: 40px; width: 42px; padding: 6px; border: 1px solid var(--brand-border); border-radius: 10px; background: white; color: #54666E; cursor: pointer; transition: color .15s, background .15s; }
 .favourite-star path { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linejoin: round; }
-.favourite-star:hover:not(:disabled), .favourite-star.is-saved { background: #fffbeb; color: #d99a00; border-color: #f4d779; }
-.favourite-star:hover:not(:disabled) path, .favourite-star.is-saved path { fill: #facc15; }
+.favourite-star:hover:not(:disabled), .favourite-star.is-saved { background: var(--brand-teal-tint); color: var(--brand-teal-dark); border-color: var(--brand-teal); }
+.favourite-star:hover:not(:disabled) path, .favourite-star.is-saved path { fill: var(--brand-teal); }
 .favourite-star:disabled { opacity: .6; cursor: wait; }
 .saved-listing .car-card-expanded { width: 100%; box-sizing: border-box; cursor: default; }
 .saved-listing .car-expanded-content { padding-top: 80px; }
