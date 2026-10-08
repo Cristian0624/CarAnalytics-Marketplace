@@ -51,9 +51,9 @@ function Header() {
               aria-haspopup="true"
             >
               <span className="language-button__content">
-                {i18n.language === "ro" && "🇲🇩"}
-                {i18n.language === "en" && "🇬🇧"}
-                {i18n.language === "ru" && "🇷🇺"}
+                {i18n.language === "ro" }
+                {i18n.language === "en"}
+                {i18n.language === "ru" }
 
                 <span>
                   {i18n.language === "ro" && "RO"}
@@ -78,7 +78,7 @@ function Header() {
                   className="language-dropdown-item"
                   onClick={() => changeLanguage("ro")}
                 >
-                  🇲🇩 <span>Română</span>
+                  <span>Română</span>
                 </button>
 
                 <button
@@ -86,7 +86,7 @@ function Header() {
                   className="language-dropdown-item"
                   onClick={() => changeLanguage("en")}
                 >
-                  🇬🇧 <span>English</span>
+                  <span>English</span>
                 </button>
 
                 <button
@@ -94,7 +94,7 @@ function Header() {
                   className="language-dropdown-item"
                   onClick={() => changeLanguage("ru")}
                 >
-                  🇷🇺 <span>Русский</span>
+                    <span>Русский</span>
                 </button>
               </div>
             )}
