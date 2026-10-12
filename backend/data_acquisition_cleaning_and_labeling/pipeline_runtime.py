@@ -265,18 +265,10 @@ def prepare_staging(run):
         # Only rebuild for a new batch after discovery has completed. Never truncate on resume.
         cur.execute("DROP TABLE IF EXISTS listings_temp")
         ensure_columns(cur, "listings_temp", RAW_COLUMNS)
-        old_columns = columns(cur, "listings")
-        ensure_columns(cur, "listings_temp", old_columns)
         cur.execute("ALTER TABLE listings_temp ADD PRIMARY KEY (id)")
-        if old_columns:
-            fields = names(old_columns)
-            cur.execute(sql.SQL("""INSERT INTO listings_temp ({}) SELECT {} FROM listings
-                WHERE id IN (SELECT listing_id FROM scrape_pipeline_ids WHERE run_id=%s)""")
-                .format(fields, fields), (run.id,))
-            log(f"Reused {cur.rowcount:,} current raw listings; existing details are retained.")
-        cur.execute("""UPDATE scrape_pipeline_ids SET outcome='copied',error=NULL WHERE run_id=%s
-            AND listing_id IN (SELECT id FROM listings_temp)""", (run.id,))
+        # Every discovered ID needs a fresh page fetch, including existing listings.
+        # The publisher restores application-owned fields and scores by listing ID.
         cur.execute("UPDATE scrape_pipeline_runs SET staging_ready=TRUE WHERE id=%s", (run.id,))
         run.finish(cur, "discover")
     connection.commit()
-    log(f"Staging ready. {len(run.pending_ids()):,} new/retry listing pages need fetching.")
+    log(f"Full refresh: staging ready. {len(run.pending_ids()):,} listing pages need fetching, including existing IDs.")
