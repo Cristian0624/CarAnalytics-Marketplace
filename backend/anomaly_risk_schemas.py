@@ -46,6 +46,17 @@ class Confidence(BaseModel):
     observed_relative_price_iqr: float | None
 
 
+class PriceDistributionPoint(BaseModel):
+    price: float
+    density: float
+
+
+class PriceDistribution(BaseModel):
+    min_price: float
+    max_price: float
+    points: list[PriceDistributionPoint]
+
+
 class PriceAnomaly(BaseModel):
     flag: Literal["extreme_price_low", "extreme_price_high"] | None = None
     actual_price: float
@@ -63,6 +74,7 @@ class PriceAnomaly(BaseModel):
     price_anomaly_score: Score | None
     score: Score | None
     reason: str
+    distribution: PriceDistribution | None = None
 
 
 class MileageAnomaly(BaseModel):

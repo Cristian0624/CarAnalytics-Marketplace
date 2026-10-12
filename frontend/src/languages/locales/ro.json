@@ -873,7 +873,9 @@
       "equal": "față de",
       "insufficient": "Sunt necesare cel puțin 10 anunțuri din {{group}} pentru evaluarea prețului.",
       "sameGeneration": "aceeași generație",
-      "sameModel": "același model"
+      "sameModel": "același model",
+      "distributionBadge": "Distribuție reală de piață ({{count}} anunțuri în DB)",
+      "distributionDensity": "Densitate mare de oferte"
     },
     "mileage": {
       "label": "Kilometraj",

@@ -873,7 +873,9 @@
       "equal": "from",
       "insufficient": "At least 10 listings from {{group}} are required for price evaluation.",
       "sameGeneration": "the same generation",
-      "sameModel": "the same model"
+      "sameModel": "the same model",
+      "distributionBadge": "Real market price distribution ({{count}} listings in DB)",
+      "distributionDensity": "High listing density"
     },
     "mileage": {
       "label": "Mileage",

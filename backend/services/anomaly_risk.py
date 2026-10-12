@@ -7,6 +7,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+try:
+    from scipy.stats import gaussian_kde
+except ImportError:
+    gaussian_kde = None
 
 Q_NAMES = ["p10", "p25", "p50", "p75", "p90"]
 MILEAGE_NAMES = ["p05", "p10", "p25", "p50", "p75", "p90", "p95"]
@@ -104,6 +108,45 @@ class AnomalyRiskService:
         return float(self.SCORING["outer_score"] + (100 - self.SCORING["outer_score"]) *
                      (1 - np.exp(-(distance - outer_distance) / tail_spread)))
 
+    def compute_price_distribution(self, prices, actual_price, q, num_points=60):
+        prices_arr = np.asarray([float(p) for p in prices if p is not None and float(p) > 0], dtype=float)
+        if len(prices_arr) == 0:
+            return None
+        p10, p25, p50, p75, p90 = map(float, q)
+        span = max(p90 - p10, p50 * 0.25, 500.0)
+        domain_min = max(0.0, min(p10 - 0.4 * span, actual_price - 0.15 * span))
+        domain_max = max(p90 + 0.4 * span, actual_price + 0.15 * span)
+        if domain_max <= domain_min:
+            domain_max = domain_min + 1000.0
+
+        x_vals = np.linspace(domain_min, domain_max, num_points)
+        std_val = float(np.std(prices_arr))
+
+        if gaussian_kde is not None and std_val > 1e-4 and len(prices_arr) >= 5:
+            try:
+                kde = gaussian_kde(prices_arr)
+                densities = kde(x_vals)
+                max_d = float(np.max(densities))
+                if max_d > 0:
+                    normalized_densities = (densities / max_d).tolist()
+                else:
+                    normalized_densities = [0.0] * num_points
+            except Exception:
+                sigma = max(span / 2.5, 100.0)
+                normalized_densities = np.exp(-0.5 * ((x_vals - p50) / sigma) ** 2).tolist()
+        else:
+            sigma = max(span / 2.5, 100.0)
+            normalized_densities = np.exp(-0.5 * ((x_vals - p50) / sigma) ** 2).tolist()
+
+        return {
+            "min_price": round(float(domain_min), 2),
+            "max_price": round(float(domain_max), 2),
+            "points": [
+                {"price": round(float(x), 2), "density": round(float(d), 4)}
+                for x, d in zip(x_vals, normalized_densities)
+            ],
+        }
+
     def analyze_price_anomaly(self, actual_price, prices, comparison_level="model_generation"):
         """Score against database prices for the selected model or generation."""
         actual_price = float(actual_price)
@@ -131,6 +174,7 @@ class AnomalyRiskService:
                 "direction": "unknown",
                 "price_anomaly_score": None,
                 "reason": "insufficient_market_support",
+                "distribution": None,
             }
 
         q = np.percentile(np.asarray(prices, dtype=float), [10, 25, 50, 75, 90])
@@ -139,9 +183,11 @@ class AnomalyRiskService:
                   "Asking price is above the observed P90 price." if direction == "unusually_expensive" else
                   "Asking price is close to the observed market median." if q[1] <= actual_price <= q[3] else
                   "Asking price lies within P10-P90, outside the central P25-P75 band.")
+        distribution = self.compute_price_distribution(prices, actual_price, q)
         return {**result, **dict(zip(Q_NAMES, map(float, q))),
                 "deviation_from_p50_pct": float(100 * (actual_price - q[2]) / q[2]),
-                "direction": direction, "price_anomaly_score": self.spread_anomaly_score(actual_price, q), "reason": reason}
+                "direction": direction, "price_anomaly_score": self.spread_anomaly_score(actual_price, q), "reason": reason,
+                "distribution": distribution}
 
     def mileage_anomaly_score(self, actual, stats):
         """Score mileage more gently than price because driving patterns vary widely.

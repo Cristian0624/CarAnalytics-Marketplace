@@ -1,4 +1,6 @@
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import "../pages/AnomalyRiskPage.css";
 
 import {
   getFieldLabel,
@@ -9,6 +11,93 @@ import {
   usesCurrentRiskPolicy,
 } from "../utils/anomalyRisk";
 import { assessmentNumber } from "../utils/assessmentI18n";
+
+function getDistributionData(price, distMin, distMax, width = 1000, baselineY = 125, peakY = 18) {
+  const points = price?.distribution?.points;
+  const usableHeight = baselineY - peakY;
+  const span = distMax - distMin;
+  if (span <= 0) return null;
+
+  let coords = [];
+  if (points && points.length > 0) {
+    coords = points.map((pt) => {
+      const x = Math.max(0, Math.min(width, ((pt.price - distMin) / span) * width));
+      const y = baselineY - Math.max(0, Math.min(1, pt.density)) * usableHeight;
+      return {
+        x: Number(x.toFixed(1)),
+        y: Number(y.toFixed(1)),
+        price: pt.price,
+        density: pt.density,
+      };
+    });
+  } else if (price.p10 != null && price.p50 != null && price.p90 != null) {
+    const sigma = Math.max(1, (price.p90 - price.p10) / 2.56);
+    const steps = 60;
+    for (let i = 0; i <= steps; i++) {
+      const p = distMin + (i / steps) * span;
+      const density = Math.exp(-0.5 * Math.pow((p - price.p50) / sigma, 2));
+      const x = (i / steps) * width;
+      const y = baselineY - density * usableHeight;
+      coords.push({
+        x: Number(x.toFixed(1)),
+        y: Number(y.toFixed(1)),
+        price: p,
+        density,
+      });
+    }
+  }
+
+  if (coords.length < 2) return null;
+
+  let linePath = `M ${coords[0].x} ${coords[0].y}`;
+  for (let i = 1; i < coords.length; i++) {
+    linePath += ` L ${coords[i].x} ${coords[i].y}`;
+  }
+  const areaPath = `${linePath} L ${coords[coords.length - 1].x} ${baselineY} L ${coords[0].x} ${baselineY} Z`;
+
+  let centralAreaPath = "";
+  if (price.p10 != null && price.p90 != null) {
+    const xP10 = Math.max(0, Math.min(width, ((price.p10 - distMin) / span) * width));
+    const xP90 = Math.max(0, Math.min(width, ((price.p90 - distMin) / span) * width));
+    const inside = coords.filter((c) => c.x >= xP10 && c.x <= xP90);
+    if (inside.length > 0) {
+      let cPath = `M ${xP10.toFixed(1)} ${baselineY}`;
+      cPath += ` L ${xP10.toFixed(1)} ${inside[0].y}`;
+      for (const pt of inside) {
+        cPath += ` L ${pt.x} ${pt.y}`;
+      }
+      cPath += ` L ${xP90.toFixed(1)} ${inside[inside.length - 1].y}`;
+      cPath += ` L ${xP90.toFixed(1)} ${baselineY} Z`;
+      centralAreaPath = cPath;
+    }
+  }
+
+  const getYAtPrice = (targetPrice) => {
+    if (targetPrice == null) return baselineY;
+    const targetX = Math.max(0, Math.min(width, ((targetPrice - distMin) / span) * width));
+    for (let i = 0; i < coords.length - 1; i++) {
+      if (targetX >= coords[i].x && targetX <= coords[i + 1].x) {
+        const segSpan = coords[i + 1].x - coords[i].x;
+        const t = segSpan === 0 ? 0 : (targetX - coords[i].x) / segSpan;
+        return coords[i].y + t * (coords[i + 1].y - coords[i].y);
+      }
+    }
+    return coords[coords.length - 1].y;
+  };
+
+  const yMedian = price.p50 != null ? getYAtPrice(price.p50) : baselineY;
+  const yAsking = price.actual_price != null ? getYAtPrice(price.actual_price) : baselineY;
+
+  return {
+    coords,
+    linePath,
+    areaPath,
+    centralAreaPath,
+    baselineY,
+    yMedian: Number(yMedian.toFixed(1)),
+    yAsking: Number(yAsking.toFixed(1)),
+  };
+}
 
 function ComponentScore({ value, weight, flag, t, contextual = false }) {
   const number = (value, digits = 0) => assessmentNumber(t, value, digits);
@@ -129,13 +218,18 @@ export default function AnomalyRiskResults({ result, vehicle }) {
   const lowConfidence = result.market_confidence === "low";
   const priceAvailable = price.score != null;
 
-  const rangeStart = Math.min(price.p10, price.actual_price);
-  const rangeEnd = Math.max(price.p90, price.actual_price);
+  const distMin = price.distribution?.min_price ?? Math.min(price.p10, price.actual_price);
+  const distMax = price.distribution?.max_price ?? Math.max(price.p90, price.actual_price);
 
   const position = (value) =>
-    rangeEnd === rangeStart
+    distMax === distMin || value == null
       ? 50
-      : ((value - rangeStart) / (rangeEnd - rangeStart)) * 100;
+      : Math.max(0, Math.min(100, ((value - distMin) / (distMax - distMin)) * 100));
+
+  const distData = useMemo(
+    () => getDistributionData(price, distMin, distMax),
+    [price, distMin, distMax],
+  );
 
   const weights = result.effective_weights;
   const contextual = result.scoring_context?.mode === "contextual_weighted"
@@ -327,6 +421,17 @@ export default function AnomalyRiskResults({ result, vehicle }) {
 
           {priceAvailable ? (
             <>
+              {price.count >= 10 && (
+                <div className="risk-distribution-badge">
+                  <span className="risk-distribution-badge-dot" aria-hidden="true" />
+                  <span>
+                    {t("anomalyRiskResults.price.distributionBadge", {
+                      count: number(price.count),
+                    })}
+                  </span>
+                </div>
+              )}
+
               <div
                 className={`risk-price-chart ${packedRange ? "risk-price-chart-packed" : ""}`}
                 role="group"
@@ -334,6 +439,95 @@ export default function AnomalyRiskResults({ result, vehicle }) {
                   "anomalyRiskResults.price.chartAriaLabel",
                 )}
               >
+                {distData && (
+                  <div className="risk-distribution-graph">
+                    <svg
+                      className="risk-distribution-svg"
+                      viewBox="0 0 1000 130"
+                      preserveAspectRatio="none"
+                      aria-hidden="true"
+                    >
+                      <defs>
+                        <linearGradient id="riskDistGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#14B8A6" stopOpacity="0.32" />
+                          <stop offset="100%" stopColor="#14B8A6" stopOpacity="0.02" />
+                        </linearGradient>
+                        <linearGradient id="riskDistCentralGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#0F766E" stopOpacity="0.42" />
+                          <stop offset="100%" stopColor="#0F766E" stopOpacity="0.08" />
+                        </linearGradient>
+                      </defs>
+
+                      <line
+                        x1="0"
+                        y1={distData.baselineY}
+                        x2="1000"
+                        y2={distData.baselineY}
+                        stroke="#CBD5E1"
+                        strokeWidth="1.5"
+                      />
+
+                      <path d={distData.areaPath} fill="url(#riskDistGrad)" />
+
+                      {distData.centralAreaPath && (
+                        <path d={distData.centralAreaPath} fill="url(#riskDistCentralGrad)" />
+                      )}
+
+                      <path
+                        d={distData.linePath}
+                        fill="none"
+                        stroke="#0F766E"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                      />
+
+                      {price.p50 != null && (
+                        <>
+                          <line
+                            x1={`${(position(price.p50) * 10).toFixed(1)}`}
+                            y1={distData.yMedian}
+                            x2={`${(position(price.p50) * 10).toFixed(1)}`}
+                            y2={distData.baselineY}
+                            stroke="#0E7C70"
+                            strokeWidth="2"
+                            strokeDasharray="4 3"
+                          />
+                          <circle
+                            cx={`${(position(price.p50) * 10).toFixed(1)}`}
+                            cy={distData.yMedian}
+                            r="4.5"
+                            fill="#0E7C70"
+                            stroke="#FFFFFF"
+                            strokeWidth="2"
+                          />
+                        </>
+                      )}
+
+                      {price.actual_price != null && (
+                        <>
+                          <line
+                            x1={`${(position(price.actual_price) * 10).toFixed(1)}`}
+                            y1={distData.yAsking}
+                            x2={`${(position(price.actual_price) * 10).toFixed(1)}`}
+                            y2={distData.baselineY}
+                            stroke="#17202A"
+                            strokeWidth="2"
+                            strokeDasharray="3 3"
+                          />
+                          <circle
+                            cx={`${(position(price.actual_price) * 10).toFixed(1)}`}
+                            cy={distData.yAsking}
+                            r="5"
+                            fill="#17202A"
+                            stroke="#FFFFFF"
+                            strokeWidth="2"
+                          />
+                        </>
+                      )}
+                    </svg>
+                  </div>
+                )}
+
                 <div className="risk-price-plot">
                   <div
                     className="risk-range"
