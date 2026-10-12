@@ -54,6 +54,11 @@ python -u backend/data_acquisition_cleaning_and_labeling/superfile_v2.py --new-r
 **After an interruption, rerun without `--new-run`.** This also applies when the interrupted
 run originally used that flag. Only one stage can run at a time, enforced by a database lock.
 
+New batches fetch every discovered advert page, including IDs already in the database, using
+12 HTTP workers. Completed requests are still skipped when resuming the same batch. A batch
+prepared before this full-refresh change retains its existing checkpoints; finish it first,
+then use `--new-run` to refresh all pages.
+
 ## Run stages individually
 
 These are the same stages used by the superfile. Run them in this order; each enforces its
@@ -75,8 +80,8 @@ individual scripts and the superfile while resuming the same batch.
 
 | Order | Script | Destination and purpose |
 | --- | --- | --- |
-| 1 | `scraper6_v2.py` | Records discovered IDs/page checkpoints in `scrape_pipeline_*`; prepares `listings_temp` and copies surviving current raw ads. |
-| 2 | `CAR_Scraper3_v2.py` | Fetches new/retry advert pages into `listings_temp`; commits detail checkpoints together with the rows. |
+| 1 | `scraper6_v2.py` | Records discovered IDs/page checkpoints in `scrape_pipeline_*`; prepares empty `listings_temp` for a full refresh. |
+| 2 | `CAR_Scraper3_v2.py` | Fetches every discovered advert page into `listings_temp`; commits detail checkpoints together with the rows. |
 | 3 | `listing_data_cleaner_v2.py` | Builds `listings_cleaned_temp` from raw staging using the existing cleaning rules. |
 | 4 | `model_class_scraper2_v2.py` | Resolves models from the incoming cleaned batch and updates the persistent `model_class` cache. |
 | 5 | `add_class_to_listings_v2.py` | Assigns classes, preserves scores, archives outgoing/incoming raw and cleaned rows, then publishes `listings` and `listings_cleaned` atomically. |
@@ -109,8 +114,8 @@ page payload. Useful metadata continues through raw, cleaned, and historical tab
 1. Discovery commits IDs and the next page after every verified results page. Missing cards,
    inconsistent pagination, and exhausted retries stop discovery; they do not imply an empty
    market. An explicitly disabled next-page button marks completion.
-2. IDs still present in the previous raw table reuse their existing details. Only new IDs
-   need individual advert requests. Successful details and their checkpoints commit together
+2. Every discovered ID needs an individual advert request, including IDs in the previous raw
+   table. On resume, successfully fetched pages are not repeated. Details and their checkpoints commit together
    in batches of 25. Failed requests remain retryable; confirmed HTTP 404/410 responses are
    recorded as gone. Blocks, timeouts, and parsing failures prevent publication.
 3. Cleaning runs transactionally in staging using the existing cleaning rules. An interrupted
@@ -176,9 +181,9 @@ brands or models (`Altă marcă`, `Alt model`, `Altele`) are excluded from clean
 for model-level comparisons. Raw rows and historical snapshots keep their source values.
 These changes apply to the next cleaning stage; completed batches are skipped on resume.
 
-- The previously agreed reuse policy remains: existing ads are not re-fetched, so their
-  price/details may be stale. Newly added metadata remains absent on reused rows unless they
-  already had it. Snapshot time and original scrape/source timestamps are separate.
+- Full refresh updates existing advert details and attempts to populate newly collected
+  metadata. Optional fields still remain `NULL` if the page does not expose them or the
+  parser cannot extract them. Existing scores are preserved rather than recalculated.
 - Search results can change while discovery is running. Checkpoints and decline checks reduce
   incomplete-publication risk but cannot make a changing external website a consistent snapshot.
   Absence from a batch does not prove an advert was sold.

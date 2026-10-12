@@ -22,7 +22,7 @@ from bs4 import BeautifulSoup
 
 BASE_URL = "https://999.md"
 
-MAX_WORKERS = 6
+MAX_WORKERS = 12
 
 # One shared minimum gap between request starts across all workers.
 # Random jitter prevents synchronized bursts.
