@@ -116,12 +116,12 @@ export default function FeaturesPage() {
     calcScore = Math.min(calcScore, 10.0);
   }
 
-  const finalScore = Number(Math.min(100, Math.max(0, calcScore)).toFixed(2));
+  const finalScore = Number(Math.min(80, Math.max(0, calcScore)).toFixed(2));
 
   const dealBadgeClass =
-    finalScore >= 65
+    finalScore >= 60
       ? "sim-badge-good"
-      : finalScore >= 45
+      : finalScore >= 30
       ? "sim-badge-medium"
       : "sim-badge-bad";
 
@@ -235,7 +235,7 @@ export default function FeaturesPage() {
         </header>
 
         {/* SECTION 1: EXACT DEAL SCORING ALGORITHM (eval.py) */}
-        <section id="scoring-lab" className="feature-lab-card">
+        <section id="scoring-lab" className="feature-lab-card scoring-lab-stacked">
           <div className="feature-lab-info">
             <span className="feature-step-tag">
               01 · {t("featuresPage.scoring.tag")}
@@ -245,49 +245,233 @@ export default function FeaturesPage() {
               {t("featuresPage.scoring.description")}
             </p>
 
-            <ul className="feature-explicit-list">
-              <li>
-                <strong>{t("featuresPage.scoring.points.groupingTitle")}:</strong>{" "}
-                {t("featuresPage.scoring.points.groupingDesc")}
-              </li>
-              <li>
-                <strong>
-                  {t("featuresPage.scoring.points.depreciationTitle")}:
-                </strong>{" "}
-                {t("featuresPage.scoring.points.depreciationDesc")}
-              </li>
-              <li>
-                <strong>{t("featuresPage.scoring.points.tiersTitle")}:</strong>{" "}
-                {t("featuresPage.scoring.points.tiersDesc")}
-              </li>
-              <li>
-                <strong>
-                  {t("featuresPage.scoring.points.penaltiesTitle")}:
-                </strong>{" "}
-                {t("featuresPage.scoring.points.penaltiesDesc")}
-              </li>
-            </ul>
+            <div className="algorithm-steps-accordion">
+              <div className="algo-step-item">
+                <div className="algo-step-header">
+                  <span className="algo-step-number">1</span>
+                  <h4>{t("featuresPage.scoring.steps.step1Title")}</h4>
+                </div>
+                <p>{t("featuresPage.scoring.steps.step1Desc")}</p>
+              </div>
+
+              <div className="algo-step-item">
+                <div className="algo-step-header">
+                  <span className="algo-step-number">2</span>
+                  <h4>{t("featuresPage.scoring.steps.step2Title")}</h4>
+                </div>
+                <p>{t("featuresPage.scoring.steps.step2Desc")}</p>
+              </div>
+
+              <div className="algo-step-item">
+                <div className="algo-step-header">
+                  <span className="algo-step-number">3</span>
+                  <h4>{t("featuresPage.scoring.steps.step3Title")}</h4>
+                </div>
+                <p>{t("featuresPage.scoring.steps.step3Desc")}</p>
+              </div>
+
+              <div className="algo-step-item">
+                <div className="algo-step-header">
+                  <span className="algo-step-number">4</span>
+                  <h4>{t("featuresPage.scoring.steps.step4Title")}</h4>
+                </div>
+                <p>{t("featuresPage.scoring.steps.step4Desc")}</p>
+              </div>
+
+              <div className="algo-step-item">
+                <div className="algo-step-header">
+                  <span className="algo-step-number">5</span>
+                  <h4>{t("featuresPage.scoring.steps.step5Title")}</h4>
+                </div>
+                <p>{t("featuresPage.scoring.steps.step5Desc")}</p>
+              </div>
+            </div>
 
             <div className="formula-code-box">
+              <div className="formula-code-title">
+                {t("featuresPage.scoring.mathFormulasTitle")}
+              </div>
               <code>
                 Expected_Price = Med_Price − ((Effective_Km − Baseline_Km) /
                 10,000) × Dep_per_10k
               </code>
               <code>
-                Score = clip(50.0 + Tier_Mod(Price_Diff_%) − Penalties, 0, 100)
+                Price_Diff_% = ((Expected_Price − Asking_Price) /
+                Expected_Price) × 100%
+              </code>
+              <code>
+                Final_Score = clip(50.0 + Tier_Mod(Price_Diff_%) − Penalties,
+                0, 80)
               </code>
             </div>
 
-            <Link to="/listings" className="feature-inline-btn">
-              {t("featuresPage.scoring.tryButton")} →
-            </Link>
+            <div className="tiers-table-container">
+              <h4 className="tiers-table-heading">
+                {t("featuresPage.scoring.tiersTable.title")}
+              </h4>
+              <div className="table-responsive">
+                <table className="tiers-matrix-table">
+                  <thead>
+                    <tr>
+                      <th>{t("featuresPage.scoring.tiersTable.colRange")}</th>
+                      <th>{t("featuresPage.scoring.tiersTable.colRate")}</th>
+                      <th>{t("featuresPage.scoring.tiersTable.colMeaning")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="tier-row-good">
+                      <td>
+                        <strong>
+                          0% – 10% {t("featuresPage.scoring.tiersTable.cheaper")}
+                        </strong>
+                      </td>
+                      <td>
+                        <span className="tier-badge-mod pos">+1.3 pct / 1%</span>
+                      </td>
+                      <td>{t("featuresPage.scoring.tiersTable.row1Note")}</td>
+                    </tr>
+                    <tr className="tier-row-good">
+                      <td>
+                        <strong>
+                          10% – 20% {t("featuresPage.scoring.tiersTable.cheaper")}
+                        </strong>
+                      </td>
+                      <td>
+                        <span className="tier-badge-mod pos">+1.0 pct / 1%</span>
+                      </td>
+                      <td>{t("featuresPage.scoring.tiersTable.row2Note")}</td>
+                    </tr>
+                    <tr className="tier-row-good">
+                      <td>
+                        <strong>
+                          20% – 30% {t("featuresPage.scoring.tiersTable.cheaper")}
+                        </strong>
+                      </td>
+                      <td>
+                        <span className="tier-badge-mod pos">+0.5 pct / 1%</span>
+                      </td>
+                      <td>{t("featuresPage.scoring.tiersTable.row3Note")}</td>
+                    </tr>
+                    <tr className="tier-row-plateau">
+                      <td>
+                        <strong>
+                          30% – 35% {t("featuresPage.scoring.tiersTable.cheaper")}
+                        </strong>
+                      </td>
+                      <td>
+                        <span className="tier-badge-mod neutral">
+                          0.0 pct ({t("featuresPage.scoring.tiersTable.plateau")})
+                        </span>
+                      </td>
+                      <td>{t("featuresPage.scoring.tiersTable.row4Note")}</td>
+                    </tr>
+                    <tr className="tier-row-danger">
+                      <td>
+                        <strong>
+                          &gt; 35% {t("featuresPage.scoring.tiersTable.cheaper")}
+                        </strong>
+                      </td>
+                      <td>
+                        <span className="tier-badge-mod neg">-2.0 pct / 1%</span>
+                      </td>
+                      <td>{t("featuresPage.scoring.tiersTable.row5Note")}</td>
+                    </tr>
+                    <tr className="tier-row-over">
+                      <td>
+                        <strong>
+                          0% – 15%{" "}
+                          {t("featuresPage.scoring.tiersTable.expensive")}
+                        </strong>
+                      </td>
+                      <td>
+                        <span className="tier-badge-mod neg">-1.0 pct / 1%</span>
+                      </td>
+                      <td>{t("featuresPage.scoring.tiersTable.row6Note")}</td>
+                    </tr>
+                    <tr className="tier-row-over">
+                      <td>
+                        <strong>
+                          15% – 25%{" "}
+                          {t("featuresPage.scoring.tiersTable.expensive")}
+                        </strong>
+                      </td>
+                      <td>
+                        <span className="tier-badge-mod neg">-1.3 pct / 1%</span>
+                      </td>
+                      <td>{t("featuresPage.scoring.tiersTable.row7Note")}</td>
+                    </tr>
+                    <tr className="tier-row-over">
+                      <td>
+                        <strong>
+                          25% – 35%{" "}
+                          {t("featuresPage.scoring.tiersTable.expensive")}
+                        </strong>
+                      </td>
+                      <td>
+                        <span className="tier-badge-mod neg">-1.6 pct / 1%</span>
+                      </td>
+                      <td>{t("featuresPage.scoring.tiersTable.row8Note")}</td>
+                    </tr>
+                    <tr className="tier-row-danger">
+                      <td>
+                        <strong>
+                          &gt; 35%{" "}
+                          {t("featuresPage.scoring.tiersTable.expensive")}
+                        </strong>
+                      </td>
+                      <td>
+                        <span className="tier-badge-mod neg">-2.0 pct / 1%</span>
+                      </td>
+                      <td>{t("featuresPage.scoring.tiersTable.row9Note")}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="scoring-badges-legend">
+              <h4 className="badges-legend-heading">
+                {t("featuresPage.scoring.badgesLegend.title")}
+              </h4>
+              <div className="badges-legend-cards">
+                <div className="badge-legend-card badge-card-good">
+                  <div className="badge-legend-pill pill-good">≥ 60 / 80</div>
+                  <div>
+                    <strong>
+                      {t("featuresPage.scoring.badgesLegend.greenTitle")}
+                    </strong>
+                    <p>{t("featuresPage.scoring.badgesLegend.greenDesc")}</p>
+                  </div>
+                </div>
+                <div className="badge-legend-card badge-card-medium">
+                  <div className="badge-legend-pill pill-medium">
+                    30 – 59 / 80
+                  </div>
+                  <div>
+                    <strong>
+                      {t("featuresPage.scoring.badgesLegend.orangeTitle")}
+                    </strong>
+                    <p>{t("featuresPage.scoring.badgesLegend.orangeDesc")}</p>
+                  </div>
+                </div>
+                <div className="badge-legend-card badge-card-bad">
+                  <div className="badge-legend-pill pill-bad">&lt; 30 / 80</div>
+                  <div>
+                    <strong>
+                      {t("featuresPage.scoring.badgesLegend.redTitle")}
+                    </strong>
+                    <p>{t("featuresPage.scoring.badgesLegend.redDesc")}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="feature-lab-interactive">
             <div className="sim-panel-header">
               <span>{t("featuresPage.scoring.simTitle")}</span>
               <span className={`sim-score-pill ${dealBadgeClass}`}>
-                {t("featuresPage.scoring.scoreLabel")}: {finalScore} / 100
+                {t("featuresPage.scoring.scoreLabel")}: {finalScore} / 80
               </span>
             </div>
 
@@ -436,10 +620,15 @@ export default function FeaturesPage() {
                 <div className="sim-bar-track">
                   <div
                     className="sim-bar-fill"
-                    style={{ width: `${finalScore}%` }}
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        Math.max(0, (finalScore / 80) * 100)
+                      )}%`,
+                    }}
                   />
                 </div>
-                <strong>{finalScore}/100</strong>
+                <strong>{finalScore}/80</strong>
               </div>
             </div>
 
@@ -447,8 +636,8 @@ export default function FeaturesPage() {
               {isLowMileage && (
                 <span className="sim-flag-chip flag-warn">
                   ⚠️ {t("featuresPage.scoring.flags.lowMileage")} (
-                  {lowMileagePenalty} pct, prag {suspiciouslyLowThreshold.toLocaleString()}{" "}
-                  km)
+                  {lowMileagePenalty} pct, prag{" "}
+                  {suspiciouslyLowThreshold.toLocaleString()} km)
                 </span>
               )}
               {isScamCap && (
@@ -483,6 +672,12 @@ export default function FeaturesPage() {
                   </span>
                 )}
             </div>
+          </div>
+
+          <div className="scoring-lab-action">
+            <Link to="/listings" className="feature-inline-btn">
+              {t("featuresPage.scoring.tryButton")} →
+            </Link>
           </div>
         </section>
 

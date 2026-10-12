@@ -241,6 +241,26 @@ h2 {
   line-height: 1.6;
 }
 
+.home-estimator-crosslink {
+  margin-top: 14px;
+  color: var(--ink-soft);
+  font-size: 1.05rem;
+}
+
+.home-estimator-crosslink a {
+  color: var(--sage-dark);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--sage);
+  text-underline-offset: 3px;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+.home-estimator-crosslink a:hover {
+  color: var(--sage);
+  text-decoration-color: var(--sage-dark);
+}
+
 .home-estimator-card {
   position: relative;
   z-index: 1;

@@ -1429,9 +1429,49 @@
       "pipeline": "Platform Workflow"
     },
     "scoring": {
-      "tag": "DEAL SCORING ALGORITHM (0 – 100, BASELINE 50.0)",
+      "tag": "DEAL SCORING ALGORITHM (0 – 80, BASELINE 50.0)",
       "title": "Dynamic Valuation with per-10,000 km Depreciation & Progressive Tiers",
-      "description": "Every listing starts at a neutral baseline of 50.0 points (on a 0–100 scale). The algorithm first filters P10–P90 price outliers, computes a mileage-adjusted Expected Price, and applies non-linear progressive tiers and anti-fraud caps.",
+      "description": "Every listing starts at a neutral baseline of 50.0 points (on a 0–80 scale). The algorithm first filters P10–P90 price outliers, computes a mileage-adjusted Expected Price, and applies non-linear progressive tiers and anti-fraud caps.",
+      "steps": {
+        "step1Title": "Step 1: Market Baseline & Outlier Filtering (P10–P90)",
+        "step1Desc": "Strict L1 grouping by Brand, Model, Generation, Year, Engine Size, Fuel Type, and Gearbox (min. 5 listings). If fewer than 5 exist, it falls back to L2 (Brand, Model, Generation, Year) or a ±2-year sliding window. Outliers outside P10–P90 price percentiles are removed.",
+        "step2Title": "Step 2: Baseline Mileage (Middle Market ±5%) & Depreciation (€/10k km)",
+        "step2Desc": "Cars within ±5% of the median price define the group's baseline mileage (baseline_mileage). The real-world depreciation slope (dep_per_10k) is derived from the price delta between low-mileage and high-mileage halves (with 5% of median price as fallback).",
+        "step3Title": "Step 3: Mileage-Adjusted Expected Price & Rollback Safeguard",
+        "step3Desc": "Expected_Price = Med_Price − ((Effective_Km − Baseline_Km) / 10,000) × Dep_per_10k. If mileage is suspiciously low (< 6,000 km/yr) or a known spam placeholder (111,111, 123,456), Baseline_Km is substituted to prevent rewarding fraudulent odometer readings.",
+        "step4Title": "Step 4: 50.0 Baseline Score & Non-Linear Progressive Tiers",
+        "step4Desc": "Every vehicle starts at a neutral 50.0 score (on the 0–80 scale). Lower prices earn diminishing returns: +1.3 pts/% (0–10%), +1.0 pt/% (10–20%), +0.5 pts/% (20–30%), and a 0-pt plateau at 30–35% (legitimate cap ~78 pts). Discounts >35% trigger a severe −2.0 pts/% penalty for hidden defect/fraud risk. Overpriced cars lose between −1.0 and −2.0 pts/%.",
+        "step5Title": "Step 5: Hard Penalties & Anti-Scam Caps (Taxi, Damaged, Scam Cap)",
+        "step5Desc": "Suspicious mileage: −15 pts (≤3 yrs) or −30 pts (>3 yrs). High-mileage Taxi usage (>45,000 km/yr): −20 pts. Scam Cap: if >20% cheaper AND suspiciously low mileage, score is hard-capped at max 20.0 pts. Damaged / salvage / missing paperwork listings are hard-capped at max 10.0 pts."
+      },
+      "mathFormulasTitle": "Official Mathematical Formulas (eval.py)",
+      "tiersTable": {
+        "title": "Non-Linear Progressive Tiers Matrix (Tier Modifiers)",
+        "colRange": "Price Deviation vs. Expected Price",
+        "colRate": "Points / Percentage",
+        "colMeaning": "Algorithmic Behavior",
+        "cheaper": "cheaper",
+        "expensive": "more expensive",
+        "plateau": "plateau",
+        "row1Note": "Maximum reward for competitive market price (+13 pts max)",
+        "row2Note": "Solid bonus on top of first bracket (+10 pts max)",
+        "row3Note": "Diminishing marginal returns (+5 pts max)",
+        "row4Note": "Neutral buffer zone — maximum legitimate deal ceiling (~78 pts)",
+        "row5Note": "Critical fraud flag: too cheap to be true (−2.0 pts/%)",
+        "row6Note": "Mild penalty reflecting ordinary negotiation room",
+        "row7Note": "Listing starts losing competitiveness",
+        "row8Note": "Significantly overpriced for mileage and specs",
+        "row9Note": "Severe premium, completely disconnected from market"
+      },
+      "badgesLegend": {
+        "title": "Listing Card Score Badges Guide (Circular Meter)",
+        "greenTitle": "Good / Great Deal (Green: ≥ 60 / 80)",
+        "greenDesc": "Fair price adjusted for mileage, with zero severe odometer or taxi red flags.",
+        "orangeTitle": "Fair Deal / Inspect Details (Orange: 30 – 59 / 80)",
+        "orangeDesc": "Slightly above market, high mileage, or minor discrepancies requiring verification.",
+        "redTitle": "Poor Deal / High Risk (Red: < 30 / 80)",
+        "redDesc": "Heavily overpriced, penalized odometer history, taxi service, or potential scam."
+      },
       "points": {
         "groupingTitle": "3-Level Hierarchical Grouping (L1 → L2 → ±2 Year Sliding Window)",
         "groupingDesc": "L1 groups by brand, model, generation, year, engine_size, fuel_type, and gearbox (min. 5 cars). If fewer than 5 exist, it falls back to L2 (brand, model, generation, year), and for rare cars applies a ±2 year sliding window.",
@@ -1443,7 +1483,7 @@
         "penaltiesDesc": "Mileage below (age × 6,000 km) or spam placeholders (111,111, 123,456, etc.): −15 pts (≤3 yrs) or −30 pts (>3 yrs). If also >20% cheaper than expected → capped at max 20.0 pts (Scam Cap). Mileage >45,000 km/yr (Taxi) → −20 pts. Damaged / salvage / missing papers → capped at max 10.0 pts."
       },
       "tryButton": "Explore Scored Listings",
-      "simTitle": "Exact eval.py Simulator (Baseline 50.0 / 100)",
+      "simTitle": "Exact eval.py Simulator (Baseline 50.0 / 80)",
       "scoreLabel": "Final Score",
       "yearsOld": "yrs",
       "damagedToggle": "Damaged / salvage / parts / papers issue (Hard-cap max 10.0)",
@@ -1461,7 +1501,7 @@
         "tierMod": "Tier Modifier"
       },
       "subscores": {
-        "finalBar": "Final Score (0–100)"
+        "finalBar": "Final Score (0–80)"
       },
       "flags": {
         "lowMileage": "Suspiciously low mileage for age",

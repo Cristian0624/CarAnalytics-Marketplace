@@ -1429,9 +1429,49 @@
       "pipeline": "Fluxul Platformei"
     },
     "scoring": {
-      "tag": "ALGORITMUL DE SCOR AL OFERTEI (0 – 100, BAZĂ 50.0)",
+      "tag": "ALGORITMUL DE SCOR AL OFERTEI (0 – 80, BAZĂ 50.0)",
       "title": "Evaluare Dinamică cu Depreciere pe 10.000 km și Praguri Progresive",
-      "description": "Fiecare anunț pornește de la un scor de bază de 50.0 puncte (pe scara 0–100). Algoritmul filtrează mai întâi extremele pieței (păstrând intervalul P10–P90), calculează prețul așteptat ajustat la rulaj și aplică trepte progresive și penalizări anti-fraudă.",
+      "description": "Fiecare anunț pornește de la un scor de bază de 50.0 puncte (pe scara 0–80). Algoritmul filtrează mai întâi extremele pieței (păstrând intervalul P10–P90), calculează prețul așteptat ajustat la rulaj și aplică trepte progresive și penalizări anti-fraudă.",
+      "steps": {
+        "step1Title": "Pasul 1: Stabilirea Bazei de Piață & Filtrarea Outlierilor (P10–P90)",
+        "step1Desc": "Grupare strictă L1 după Marcă, Model, Generație, An, Capacitate Motor, Combustibil și Cutie (min. 5 oferte). Dacă sunt sub 5, algoritmul recurge la L2 (Marcă, Model, Generație, An) sau la o fereastră glisantă de ±2 ani. Prețurile aberante de sub percentila P10 și peste P90 sunt eliminate.",
+        "step2Title": "Pasul 2: Rulajul de Referință (Middle Market ±5%) & Deprecierea (€/10.000 km)",
+        "step2Desc": "Din mașinile aflate în intervalul ±5% din prețul median se izolează rulajul de bază (baseline_mileage). Rata reală de depreciere (dep_per_10k) se calculează din panta dintre jumătatea cu kilometraj mic și cea cu kilometraj mare (sau 5% din prețul median ca fallback de siguranță).",
+        "step3Title": "Pasul 3: Calculul Prețului Așteptat (Expected Price) & Protecție Kilometraj Fals",
+        "step3Desc": "Prețul așteptat se ajustează proporțional cu abaterea kilometrajului față de mediana grupului: Expected_Price = Med_Price − ((Km_Efectiv − Baseline_Km) / 10.000) × Dep_per_10k. Dacă rulajul este suspect de mic (< 6.000 km/an) sau conține valori spam (111.111, 123.456), la calculul valorii se utilizează Baseline_Km, astfel încât vânzătorul să nu fie recompensat nejustificat pentru kilometraj dat înapoi.",
+        "step4Title": "Pasul 4: Scor de Bază 50.0 & Trepte Neliniare (Diminishing Returns)",
+        "step4Desc": "Scorul pleacă de la 50.0 puncte (pe scara 0–80). Dacă mașina e mai ieftină decât Expected Price, primește puncte în trepte regresive: +1.3 pct/% (0–10%), +1.0 pct/% (10–20%), +0.5 pct/% (20–30%) și un platou la 30–35% (max. legitim ~78 puncte). O reducere de peste 35% declanșează o penalizare dură de −2.0 pct/% (anomalie de fraudă). Mașinile supraevaluate pierd între −1.0 și −2.0 pct/%.",
+        "step5Title": "Pasul 5: Penalizări Dure & Plafonări Anti-Scam (Taxi, Avariate, Scam Cap)",
+        "step5Desc": "Kilometraj suspect: −15 puncte (≤3 ani) sau −30 puncte (>3 ani). Rulaj intens de taxi (>45.000 km/an): −20 puncte. Scam Cap: dacă prețul este cu >20% sub piață ȘI kilometrajul e suspect de mic, scorul este plafonat la max. 20.0 puncte. Mașini avariate, pentru piese sau fără acte: plafonare forțată la max. 10.0 puncte."
+      },
+      "mathFormulasTitle": "Formulele Matematice Oficiale (eval.py)",
+      "tiersTable": {
+        "title": "Matricea Treptelor Progresive Neliniare (Tier Modifiers)",
+        "colRange": "Abatere Preț vs. Expected Price",
+        "colRate": "Rată Puncte / Procent",
+        "colMeaning": "Comportament Algoritm",
+        "cheaper": "mai ieftin",
+        "expensive": "mai scump",
+        "plateau": "platou",
+        "row1Note": "Recompensă maximă pentru preț competitiv și accesibil (+13 puncte max)",
+        "row2Note": "Recompensă solidă adăugată peste primul palier (+10 puncte max)",
+        "row3Note": "Randamente descrescătoare (diminishing returns, +5 puncte max)",
+        "row4Note": "Zonă tampon neutră — plafonul maxim al unei oferte legitime (~78 pct)",
+        "row5Note": "Alertă critică de fraudă: preț prea bun pentru a fi real (−2.0 pct/%)",
+        "row6Note": "Penalizare moderată pentru marjă normală de negociere",
+        "row7Note": "Oferta devine neatrăgătoare comparativ cu mediana pieței",
+        "row8Note": "Supraevaluare accentuată față de dotări și kilometraj",
+        "row9Note": "Preț aberant, complet deconectat de realitatea pieței"
+      },
+      "badgesLegend": {
+        "title": "Ghidul Scorurilor pe Cardurile de Mașini (Circular Badge)",
+        "greenTitle": "Ofertă Bună / Foarte Avantajoasă (Verde: ≥ 60 / 80)",
+        "greenDesc": "Preț corect ajustat la rulaj, fără penalizări grave de istoric sau kilometraj dat înapoi.",
+        "orangeTitle": "Ofertă Medie / Atenție la Detalii (Portocaliu: 30 – 59 / 80)",
+        "orangeDesc": "Preț ușor peste medie, rulaj ridicat sau mici neconcordanțe tehnice ce necesită verificare.",
+        "redTitle": "Ofertă Slabă / Risc Ridicat (Roșu: < 30 / 80)",
+        "redDesc": "Supraevaluată masiv, rulaj suspect penalizat, regim de taxi sau potențială capcană/scam."
+      },
       "points": {
         "groupingTitle": "Grupare Ierarhică în 3 Niveluri (L1 → L2 → Fereastră ±2 ani)",
         "groupingDesc": "L1 grupează după marcă, model, generație, an, capacitate motor, combustibil și cutie (min. 5 mașini). Dacă sunt sub 5, cade pe L2 (marcă, model, generație, an), iar pentru mașini rare aplică o fereastră glisantă de ±2 ani.",
@@ -1443,7 +1483,7 @@
         "penaltiesDesc": "Rulaj sub (vârstă × 6.000 km) sau valori spam (111.111, 123.456 etc.): −15 pct (≤3 ani) sau −30 pct (>3 ani). Dacă e și >20% sub prețul așteptat + rulaj suspect → plafonare la max 20.0 pct (Scam Cap). Rulaj >45.000 km/an (regim Taxi) → −20 pct. Mașini avariate / fără acte → plafonare la max 10.0 pct."
       },
       "tryButton": "Vezi scorurile în Piața Auto",
-      "simTitle": "Simulator Exact eval.py (Bază 50.0 / 100)",
+      "simTitle": "Simulator Exact eval.py (Bază 50.0 / 80)",
       "scoreLabel": "Scor Final",
       "yearsOld": "ani",
       "damagedToggle": "Stare avariată / defect / piese / fără acte (Plafonare max 10.0)",
@@ -1461,7 +1501,7 @@
         "tierMod": "Modificator Trepte"
       },
       "subscores": {
-        "finalBar": "Scor Final (0–100)"
+        "finalBar": "Scor Final (0–80)"
       },
       "flags": {
         "lowMileage": "Rulaj suspect sub pragul vârstei",
