@@ -20,6 +20,31 @@
   margin: 0 auto 56px;
 }
 
+.about-brand-emblem-wrap {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #17202A 0%, #1e2c38 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 28px rgba(23, 32, 42, 0.16), 0 0 24px rgba(86, 185, 166, 0.25);
+  border: 1px solid rgba(86, 185, 166, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.about-brand-emblem-wrap:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 16px 36px rgba(23, 32, 42, 0.22), 0 0 32px rgba(86, 185, 166, 0.4);
+}
+
+.about-brand-emblem {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
 .about-badge {
   display: inline-block;
   padding: 7px 16px;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { registerUser } from "../api/auth";
 import "./AuthenticationPages.css";
@@ -36,6 +36,14 @@ function ÎnregistrarePage() {
   return (
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
+        <Link to="/" className="auth-brand-header" aria-label="FaceAuto Home">
+          <img
+            src="/brand/logo3_1-dark.svg"
+            alt="FaceAuto"
+            className="auth-brand-logo"
+          />
+        </Link>
+
         <h2>{t("register.title")}</h2>
 
         <input

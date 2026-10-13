@@ -28,16 +28,16 @@ function Header() {
             className="header-brand"
             aria-label="FaceAuto"
           >
-            <div className="brand-icon">
-              <img
-                src="/icon1.png"
-                alt="FaceAuto logo"
-              />
-            </div>
-
-            <span>
-              Face<span style={{ color: "var(--brand-teal)" }}>Auto</span>
-            </span>
+            <img
+              src="/brand/logo4_1.svg"
+              alt="FaceAuto"
+              className="header-brand-full"
+            />
+            <img
+              src="/brand/logo1.1.svg"
+              alt="FaceAuto"
+              className="header-brand-mark"
+            />
           </Link>
         </div>
 
