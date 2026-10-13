@@ -395,6 +395,31 @@ class DatabaseTests(unittest.TestCase):
             run.connection.commit()
         cleaner.main()
 
+    def test_cleaner_excludes_named_sellers_but_retains_other_accounts_and_raw_rows(self):
+        blocked = list(cleaner.EXCLUDED_SELLER_USERNAMES)
+        rows = []
+        for listing_id, username in enumerate(blocked, start=3):
+            row = self.car(listing_id)
+            row["seller_username"] = f"  {username.upper()}  "
+            rows.append(row)
+        allowed = self.car(15)
+        allowed["seller_username"] = "Sauto-stock-extern-ltd"
+        missing = self.car(16)
+        missing["seller_username"] = None
+        rows.extend((allowed, missing))
+
+        self.clean_detail_rows(rows)
+
+        self.assertEqual(
+            self.conn.execute("SELECT id FROM listings_cleaned_temp ORDER BY id").fetchall(),
+            [(15,), (16,)],
+        )
+        self.assertEqual(self.conn.execute("SELECT COUNT(*) FROM listings_temp").fetchone()[0], len(rows))
+        self.assertEqual(
+            self.conn.execute("SELECT id FROM listings_cleaned ORDER BY id").fetchall(),
+            [(1,), (2,)],
+        )
+
     def test_cleaner_handles_placeholder_identity_without_removing_real_models(self):
         changes = {
             3: {"brand": "  ALTĂ   MARCĂ  "},

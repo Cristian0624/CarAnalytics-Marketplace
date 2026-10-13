@@ -5,6 +5,30 @@ from pipeline_runtime import PipelineError, columns, names, run_cli, stage_sessi
 MDL_PER_EUR = 20.02
 USD_PER_EUR = 1.16
 
+EXCLUDED_SELLER_USERNAMES = (
+    "sauto-stock-extern",
+    "auto-store",
+    "4kautocenter",
+    "autooutlet",
+    "honestauto",
+    "eauto1",
+    "yarcars-import",
+    "autokorea-md",
+    "qcars",
+    "autoparc",
+    "rvm-auto",
+    "usauto",
+)
+
+
+def exclude_seller_accounts(cur):
+    """Keep these accounts in raw/history, but omit their ads from analysis."""
+    cur.execute("""
+        DELETE FROM listings_cleaned_temp
+        WHERE LOWER(BTRIM(seller_username)) = ANY(%s)
+    """, (list(EXCLUDED_SELLER_USERNAMES),))
+    print(f"[CLEANER] EXCLUDED: {cur.rowcount:,} rows (blocked seller accounts)", flush=True)
+
 
 def normalize_vehicle_identity(cur):
     """Keep meaningful brand/model values and represent unspecified generations as NULL."""
@@ -123,6 +147,7 @@ def main():
             print(f"[CLEANER] EXCLUDED: {excluded_count:,} rows (initial filter: not Vând/Schimb, not Moldova-registered, state Nou, invalid/missing price)", flush=True)
             print(f"[CLEANER] AFTER:    {after_count:,} rows", flush=True)
 
+            exclude_seller_accounts(cur)
             normalize_vehicle_identity(cur)
 
             cur.execute("SELECT COUNT(*) FROM listings_cleaned_temp")
