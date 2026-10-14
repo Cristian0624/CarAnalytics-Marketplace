@@ -402,9 +402,11 @@ class DatabaseTests(unittest.TestCase):
             row = self.car(listing_id)
             row["seller_username"] = f"  {username.upper()}  "
             rows.append(row)
-        allowed = self.car(15)
+        allowed_id = len(blocked) + 3
+        missing_id = allowed_id + 1
+        allowed = self.car(allowed_id)
         allowed["seller_username"] = "Sauto-stock-extern-ltd"
-        missing = self.car(16)
+        missing = self.car(missing_id)
         missing["seller_username"] = None
         rows.extend((allowed, missing))
 
@@ -412,13 +414,40 @@ class DatabaseTests(unittest.TestCase):
 
         self.assertEqual(
             self.conn.execute("SELECT id FROM listings_cleaned_temp ORDER BY id").fetchall(),
-            [(15,), (16,)],
+            [(allowed_id,), (missing_id,)],
         )
         self.assertEqual(self.conn.execute("SELECT COUNT(*) FROM listings_temp").fetchone()[0], len(rows))
         self.assertEqual(
             self.conn.execute("SELECT id FROM listings_cleaned ORDER BY id").fetchall(),
             [(1,), (2,)],
         )
+
+    def test_cleaner_excludes_selected_sellers_only_below_corrected_mileage_threshold(self):
+        rows = []
+        for listing_id, username in enumerate(cleaner.LOW_MILEAGE_EXCLUDED_SELLER_USERNAMES, start=3):
+            row = self.car(listing_id)
+            row.update(seller_username=f"  {username.upper()}  ", mileage=2000 + listing_id)
+            rows.append(row)
+
+        first_allowed_id = len(rows) + 3
+        at_threshold = self.car(first_allowed_id)
+        at_threshold.update(seller_username="CIPAUTO", mileage=2700)
+        other_seller = self.car(first_allowed_id + 1)
+        other_seller.update(seller_username="Other seller", mileage=2699)
+        corrected = self.car(first_allowed_id + 2)
+        corrected.update(seller_username="AUTOPLAZA", mileage=200)
+        rows.extend((at_threshold, other_seller, corrected))
+
+        self.clean_detail_rows(rows)
+
+        self.assertEqual(
+            self.conn.execute(
+                "SELECT id, mileage FROM listings_cleaned_temp ORDER BY id"
+            ).fetchall(),
+            [(first_allowed_id, 2700), (first_allowed_id + 1, 2699),
+             (first_allowed_id + 2, 200000)],
+        )
+        self.assertEqual(self.conn.execute("SELECT COUNT(*) FROM listings_temp").fetchone()[0], len(rows))
 
     def test_cleaner_handles_placeholder_identity_without_removing_real_models(self):
         changes = {

@@ -18,6 +18,21 @@ EXCLUDED_SELLER_USERNAMES = (
     "autoparc",
     "rvm-auto",
     "usauto",
+    "cristigocars",
+    "gocars",
+    "gicuwin77",
+    "panutaion18",
+    "odesa-md",
+    "gheorghe-1981",
+    "autobridge",
+)
+
+LOW_MILEAGE_EXCLUDED_SELLER_USERNAMES = (
+    "cipauto",
+    "cipauto2",
+    "premium-cipauto",
+    "autoplaza",
+    "autoplaza-botanica",
 )
 
 
@@ -28,6 +43,16 @@ def exclude_seller_accounts(cur):
         WHERE LOWER(BTRIM(seller_username)) = ANY(%s)
     """, (list(EXCLUDED_SELLER_USERNAMES),))
     print(f"[CLEANER] EXCLUDED: {cur.rowcount:,} rows (blocked seller accounts)", flush=True)
+
+
+def exclude_low_mileage_seller_accounts(cur):
+    """Apply the account rule to the final, corrected mileage value."""
+    cur.execute("""
+        DELETE FROM listings_cleaned_temp
+        WHERE mileage < 2700
+          AND LOWER(BTRIM(seller_username)) = ANY(%s)
+    """, (list(LOW_MILEAGE_EXCLUDED_SELLER_USERNAMES),))
+    print(f"[CLEANER] EXCLUDED: {cur.rowcount:,} rows (selected sellers with mileage under 2,700 km)", flush=True)
 
 
 def normalize_vehicle_identity(cur):
@@ -247,6 +272,8 @@ def main():
             after_count = cur.fetchone()[0]
             print(f"[CLEANER] EXCLUDED: {excluded_count:,} rows (negative mileage, mileage < 70, or mileage > 700,000)", flush=True)
             print(f"[CLEANER] AFTER:    {after_count:,} rows", flush=True)
+
+            exclude_low_mileage_seller_accounts(cur)
 
             cur.execute("SELECT COUNT(*) FROM listings_cleaned_temp")
             before_count = cur.fetchone()[0]
