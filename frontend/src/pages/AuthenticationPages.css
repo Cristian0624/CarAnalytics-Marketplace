@@ -40,12 +40,35 @@
   
     text-align: left;
   }
-  
-  
+
+  /* =========================================================
+     BRAND HEADER
+     ========================================================= */
+
+  .auth-brand-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 28px;
+    text-decoration: none;
+    transition: transform 0.25s ease, filter 0.25s ease;
+  }
+
+  .auth-brand-header:hover {
+    transform: translateY(-2px);
+    filter: drop-shadow(0 4px 12px rgba(86, 185, 166, 0.3));
+  }
+
+  .auth-brand-logo {
+    height: 64px;
+    width: auto;
+    display: block;
+  }
+
   /* =========================================================
      HEADINGS
      ========================================================= */
-  
+
   .auth-form h2 {
     margin: 0 0 30px;
   

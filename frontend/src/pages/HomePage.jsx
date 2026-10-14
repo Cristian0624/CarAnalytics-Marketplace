@@ -318,7 +318,12 @@ function HomePage() {
           {user ? (
             <>
               <div className="hero-badge">
-                {t("home.hero.welcome", { name: user.name })}
+                <img
+                  src="/brand/logo1.1.svg"
+                  alt=""
+                  className="hero-badge-mark"
+                />
+                <span>{t("home.hero.welcome", { name: user.name })}</span>
               </div>
 
               <h1 className="hero-title">
@@ -331,6 +336,15 @@ function HomePage() {
             </>
           ) : (
             <>
+              <div className="hero-badge">
+                <img
+                  src="/brand/logo1.1.svg"
+                  alt=""
+                  className="hero-badge-mark"
+                />
+                <span>FaceAuto Market Intelligence</span>
+              </div>
+
               <h1 className="hero-title">
                 {t("home.hero.guestTitle")}
               </h1>
@@ -1282,9 +1296,13 @@ function HomePage() {
       <footer className="footer-section">
         <div className="footer-content">
 
-          <div className="footer-logo">
-            Face<span style={{ color: "var(--brand-teal)" }}>Auto</span>
-          </div>
+          <Link to="/" className="footer-brand" aria-label="FaceAuto">
+            <img
+              src="/brand/logo4_1.svg"
+              alt="FaceAuto"
+              className="footer-brand-logo"
+            />
+          </Link>
 
           <div className="footer-links">
             <Link to="/about">

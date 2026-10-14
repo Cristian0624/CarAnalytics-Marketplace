@@ -55,16 +55,28 @@ h2 {
 }
 
 .hero-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   align-self: center;
   margin: 0 auto 18px;
-  background-color: var(--sage);
-  color: var(--brunswick-dark);
+  background: rgba(23, 32, 42, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(86, 185, 166, 0.35);
+  color: var(--brand-offwhite);
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   padding: 8px 18px;
   border-radius: 999px;
   letter-spacing: 0.2px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15), 0 0 12px rgba(86, 185, 166, 0.2);
+}
+
+.hero-badge-mark {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  object-fit: contain;
 }
 
 .hero-subtitle {
@@ -1223,10 +1235,22 @@ h2 {
   gap: 20px;
 }
 
-.footer-logo {
-  font-weight: 800;
-  font-size: 1.2rem;
-  color: var(--brand-offwhite);
+.footer-brand {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.footer-brand:hover {
+  transform: translateY(-1px);
+  filter: drop-shadow(0 0 10px rgba(86, 185, 166, 0.4));
+}
+
+.footer-brand-logo {
+  height: 32px;
+  width: auto;
+  display: block;
 }
 
 .footer-links a {

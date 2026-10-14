@@ -50,6 +50,13 @@ export default function AboutUsPage() {
 
       <div className="about-container">
         <header className="about-hero">
+          <div className="about-brand-emblem-wrap">
+            <img
+              src="/brand/logo1.1.svg"
+              alt="FaceAuto"
+              className="about-brand-emblem"
+            />
+          </div>
           <span className="about-badge">{t("aboutUs.badge")}</span>
           <h1>
             {t("aboutUs.titlePrefix")}{" "}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../context/AuthContext";
@@ -46,6 +46,14 @@ function AutentificarePage() {
   return (
     <div className="auth-page">
       <form className="auth-form" onSubmit={handleSubmit}>
+        <Link to="/" className="auth-brand-header" aria-label="FaceAuto Home">
+          <img
+            src="/brand/logo3_1-dark.svg"
+            alt="FaceAuto"
+            className="auth-brand-logo"
+          />
+        </Link>
+
         <h2>{t("login.title")}</h2>
 
         <input

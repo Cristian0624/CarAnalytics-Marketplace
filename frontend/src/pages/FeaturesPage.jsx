@@ -209,6 +209,13 @@ export default function FeaturesPage() {
       <div className="features-page-container">
         {/* HERO */}
         <header className="features-hero">
+          <div className="features-brand-emblem-wrap">
+            <img
+              src="/brand/logo1.1.svg"
+              alt="FaceAuto"
+              className="features-brand-emblem"
+            />
+          </div>
           <span className="features-eyebrow">{t("featuresPage.badge")}</span>
           <h1>
             {t("featuresPage.titlePrefix")}{" "}
