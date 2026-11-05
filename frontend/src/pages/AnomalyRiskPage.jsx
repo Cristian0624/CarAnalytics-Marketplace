@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { assessAnomalyRisk } from "../api/anomaly_risk";
+import { assessAnomalyRisk, assessAnomalyRiskFromUrl } from "../api/anomaly_risk";
 import { getListingOptions } from "../api/listings";
-import { buildRiskPayload, resolveVehicleOption, riskErrorMessage } from "../utils/anomalyRisk";
+import { buildRiskPayload, resolveVehicleOption, riskErrorMessage, translateVehicleValue } from "../utils/anomalyRisk";
 import { clearInputValidity, localizeInputValidity } from "../utils/assessmentErrors";
 import AnomalyRiskResults from "../components/AnomalyRiskResults";
 import VehicleSelect from "../components/VehicleSelect";
@@ -23,6 +23,9 @@ const OPTIONS = {
 };
 
 export default function AnomalyRiskPage() {
+  const [inputMode, setInputMode] = useState("url");
+  const [urlInput, setUrlInput] = useState("");
+  const [extractedVehicle, setExtractedVehicle] = useState(null);
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const [brands, setBrands] = useState([]);
   const [models, setModels] = useState([]);
@@ -162,6 +165,61 @@ export default function AnomalyRiskPage() {
     setForm((current) => ({ ...current, [field]: value }));
   }
 
+  async function submitUrl(event) {
+    event.preventDefault();
+    if (requestRef.current) return;
+    const trimmedUrl = urlInput.trim();
+    if (!trimmedUrl) {
+      setError(t("risk.urlAnalyzer.errors.empty"));
+      return;
+    }
+    const controller = new AbortController();
+    requestRef.current = controller;
+    const timeout = setTimeout(
+      () => controller.abort(new DOMException("Request timed out", "TimeoutError")),
+      60000
+    );
+    setLoading(true);
+    setError("");
+    setResult(null);
+    setExtractedVehicle(null);
+    try {
+      const response = await assessAnomalyRiskFromUrl(trimmedUrl, controller.signal);
+      if (!controller.signal.aborted && response) {
+        const v = response.vehicle;
+        const nextForm = {
+          brand: v.brand ?? "",
+          model: v.model ?? "",
+          generation: v.generation ?? "",
+          price: v.price != null ? String(v.price) : "",
+          year: v.year != null ? String(v.year) : "",
+          mileage: v.mileage != null ? String(v.mileage) : "",
+          engine: v.engine != null ? String(v.engine) : "",
+          fuel_type: v.fuel_type ?? "",
+          gearbox: v.gearbox ?? "",
+          drivetrain: v.drivetrain ?? "",
+          body_type: v.body_type ?? "",
+        };
+        setForm(nextForm);
+        setExtractedVehicle(v);
+        setSubmitted(buildRiskPayload(nextForm));
+        setResult(response.assessment);
+      }
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        if (typeof err.detail === "string" && [404, 422, 502].includes(err.status)) {
+          setError(err.detail);
+        } else {
+          setError(riskErrorMessage(err, t));
+        }
+      }
+    } finally {
+      clearTimeout(timeout);
+      requestRef.current = null;
+      setLoading(false);
+    }
+  }
+
   async function submit(event) {
     event.preventDefault();
     if (requestRef.current) return;
@@ -234,18 +292,224 @@ export default function AnomalyRiskPage() {
             <span className="risk-step-number" aria-hidden="true">
               {index + 1}
             </span>
-            {t(`risk.steps.${index}`)}
+            {t(inputMode === "url" ? `risk.urlSteps.${index}` : `risk.steps.${index}`)}
           </li>
         ))}
       </ol>
 
       <p className="risk-crosslink">
         {t("risk.estimatorCtaPrefix")}{" "}
-        <Link to={{ pathname: "/", hash: "#estimator" }}>
+        <Link to="/price-estimate">
           {t("risk.estimatorCtaLink")}
         </Link>
       </p>
 
+      <div className="risk-mode-switcher" role="tablist" aria-label={t("risk.offerData")}>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={inputMode === "url"}
+          className={`risk-mode-tab ${inputMode === "url" ? "active" : ""}`}
+          onClick={() => {
+            setInputMode("url");
+            setError("");
+          }}
+        >
+          <img src="/999-logo.png" alt="" className="risk-mode-tab-icon" />
+          <span>{t("risk.modes.url")}</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={inputMode === "manual"}
+          className={`risk-mode-tab ${inputMode === "manual" ? "active" : ""}`}
+          onClick={() => {
+            setInputMode("manual");
+            setError("");
+          }}
+        >
+          <span>{t("risk.modes.manual")}</span>
+        </button>
+      </div>
+
+      {inputMode === "url" ? (
+        <form
+          className="risk-form risk-url-form"
+          onSubmit={submitUrl}
+          onInvalid={(event) => localizeInputValidity(event, t)}
+          onInput={clearInputValidity}
+          aria-busy={loading}
+        >
+          <div className="risk-form-heading">
+            <div>
+              <h2>{t("risk.urlAnalyzer.title")}</h2>
+              <p>{t("risk.urlAnalyzer.description")}</p>
+            </div>
+            <span>* {t("risk.required")}</span>
+          </div>
+
+          <fieldset disabled={loading}>
+            <div className="risk-url-input-group">
+              <label htmlFor="risk-url-input">
+                {t("risk.urlAnalyzer.label")} *
+              </label>
+              <div className="risk-url-input-row">
+                <input
+                  id="risk-url-input"
+                  name="url"
+                  type="url"
+                  required
+                  placeholder={t("risk.urlAnalyzer.placeholder")}
+                  value={urlInput}
+                  onChange={(e) => {
+                    setUrlInput(e.target.value);
+                    setError("");
+                  }}
+                />
+                <button className="risk-submit" type="submit">
+                  {loading
+                    ? t("risk.urlAnalyzer.analyzing")
+                    : t("risk.urlAnalyzer.analyze")}
+                </button>
+              </div>
+            </div>
+
+            <p className="risk-form-note">{t("risk.urlAnalyzer.note")}</p>
+
+            <div className="risk-actions">
+              <button
+                className="risk-reset"
+                type="button"
+                onClick={() => {
+                  setUrlInput("");
+                  setExtractedVehicle(null);
+                  setForm({ ...EMPTY_FORM });
+                  setModels([]);
+                  setGenerations([]);
+                  setResult(null);
+                  setSubmitted(null);
+                  setError("");
+                }}
+              >
+                {t("risk.reset")}
+              </button>
+
+              {extractedVehicle && (
+                <button
+                  type="button"
+                  className="risk-edit-manual-btn"
+                  onClick={() => setInputMode("manual")}
+                >
+                  {t("risk.urlAnalyzer.editManual")}
+                </button>
+              )}
+
+              {result && submitted && (
+                <SaveItemButton
+                  key={JSON.stringify(submitted)}
+                  label={t("risk.saveAnalysis")}
+                  defaultName={`${submitted.brand} ${submitted.model}${submitted.year ? ` ${submitted.year}` : ""}`}
+                  path="/saved-risk-assessments"
+                  onSave={(name) =>
+                    createSaved("risks", { name, input: submitted })
+                  }
+                  onSaved={(item) => setResult(item.result)}
+                />
+              )}
+            </div>
+          </fieldset>
+
+          {extractedVehicle && (
+            <div className="risk-extracted-card">
+              <div className="risk-extracted-header">
+                <div className="risk-extracted-title-wrap">
+                  <span
+                    className={`risk-source-badge risk-source-${extractedVehicle.source}`}
+                  >
+                    {extractedVehicle.source === "database"
+                      ? t("risk.urlAnalyzer.sourceDatabase")
+                      : t("risk.urlAnalyzer.sourceLive")}
+                  </span>
+                  <h3>
+                    {extractedVehicle.brand} {extractedVehicle.model}
+                    {extractedVehicle.generation
+                      ? ` · ${extractedVehicle.generation}`
+                      : ""}
+                  </h3>
+                </div>
+                <a
+                  href={extractedVehicle.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="risk-extracted-link"
+                >
+                  {t("risk.urlAnalyzer.openAd")}
+                </a>
+              </div>
+
+              <div className="risk-extracted-chips">
+                <span className="risk-extracted-chip risk-extracted-chip-price">
+                  <strong>{Number(extractedVehicle.price).toLocaleString()} €</strong>
+                  {extractedVehicle.original_currency &&
+                    extractedVehicle.original_currency.toUpperCase() !== "EUR" &&
+                    extractedVehicle.original_price != null && (
+                      <small>
+                        ({Number(extractedVehicle.original_price).toLocaleString()}{" "}
+                        {extractedVehicle.original_currency})
+                      </small>
+                    )}
+                </span>
+                {extractedVehicle.year && (
+                  <span className="risk-extracted-chip">
+                    {t("risk.year")}: <strong>{extractedVehicle.year}</strong>
+                  </span>
+                )}
+                {extractedVehicle.mileage != null && (
+                  <span className="risk-extracted-chip">
+                    {t("risk.mileage")}:{" "}
+                    <strong>
+                      {Number(extractedVehicle.mileage).toLocaleString()} km
+                    </strong>
+                  </span>
+                )}
+                {extractedVehicle.engine != null && (
+                  <span className="risk-extracted-chip">
+                    {t("risk.engine")}: <strong>{extractedVehicle.engine} L</strong>
+                  </span>
+                )}
+                {extractedVehicle.fuel_type && (
+                  <span className="risk-extracted-chip">
+                    {t("risk.fuel")}:{" "}
+                    <strong>
+                      {translateVehicleValue(t, "fuel_type", extractedVehicle.fuel_type)}
+                    </strong>
+                  </span>
+                )}
+                {extractedVehicle.gearbox && (
+                  <span className="risk-extracted-chip">
+                    {t("risk.gearbox")}:{" "}
+                    <strong>
+                      {translateVehicleValue(t, "gearbox", extractedVehicle.gearbox)}
+                    </strong>
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <p className="risk-error" role="alert">
+              {error}
+            </p>
+          )}
+
+          {loading && (
+            <p className="risk-loading" role="status">
+              {t("risk.urlAnalyzer.loading")}
+            </p>
+          )}
+        </form>
+      ) : (
         <form className="risk-form" onSubmit={submit} onInvalid={(event) => localizeInputValidity(event, t)} onInput={clearInputValidity} aria-busy={loading}>
         <div className="risk-form-heading">
           <div>
@@ -404,6 +668,7 @@ export default function AnomalyRiskPage() {
               </p>
             )}
         </form>
+      )}
 
         {result ? <div ref={resultRef} tabIndex={-1} className="risk-result-focus"><AnomalyRiskResults result={result} vehicle={submitted} /></div> : !loading && (
           <div className="risk-preview" aria-label={t("risk.whatYouLearn")}>

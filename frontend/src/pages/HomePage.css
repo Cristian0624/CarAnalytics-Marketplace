@@ -552,7 +552,14 @@ h2 {
 }
 
 /* FEATURES */
+.features-section {
+  position: relative;
+  padding-top: 175px;
+}
+
 .features-grid {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 24px;

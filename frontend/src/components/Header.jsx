@@ -116,6 +116,13 @@ function Header() {
           </NavLink>
 
           <NavLink
+            to="/price-estimate"
+            className={navClass}
+          >
+            {t("header.priceEstimate")}
+          </NavLink>
+
+          <NavLink
             to="/anomaly-risk"
             className={navClass}
           >

@@ -26,11 +26,32 @@
   "header": {
     "home": "Acasă",
     "listings": "Piață",
+    "priceEstimate": "Estimare Preț",
     "riskAnalysis": "Analiza Risc",
     "profile": "Profilul meu",
     "login": "Autentificare",
     "register": "Înregistrare",
     "about": "Despre Noi"
+  },
+  "priceEstimator": {
+    "steps": [
+      "Introdu specificațiile mașinii",
+      "Comparăm cu anunțuri similare din baza de date",
+      "Primești prețul estimat de piață și intervalele de vânzare"
+    ],
+    "urlSteps": [
+      "Lipește linkul anunțului de pe 999.md",
+      "Extragem specificațiile și comparăm cu piața",
+      "Primești valoarea estimată de piață și intervalele de preț"
+    ],
+    "manualDescription": "Selectează marca, modelul, generația și specificațiile tehnice pentru a calcula prețul de piață.",
+    "urlAnalyzer": {
+      "title": "Estimează prețul prin link 999.md",
+      "description": "Lipește adresa URL a unui anunț de pe 999.md, iar noi căutăm în baza de date sau extragem live specificațiile mașinii pentru a-i estima valoarea de piață.",
+      "analyze": "Estimează din link",
+      "analyzing": "Se preiau datele și se calculează…",
+      "loading": "Extragem detaliile vehiculului și calculăm estimarea prețului de piață."
+    }
   },
   "estimator": {
     "title": "Estimează prețul mașinii",
@@ -148,6 +169,33 @@
       "Comparăm oferta cu piața",
       "Primești scorul, riscurile și ce să verifici"
     ],
+    "urlSteps": [
+      "Lipește linkul anunțului de pe 999.md",
+      "Extragem datele și comparăm cu piața",
+      "Primești nota ofertei, riscurile și ce să verifici"
+    ],
+    "modes": {
+      "url": "Link 999.md",
+      "manual": "Date manuale"
+    },
+    "urlAnalyzer": {
+      "title": "Analizează prin link 999.md",
+      "description": "Ai găsit un anunț pe 999.md? Lipește adresa URL mai jos, iar noi căutăm mai întâi în baza de date sau extragem automat detaliile mașinii, calculăm nota ofertei (Deal Score) și evaluăm semnalele de risc.",
+      "label": "Adresă URL anunț 999.md",
+      "placeholder": "Ex. https://999.md/ro/103948572",
+      "note": "Acceptă orice link de anunț auto de pe 999.md (în EUR, MDL sau USD — prețul este convertit automat în EUR).",
+      "analyze": "Analizează linkul",
+      "analyzing": "Se preiau datele și se analizează…",
+      "loading": "Căutăm anunțul în baza de date sau îl extragem de pe 999.md și îl comparăm cu piața.",
+      "sourceDatabase": "Găsit în baza de date",
+      "sourceLive": "Extras live de pe 999.md",
+      "openAd": "Deschide anunțul 999.md ↗",
+      "editManual": "Vezi / editează datele în formular",
+      "errors": {
+        "empty": "Introdu un link către un anunț de pe 999.md.",
+        "invalid": "Linkul trebuie să fie o adresă validă de anunț de pe 999.md (ex: https://999.md/ro/103948572)."
+      }
+    },
     "estimatorCtaPrefix": "Vrei doar să afli cât valorează o mașină?",
     "estimatorCtaLink": "Folosește Estimarea prețului."
   },
@@ -851,6 +899,21 @@
       "databaseAtAnalysis": "în baza de date la momentul analizei.",
       "rarityAdjustment": "Ajustare pentru raritate: +{{points}} puncte.",
       "overallScoreUnavailable": "Scor general indisponibil."
+    },
+    "dealGrade": {
+      "label": "Nota ofertei (Deal Score)",
+      "unavailable": "Indisponibilă",
+      "levels": {
+        "good": "Ofertă avantajoasă",
+        "medium": "Verifică detaliile",
+        "bad": "Ofertă slabă"
+      },
+      "description": "Evaluează cât de avantajoasă este oferta față de prețul așteptat, rulaj și semnalele de risc. Cu cât scorul e mai mare, cu atât oferta arată mai bine.",
+      "legend": {
+        "bad": "< 30 Slabă",
+        "medium": "30–59 Medie",
+        "good": "60+ Avantajoasă"
+      }
     },
     "caution": {
       "fewExamplesTitle": "Prea puține exemple pentru o concluzie.",
