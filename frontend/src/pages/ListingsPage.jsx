@@ -17,7 +17,7 @@ import SaveItemButton from "../components/SaveItemButton";
 import { useComparator } from "../context/ComparatorContext";
 import "./ListingsPage.css";
 
-const ITEMS_PER_PAGE = 45;
+const ITEMS_PER_PAGE = 48;
 
 function shuffleListings(items) {
   const shuffled = [...items];
@@ -372,12 +372,6 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
     setSortOpen(false);
   }
 
-  const rows = [];
-
-  for (let index = 0; index < data.items.length; index += 3) {
-    rows.push(data.items.slice(index, index + 3));
-  }
-
   const saveAction =
     !loading &&
     !error && (
@@ -714,45 +708,38 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
             role="status"
             aria-label={t("listings.loading")}
           >
-            {[0, 1, 2].map((rowIdx) => (
-              <div className="car-row" key={rowIdx}>
-                {[0, 1, 2].map((colIdx) => {
-                  const idx = rowIdx * 3 + colIdx;
-                  return (
-                    <div
-                      key={colIdx}
-                      className="car-card car-card-skeleton"
-                      style={{ "--stagger-delay": `${idx * 55}ms` }}
-                    >
-                      <div className="car-card-skeleton-image car-skeleton-bar" />
-                      <div className="car-card-content">
-                        <div className="car-card-title-row">
-                          <div className="car-skeleton-title-group">
-                            <div
-                              className="car-skeleton-bar car-skeleton-title"
-                              style={{ width: `${58 + ((idx * 17) % 28)}%` }}
-                            />
-                            <div
-                              className="car-skeleton-bar car-skeleton-gen"
-                              style={{ width: `${35 + ((idx * 13) % 22)}%` }}
-                            />
-                          </div>
-                          <div className="car-skeleton-logo" />
-                        </div>
-
-                        <div className="car-details">
-                          <div className="car-skeleton-pill car-skeleton-pill-sm" />
-                          <div className="car-skeleton-pill car-skeleton-pill-md" />
-                        </div>
-
-                        <div className="car-card-bottom">
-                          <div className="car-skeleton-bar car-skeleton-price" />
-                          <div className="car-skeleton-score" />
-                        </div>
-                      </div>
+            {Array.from({ length: 12 }, (_, idx) => (
+              <div
+                key={idx}
+                className="car-card car-card-skeleton"
+                style={{ "--stagger-delay": `${idx * 45}ms` }}
+              >
+                <div className="car-card-skeleton-image car-skeleton-bar" />
+                <div className="car-card-content">
+                  <div className="car-card-title-row">
+                    <div className="car-skeleton-title-group">
+                      <div
+                        className="car-skeleton-bar car-skeleton-title"
+                        style={{ width: `${58 + ((idx * 17) % 28)}%` }}
+                      />
+                      <div
+                        className="car-skeleton-bar car-skeleton-gen"
+                        style={{ width: `${35 + ((idx * 13) % 22)}%` }}
+                      />
                     </div>
-                  );
-                })}
+                    <div className="car-skeleton-logo" />
+                  </div>
+
+                  <div className="car-details">
+                    <div className="car-skeleton-pill car-skeleton-pill-sm" />
+                    <div className="car-skeleton-pill car-skeleton-pill-md" />
+                  </div>
+
+                  <div className="car-card-bottom">
+                    <div className="car-skeleton-bar car-skeleton-price" />
+                    <div className="car-skeleton-score" />
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -789,53 +776,19 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
           data.items.length > 0 && (
             <>
               <div className="cars-marketplace">
-                {rows.map((row, rowIndex) => {
-                  const expandedIndex = row.findIndex(
-                    (car) => car.id === expandedCarId
-                  );
-
-                  const visibleCars = row;
-
-                  return (
-                    <div
-                      className="car-row"
-                      key={rowIndex}
-                    >
-                      {visibleCars.map((car, index) => (
-                        <CarCard
-                          key={car.id}
-                          car={car}
-                          fadeDelay={Math.min((rowIndex * 3 + index) * 25, 380)}
-                          expanded={
-                            car.id === expandedCarId
-                          }
-                          peeking={
-                            expandedIndex >= 0 &&
-                            car.id !== expandedCarId
-                          }
-                          position={
-                            [
-                              "left",
-                              "middle",
-                              "right",
-                            ][
-                              expandedIndex >= 0
-                                ? expandedIndex
-                                : index
-                            ]
-                          }
-                          onClick={() =>
-                            setExpandedCarId((current) =>
-                              current === car.id
-                                ? null
-                                : car.id
-                            )
-                          }
-                        />
-                      ))}
-                    </div>
-                  );
-                })}
+                {data.items.map((car, index) => (
+                  <CarCard
+                    key={car.id}
+                    car={car}
+                    fadeDelay={Math.min(index * 25, 380)}
+                    expanded={car.id === expandedCarId}
+                    onClick={() =>
+                      setExpandedCarId((current) =>
+                        current === car.id ? null : car.id
+                      )
+                    }
+                  />
+                ))}
               </div>
 
               <nav

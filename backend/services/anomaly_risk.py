@@ -648,7 +648,147 @@ class AnomalyRiskService:
             total, weights = best_total, best_weights
         return total, weights, context
 
-    def assess_listing_risk(self, vehicle, prices, model_observations, comparison_rows, text_signals=None):
+    @staticmethod
+    def _deal_score_mod(pct: float) -> float:
+        if pct is None or not np.isfinite(pct):
+            return 0.0
+        if pct > 0:
+            bonus = 0.0
+            remaining = float(pct)
+            t1 = min(remaining, 10.0)
+            bonus += t1 * 1.7
+            remaining -= t1
+            if remaining > 0:
+                t2 = min(remaining, 5.0)
+                bonus += t2 * 1.4
+                remaining -= t2
+            if remaining > 0:
+                t3 = min(remaining, 5.0)
+                remaining -= t3
+            if remaining > 0:
+                t4 = min(remaining, 5.0)
+                bonus -= t4 * 1.5
+                remaining -= t4
+            if remaining > 0:
+                t5 = min(remaining, 5.0)
+                bonus -= t5 * 1.7
+                remaining -= t5
+            if remaining > 0:
+                bonus -= remaining * 2.0
+            return bonus
+        else:
+            penalty = 0.0
+            remaining = abs(float(pct))
+            t1 = min(remaining, 15.0)
+            penalty += t1 * 1.0
+            remaining -= t1
+            if remaining > 0:
+                t2 = min(remaining, 10.0)
+                penalty += t2 * 1.3
+                remaining -= t2
+            if remaining > 0:
+                t3 = min(remaining, 10.0)
+                penalty += t3 * 1.6
+                remaining -= t3
+            if remaining > 0:
+                penalty += remaining * 2.0
+            return -penalty
+
+    def calculate_deal_score(self, vehicle, prices, comparison_rows, text_signals=None, stored_score=None):
+        """Calculate the 0-80 Deal Score using the eval.py grading algorithm."""
+        if stored_score is not None:
+            try:
+                val = float(stored_score)
+                if np.isfinite(val) and val > 0:
+                    score = round(min(80.0, max(0.0, val)), 2)
+                    level = "good" if score >= 60 else "medium" if score >= 30 else "bad"
+                    return score, level
+            except (ValueError, TypeError):
+                pass
+
+        p_arr = np.asarray([float(p) for p in prices if p is not None and float(p) > 0], dtype=float)
+        if len(p_arr) < 5:
+            return None, None
+
+        actual_price = float(vehicle["price"])
+        if len(p_arr) >= 5:
+            p10, p90 = np.percentile(p_arr, [10, 90])
+            valid_p = p_arr[(p_arr >= p10) & (p_arr <= p90)]
+            if len(valid_p) > 0:
+                p_arr = valid_p
+
+        med_price = float(np.median(p_arr))
+        if not np.isfinite(med_price) or med_price <= 0:
+            return None, None
+
+        ref_m = np.array([], dtype=float)
+        if len(comparison_rows) > 0:
+            ref_df = self.prepare_features(pd.DataFrame(comparison_rows))
+            ref_m = ref_df["mileage"].dropna().to_numpy(dtype=float)
+
+        baseline_mileage = float(np.median(ref_m)) if len(ref_m) >= 5 else 150000.0
+        dep_per_10k = med_price * 0.05
+
+        year = vehicle.get("year")
+        age = max(1, date.today().year - int(year)) if year is not None and not pd.isna(year) else 5
+
+        spam_mileages = {0, 1, 10, 100, 1000, 10000, 1111, 11111, 111111, 12345, 123456, 9999, 99999, 999999}
+        actual_m = vehicle.get("mileage")
+        has_mileage = actual_m is not None and not pd.isna(actual_m)
+
+        if has_mileage:
+            m_val = float(actual_m)
+            is_spam = int(round(m_val)) in spam_mileages
+            suspicious_threshold = age * 6000.0
+            effective_m = baseline_mileage if is_spam else m_val
+            effective_m = max(effective_m, suspicious_threshold)
+            raw_adj = ((baseline_mileage - effective_m) / 10000.0) * dep_per_10k
+            max_bonus = med_price * 0.12
+            mileage_adj = min(raw_adj, max_bonus) if raw_adj > 0 else raw_adj
+            expected_price = max(500.0, med_price + mileage_adj)
+        else:
+            m_val = None
+            is_spam = False
+            suspicious_threshold = age * 6000.0
+            expected_price = max(500.0, med_price)
+
+        price_diff_pct = ((expected_price - actual_price) / expected_price) * 100.0
+        calc_score = 50.0 + self._deal_score_mod(price_diff_pct)
+
+        if has_mileage:
+            fuel_str = str(vehicle.get("fuel_type") or "").lower()
+            default_annual_km = 22000.0 if "diesel" in fuel_str else 16000.0
+            med_annual_km = (baseline_mileage / max(1, age)) if len(ref_m) >= 5 else default_annual_km
+            med_annual_km = max(6000.0, med_annual_km)
+            annual_km = m_val / age
+            km_ratio = annual_km / med_annual_km
+
+            if age >= 4 and km_ratio < 0.40 and not is_spam:
+                calc_score -= 15.0
+            if age >= 3 and km_ratio < 0.25 and not is_spam:
+                calc_score -= 15.0
+
+            is_low_mileage = (m_val < suspicious_threshold) or is_spam
+            if is_low_mileage:
+                calc_score -= 15.0 if age <= 3 else 30.0
+                if price_diff_pct > 20.0:
+                    calc_score = min(calc_score, 20.0)
+
+            if km_ratio > 2.2 or annual_km > 45000:
+                calc_score -= 20.0
+
+        if text_signals:
+            if text_signals.get("is_urgent"):
+                calc_score -= 15.0
+            if text_signals.get("is_defective"):
+                calc_score -= 25.0
+                calc_score = min(calc_score, 30.0)
+
+        final_score = round(float(np.clip(calc_score, 0.0, 80.0)), 2)
+        deal_level = "good" if final_score >= 60.0 else "medium" if final_score >= 30.0 else "bad"
+        return final_score, deal_level
+
+    def assess_listing_risk(self, vehicle, prices, model_observations, comparison_rows, text_signals=None, stored_score=None):
         if "price" not in vehicle:
             raise ValueError("Supply price as the asking price in EUR")
         comparison_level = "model_generation" if vehicle.get("generation") else "model"
@@ -704,6 +844,7 @@ class AnomalyRiskService:
                     "market_support": market_support, "message": message, "anomaly_score": None, "risk_level": None,
                     "market_confidence": confidence["market_confidence"], "confidence_score": confidence["confidence_score"],
                     "confidence": confidence,
+                    "deal_score": None, "deal_level": None,
                     "components": {"price_anomaly": {**price, "score": price["price_anomaly_score"]},
                                    "mileage_anomaly": {**mileage, "score": mileage["mileage_anomaly_score"]},
                                    "specification_anomaly": {**specification, "score": specification["specification_anomaly_score"]}},
@@ -765,11 +906,15 @@ class AnomalyRiskService:
             reasons.append(message)
         if total is not None and market_support["rarity_penalty"]:
             reasons.append(f"A {market_support['rarity_penalty']:.2f}-point rarity adjustment was applied to the overall score.")
+        deal_score, deal_level = self.calculate_deal_score(
+            vehicle, prices, comparison_rows, text_signals=text_signals, stored_score=stored_score
+        )
         return {"scoring_policy_version": SCORING_POLICY_VERSION, "assessment_status": assessment_status,
                 "market_support": market_support, "message": message,
                 "anomaly_score": total, "risk_level": level, "market_confidence": confidence["market_confidence"],
                 "confidence_score": confidence["confidence_score"], "confidence": confidence,
                 "scoring_context": context,
+                "deal_score": deal_score, "deal_level": deal_level,
                 "components": {"price_anomaly": {**price, "score": price["price_anomaly_score"]},
                                "mileage_anomaly": {**mileage, "score": mileage["mileage_anomaly_score"]},
                                "specification_anomaly": {**specification, "score": specification["specification_anomaly_score"]}},

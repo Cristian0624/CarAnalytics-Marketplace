@@ -26,11 +26,39 @@
   "header": {
     "home": "Home",
     "listings": "Marketplace",
+    "priceEstimate": "Price Estimation",
     "riskAnalysis": "Risk Analysis",
     "profile": "My Profile",
     "login": "Login",
     "register": "Register",
-    "about": "About Us"
+    "about": "About Us",
+    "comparator": "Comparator",
+    "features": "Features & Labs",
+    "language": "Language",
+    "navigation": "Navigation",
+    "account": "Account",
+    "closeMenu": "Close menu",
+    "openMenu": "Open menu"
+  },
+  "priceEstimator": {
+    "steps": [
+      "Enter the vehicle specifications",
+      "We compare with similar listings in the database",
+      "You get the estimated market price and selling ranges"
+    ],
+    "urlSteps": [
+      "Paste the 999.md listing link",
+      "We extract the specifications and compare with the market",
+      "You get the estimated market value and price bands"
+    ],
+    "manualDescription": "Select the brand, model, generation, and technical specifications to calculate the market price.",
+    "urlAnalyzer": {
+      "title": "Estimate price via 999.md link",
+      "description": "Paste a 999.md listing URL and we will look it up in our database or extract its specifications live to estimate its fair market value.",
+      "analyze": "Estimate from link",
+      "analyzing": "Fetching details and calculating…",
+      "loading": "Extracting vehicle details and calculating the market price estimate."
+    }
   },
   "estimator": {
     "title": "Estimate car price",
@@ -148,6 +176,33 @@
       "We compare the offer with the market",
       "You get the score, the risks and what to check"
     ],
+    "urlSteps": [
+      "Paste the 999.md listing link",
+      "We extract the details and compare with the market",
+      "You get the deal grade, risks, and what to check"
+    ],
+    "modes": {
+      "url": "999.md Link",
+      "manual": "Manual input"
+    },
+    "urlAnalyzer": {
+      "title": "Analyze via 999.md link",
+      "description": "Found a listing on 999.md? Paste the URL below and we will check our database first or automatically extract the vehicle details, calculate the Deal Score, and evaluate risk signals.",
+      "label": "999.md listing URL",
+      "placeholder": "E.g. https://999.md/ro/103948572",
+      "note": "Accepts any car listing URL from 999.md (in EUR, MDL, or USD — the price is automatically converted to EUR).",
+      "analyze": "Analyze link",
+      "analyzing": "Fetching details and analyzing…",
+      "loading": "Looking up the listing in our database or extracting it from 999.md and comparing with the market.",
+      "sourceDatabase": "Found in database",
+      "sourceLive": "Extracted live from 999.md",
+      "openAd": "Open 999.md listing ↗",
+      "editManual": "View / edit details in form",
+      "errors": {
+        "empty": "Enter a link to a 999.md listing.",
+        "invalid": "The link must be a valid 999.md listing address (e.g. https://999.md/ro/103948572)."
+      }
+    },
     "estimatorCtaPrefix": "Just want to know what a car is worth?",
     "estimatorCtaLink": "Use the Price estimator."
   },
@@ -852,6 +907,21 @@
       "rarityAdjustment": "Rarity adjustment: +{{points}} points.",
       "overallScoreUnavailable": "Overall score unavailable."
     },
+    "dealGrade": {
+      "label": "Deal Grade (Deal Score)",
+      "unavailable": "Unavailable",
+      "levels": {
+        "good": "Good deal",
+        "medium": "Check details",
+        "bad": "Poor deal"
+      },
+      "description": "Grades how advantageous the offer is compared to expected market price, mileage depreciation, and risk signals. Higher score means a better deal.",
+      "legend": {
+        "bad": "< 30 Poor",
+        "medium": "30–59 Fair",
+        "good": "60+ Good"
+      }
+    },
     "caution": {
       "fewExamplesTitle": "Too few examples for a conclusion.",
       "cautionTitle": "Interpret the result with caution.",
@@ -1114,12 +1184,12 @@
     "profile": "My Profile",
     "myListings": "My Listings",
     "createListing": "Create Listing",
-    "favourites": "Favorite Listings",
+    "favourites": "Saved Cars",
     "savedRisks": "Saved Risk Analyses",
     "savedSearches": "Saved Filters",
-    "logout": "Log out",
-    "login": "Log in",
-    "register": "Register",
+    "logout": "Log Out",
+    "login": "Log In",
+    "register": "Create Account",
     "comparisons": "Saved Comparisons"
   },
   "autocomplete": {

@@ -9,6 +9,7 @@ import ProfilePage from "./pages/ProfilePage";
 import RecommendationsPage from "./pages/RecommendationsPage";
 import CreateListingPage from "./pages/CreateListingPage";
 import AnomalyRiskPage from "./pages/AnomalyRiskPage";
+import PriceEstimatePage from "./pages/PriceEstimatePage";
 import SavedItemsPage from "./pages/SavedItemsPage";
 import MyListingsPage from "./pages/MyListingsPage";
 import ComparatorPage from "./pages/ComparatorPage";
@@ -52,6 +53,7 @@ function App() {
         <Route path="/recommendations" element={<RecommendationsPage />} />
         <Route path="/create-listing" element={<CreateListingPage />} />
         <Route path="/anomaly-risk" element={<AnomalyRiskPage />} />
+        <Route path="/price-estimate" element={<PriceEstimatePage />} />
         <Route path="/favourites/:id?" element={<SavedItemsPage kind="favourites" />} />
         <Route path="/saved-risk-assessments/:id?" element={<SavedItemsPage kind="risks" />} />
         <Route path="/saved-searches/:id?" element={<SavedItemsPage kind="searches" />} />

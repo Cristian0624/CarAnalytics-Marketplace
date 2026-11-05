@@ -1761,3 +1761,355 @@
 }
 
 
+
+/* ============================================================
+   LISTING FILTERS RESPONSIVE ENHANCEMENTS
+   ============================================================ */
+
+/* Laptop */
+@media (max-width: 1200px) {
+  .lf-drops {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .lf-drops.lf-drops-more {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .lf-body {
+    grid-template-columns: 240px 1fr;
+  }
+  .lf-panel {
+    width: min(960px, 100%);
+  }
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .marketplace-head-title {
+    font-size: clamp(28px, 4vw, 48px);
+  }
+  .lf-bar {
+    flex-wrap: wrap;
+    min-height: auto;
+    padding: 10px 10px;
+    gap: 8px;
+  }
+  .lf-toggle {
+    height: 38px;
+    padding: 0 13px;
+    font-size: 13.5px;
+  }
+}
+
+/* Small tablet */
+@media (max-width: 768px) {
+  .lf-drops {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .marketplace-head {
+    padding: 10px 12px;
+  }
+  .marketplace-head-title {
+    font-size: clamp(24px, 5vw, 38px);
+  }
+  .lf-active-pills-bar {
+    gap: 6px;
+    padding: 2px 4px;
+  }
+  .filter-pill {
+    font-size: 12px;
+    height: 30px;
+    padding: 0 6px 0 10px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .listing-filters,
+  .marketplace-head,
+  .marketplace-head-right,
+  .lf-bar,
+  .lf-actions-wrapper,
+  .lf-actions-container {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .marketplace-head {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    margin-bottom: 16px;
+    border-radius: 14px;
+  }
+
+  .marketplace-head-left,
+  .marketplace-head-right {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .marketplace-head-right {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .marketplace-head-right .lf-filter-toggle {
+    order: -1;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 46px;
+    height: auto;
+    justify-content: center;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+  }
+
+  .lf-bar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 9px;
+    padding: 10px;
+  }
+
+  .lf-bar > .lf-filter-toggle {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 46px;
+    height: auto;
+    justify-content: center;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+  }
+
+  .lf-btn-text {
+    display: inline-block;
+  }
+
+  .lf-bar > .lf-pills,
+  .lf-active-pills-bar .lf-pills {
+    width: 100%;
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+
+  .filter-pill {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .lf-active-pills-bar {
+    align-items: flex-start;
+    flex-direction: column;
+    margin: 8px 0 14px;
+  }
+
+  .lf-overlay {
+    inset: 0;
+    padding: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    align-items: stretch;
+  }
+
+  .lf-panel {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    min-width: 0;
+    border: 0;
+    border-radius: 0;
+    overflow-x: hidden;
+  }
+
+  .lf-body {
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+    overflow-x: hidden;
+  }
+
+  .lf-tree,
+  .lf-main {
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .lf-tree {
+    padding: 14px 16px;
+  }
+
+  .lf-main {
+    padding: 16px;
+  }
+
+  .lf-footer {
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+    border-radius: 0;
+  }
+
+  .lf-footer-left {
+    flex-wrap: wrap;
+    flex-basis: 100%;
+    gap: 8px;
+  }
+
+  .lf-footer-pills {
+    flex-basis: 100%;
+    flex-wrap: wrap;
+    overflow: visible;
+    white-space: normal;
+    padding: 0;
+  }
+
+  .lf-footer-pill {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .filter-validation-error,
+  .lf-footer-actions {
+    width: 100%;
+    min-width: 0;
+    margin-left: 0;
+  }
+
+  .lf-footer-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .lf-actions-extra.visible {
+    max-width: 100%;
+    justify-content: flex-start;
+  }
+
+  .apply-filters-button {
+    box-sizing: border-box;
+    max-width: 100%;
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+  }
+
+  .lf-drops {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .range-inputs,
+  .filter-group,
+  .filter-grid {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .range-inputs input {
+    width: 0;
+    flex: 1 1 0;
+  }
+
+  .lf-bar {
+    padding: 8px;
+    gap: 6px;
+    border-radius: 10px;
+  }
+  .lf-toggle {
+    height: 36px;
+    padding: 0 11px;
+    font-size: 13px;
+    gap: 6px;
+  }
+  .lf-badge {
+    min-width: 18px;
+    height: 18px;
+    font-size: 11px;
+  }
+  .lf-drops,
+  .lf-drops.lf-drops-more {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .lf-drop {
+    min-height: 44px;
+  }
+  .lf-btn-text {
+    display: inline-block;
+  }
+  .lf-actions-container.is-floating {
+    bottom: 12px;
+    left: 10px;
+    gap: 6px;
+  }
+  .lf-footer {
+    min-height: 60px;
+    padding: 10px 12px;
+  }
+  .apply-filters-button {
+    min-width: 150px;
+    height: 40px;
+    font-size: 14px;
+  }
+  .lf-reset {
+    height: 40px;
+    padding: 0 14px;
+    font-size: 13px;
+  }
+  .marketplace-head-title {
+    font-size: clamp(20px, 6vw, 30px);
+  }
+  .lf-sort-menu {
+    min-width: 180px;
+  }
+  .chip {
+    padding: 7px 12px;
+    font-size: 13px;
+  }
+}
+
+/* Big screens */
+@media (min-width: 1921px) {
+  .lf-panel {
+    width: min(1400px, 100%);
+  }
+  .lf-body {
+    grid-template-columns: 320px 1fr;
+  }
+  .lf-toggle {
+    height: 48px;
+    padding: 0 20px;
+    font-size: 15px;
+  }
+  .marketplace-head-title {
+    font-size: 70px;
+  }
+  .lf-drops {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .lf-drops.lf-drops-more {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .lf-drop {
+    min-height: 52px;
+    font-size: 15px;
+  }
+  .chip {
+    padding: 10px 20px;
+    font-size: 15px;
+    border-radius: 10px;
+  }
+  .apply-filters-button {
+    min-width: 220px;
+    height: 50px;
+    font-size: 16px;
+  }
+}

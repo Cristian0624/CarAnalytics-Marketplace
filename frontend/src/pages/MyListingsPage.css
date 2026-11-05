@@ -193,3 +193,233 @@
   }
 }
 
+
+/* ============================================================
+   MY LISTINGS PAGE RESPONSIVE ENHANCEMENTS
+   ============================================================ */
+
+/* Laptop */
+@media (max-width: 1280px) {
+  .my-listings-topbar {
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .my-listings-topbar {
+    gap: 10px;
+  }
+  .my-listing-header h2 {
+    font-size: 20px;
+  }
+  .my-listing-price {
+    font-size: 22px;
+  }
+  .my-listing-edit-dialog {
+    padding: 24px;
+    border-radius: 16px;
+  }
+  .my-listing-edit-dialog h2 {
+    font-size: 20px;
+  }
+}
+
+/* Small tablet */
+@media (max-width: 768px) {
+  .my-listings-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .my-listings-add-btn {
+    align-self: stretch;
+    justify-content: center;
+    padding: 11px 18px;
+    font-size: 14px;
+  }
+  .my-listing-header h2 {
+    font-size: 18px;
+  }
+  .my-listing-price {
+    font-size: 20px;
+    margin: 6px 0 14px;
+  }
+  .my-listing-specs-grid {
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .my-listing-edit-dialog {
+    padding: 20px;
+    max-height: 92vh;
+    border-radius: 14px;
+  }
+  .my-listing-edit-grid {
+    gap: 11px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .my-listings-topbar {
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .my-listings-count {
+    font-size: 14px;
+  }
+  .my-listings-add-btn {
+    padding: 10px 16px;
+    font-size: 13.5px;
+    border-radius: 9px;
+    gap: 6px;
+  }
+  .my-listing-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+  .my-listing-header {
+    margin: 10px 0 4px;
+  }
+  .my-listing-header h2 {
+    font-size: 17px;
+  }
+  .my-listing-price {
+    font-size: 19px;
+    margin: 6px 0 12px;
+  }
+  .my-listing-specs-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 7px;
+    margin-bottom: 14px;
+  }
+  .my-listing-spec-item {
+    padding: 7px 10px;
+  }
+  .my-listing-spec-label {
+    font-size: 10px;
+  }
+  .my-listing-spec-val {
+    font-size: 12.5px;
+  }
+  .my-listing-chip {
+    font-size: 11.5px;
+    padding: 3px 8px;
+  }
+  .my-listing-edit-modal {
+    padding: 14px;
+  }
+  .my-listing-edit-dialog {
+    padding: 18px 16px;
+    border-radius: 13px;
+  }
+  .my-listing-edit-dialog h2 {
+    font-size: 18px;
+    margin: 0 0 6px;
+  }
+  .my-listing-edit-dialog p {
+    font-size: 13px;
+    margin: 0 0 16px;
+  }
+  .my-listing-edit-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .my-listing-edit-field input,
+  .my-listing-edit-field select {
+    padding: 11px 12px;
+    font-size: 15px;
+    height: 48px;
+  }
+}
+
+/* Very small */
+@media (max-width: 360px) {
+  .my-listings-add-btn {
+    padding: 9px 13px;
+    font-size: 13px;
+  }
+  .my-listing-specs-grid {
+    grid-template-columns: 1fr;
+  }
+  .my-listing-edit-dialog {
+    padding: 15px 13px;
+  }
+  .my-listing-edit-dialog h2 {
+    font-size: 17px;
+  }
+}
+
+/* Big screens */
+@media (min-width: 1921px) {
+  .my-listings-topbar {
+    margin-bottom: 32px;
+  }
+  .my-listings-count {
+    font-size: 18px;
+  }
+  .my-listings-add-btn {
+    padding: 13px 24px;
+    font-size: 16px;
+    border-radius: 12px;
+    gap: 10px;
+  }
+  .my-listing-header h2 {
+    font-size: 28px;
+  }
+  .my-listing-price {
+    font-size: 30px;
+    margin: 10px 0 22px;
+  }
+  .my-listing-specs-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 26px;
+  }
+  .my-listing-spec-item {
+    padding: 12px 16px;
+    border-radius: 10px;
+  }
+  .my-listing-spec-label {
+    font-size: 13px;
+  }
+  .my-listing-spec-val {
+    font-size: 16px;
+  }
+  .my-listing-chip {
+    font-size: 14px;
+    padding: 6px 13px;
+    border-radius: 8px;
+  }
+  .my-listing-edit-dialog {
+    max-width: 760px;
+    padding: 40px;
+    border-radius: 24px;
+  }
+  .my-listing-edit-dialog h2 {
+    font-size: 28px;
+    margin: 0 0 10px;
+  }
+  .my-listing-edit-dialog p {
+    font-size: 16px;
+    margin: 0 0 26px;
+  }
+  .my-listing-edit-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+    margin-bottom: 26px;
+  }
+  .my-listing-edit-field label {
+    font-size: 15px;
+  }
+  .my-listing-edit-field input,
+  .my-listing-edit-field select {
+    padding: 13px 16px;
+    font-size: 15px;
+    border-radius: 10px;
+  }
+}

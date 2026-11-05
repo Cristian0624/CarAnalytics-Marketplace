@@ -210,4 +210,88 @@
 
 .chevron-open {
   transform: rotate(180deg);
+}/* ============================================================
+   AUTH BUTTON RESPONSIVE ENHANCEMENTS
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .auth-button {
+    padding: 6px 14px;
+    font-size: 12px;
+    height: 34px;
+    border-radius: 20px;
+  }
+  .auth-button::before,
+  .auth-button::after,
+  .auth-button__inner {
+    border-radius: 20px;
+  }
+  .auth-button__content {
+    gap: 5px;
+  }
+  .auth-button__content svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-button {
+    padding: 3px 9px;
+    font-size: 10.5px;
+    height: 28px;
+    border-radius: 14px;
+    letter-spacing: -0.2px;
+  }
+  .auth-button::before,
+  .auth-button::after,
+  .auth-button__inner {
+    border-radius: 14px;
+  }
+  .auth-button__content {
+    gap: 3px;
+  }
+  .auth-button__content svg {
+    width: 12px;
+    height: 12px;
+  }
+  .chevron {
+    font-size: 7px;
+    margin-left: 1px;
+  }
+  .auth-dropdown {
+    min-width: 170px;
+    right: 0;
+    padding: 4px;
+  }
+  .auth-dropdown-header {
+    font-size: 11px;
+    padding: 6px 8px;
+    max-width: 170px;
+  }
+  .auth-dropdown-item {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+}
+
+@media (max-width: 360px) {
+  .auth-button {
+    padding: 2px 6px;
+    font-size: 9.5px;
+    height: 26px;
+    border-radius: 12px;
+  }
+  .auth-button::before,
+  .auth-button::after,
+  .auth-button__inner {
+    border-radius: 12px;
+  }
+  .auth-button__content svg {
+    width: 10px;
+    height: 10px;
+  }
+  .auth-dropdown {
+    min-width: 150px;
+  }
 }

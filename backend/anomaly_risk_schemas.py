@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 Category = Annotated[str, Field(min_length=1, max_length=200)]
 Score = Annotated[float, Field(ge=0, le=100, allow_inf_nan=False)]
+DealScore = Annotated[float, Field(ge=0, le=80, allow_inf_nan=False)]
 Level = Literal["low", "medium", "high"]
 RiskLevel = Literal["low", "medium", "medium_high", "high"]
 AssessmentStatus = Literal["full", "limited_support", "very_rare", "partial"]
@@ -167,4 +168,39 @@ class AnomalyRiskResponse(BaseModel):
     components: Components
     effective_weights: dict[str, float]
     scoring_context: ScoringContext | None = None
+    deal_score: DealScore | None = None
+    deal_level: Literal["good", "medium", "bad"] | None = None
     reasons: list[str]
+
+
+class AnomalyRiskUrlRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    url: str = Field(min_length=1, max_length=500, description="999.md listing URL or ID.")
+
+
+class ExtractedVehicle(BaseModel):
+    listing_id: int
+    url: str
+    source: Literal["database", "live_scrape"]
+    title: str | None = None
+    image_url: str | None = None
+    brand: str
+    model: str
+    generation: str | None = None
+    price: float
+    original_price: float | None = None
+    original_currency: str | None = None
+    year: int | None = None
+    mileage: int | None = None
+    engine: float | None = None
+    fuel_type: str | None = None
+    gearbox: str | None = None
+    drivetrain: str | None = None
+    body_type: str | None = None
+
+
+class AnomalyRiskUrlResponse(BaseModel):
+    vehicle: ExtractedVehicle
+    assessment: AnomalyRiskResponse
+

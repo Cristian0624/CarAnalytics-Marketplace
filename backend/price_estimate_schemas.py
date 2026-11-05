@@ -128,6 +128,9 @@ class Distribution(BaseModel):
     bars: list[DistributionBar]
 
 
+from anomaly_risk_schemas import ExtractedVehicle
+
+
 class PriceEstimateResponse(BaseModel):
     currency: str = "EUR"
     estimate_available: bool
@@ -137,3 +140,14 @@ class PriceEstimateResponse(BaseModel):
     search: EstimateSearch
     market_stats: MarketStats | None
     distribution: Distribution | None
+
+
+class PriceEstimateUrlRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    url: str = Field(min_length=1, max_length=500, description="999.md listing URL or ID.")
+
+
+class PriceEstimateUrlResponse(BaseModel):
+    vehicle: ExtractedVehicle
+    estimate: PriceEstimateResponse
