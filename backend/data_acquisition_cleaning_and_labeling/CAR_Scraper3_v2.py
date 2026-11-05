@@ -853,7 +853,7 @@ def scrape_all(connection, ids, run):
                         f"CHECK: ID={listing['id']} | "
                         f"offer_type={listing.get('offer_type')!r} | "
                         f"VIN={'yes' if listing.get('vin') else 'absent'} | "
-                        f"seller={'yes' if listing.get('seller_id') else 'absent'} | "
+                        f"seller={'yes' if listing.get('seller_username') else 'absent'} | "
                         f"image={'yes' if listing.get('image_url') else 'absent'}"
                     )
                 completion_times.append(time.monotonic())
