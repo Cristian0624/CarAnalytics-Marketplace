@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import "./ListingFilters.css";
 import VehicleTree from "./VehicleTree";
 import useListingYearRange from "../hooks/useListingYearRange";
+import { prefetchListingOptions } from "../api/listings";
 import {
   listingFilterError,
   updateListingFilter
@@ -308,6 +309,10 @@ export default function ListingFilters({
   const inlineRef = useRef(null);
   const exitTimerRef = useRef(null);
   const yearRange = useListingYearRange(filters);
+
+  useEffect(() => {
+    prefetchListingOptions();
+  }, []);
 
   useEffect(() => {
     if (!floating) return;
@@ -750,7 +755,7 @@ export default function ListingFilters({
                       return (
                         <div
                           key={d.key}
-                          className="lf-drop-wrapper"
+                          className={`lf-drop-wrapper ${isOpen ? "is-open" : ""}`}
                         >
                           <button
                             type="button"

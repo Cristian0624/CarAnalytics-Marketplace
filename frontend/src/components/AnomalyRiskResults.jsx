@@ -100,8 +100,9 @@ function getDistributionData(price, distMin, distMax, width = 1000, baselineY = 
 }
 
 function ComponentScore({ value, weight, flag, t, contextual = false }) {
-  const number = (value, digits = 0) => assessmentNumber(t, value, digits);
+  const number = (val, digits = 0) => assessmentNumber(t, val, digits);
   const message = extremeAnomalyMessage(flag, t);
+  const contribution = value != null && weight != null ? value * weight : null;
 
   return (
     <>
@@ -121,10 +122,10 @@ function ComponentScore({ value, weight, flag, t, contextual = false }) {
             : `${number(value, 1)} / 100`}
         </strong>
 
-        {weight != null && (
-          <small>
-            {t("anomalyRiskResults.componentScore.weight")}:{" "}
-            {number(weight * 100, 1)}%
+        {contribution != null && (
+          <small className="component-score-contribution">
+            {t("anomalyRiskResults.componentScore.contribution")}:{" "}
+            <strong>+{number(contribution, 1)} / 100</strong>
           </small>
         )}
       </div>

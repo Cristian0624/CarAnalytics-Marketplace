@@ -818,6 +818,8 @@
     "componentScore": {
       "score": "Scor anomalie",
       "weight": "Pondere în scor",
+      "contribution": "Impact în scorul final",
+      "weightShort": "pondere",
       "unavailable": "Indisponibil"
     },
     "historical": {
@@ -1442,7 +1444,7 @@
         "step3Title": "Pasul 3: Calculul Prețului Așteptat (Expected Price) & Protecție Kilometraj Fals",
         "step3Desc": "Prețul așteptat se ajustează proporțional cu abaterea kilometrajului față de mediana grupului: Expected_Price = Med_Price − ((Km_Efectiv − Baseline_Km) / 10.000) × Dep_per_10k. Dacă rulajul este suspect de mic (< 6.000 km/an) sau conține valori spam (111.111, 123.456), la calculul valorii se utilizează Baseline_Km, astfel încât vânzătorul să nu fie recompensat nejustificat pentru kilometraj dat înapoi.",
         "step4Title": "Pasul 4: Scor de Bază 50.0 & Trepte Neliniare (Diminishing Returns)",
-        "step4Desc": "Scorul pleacă de la 50.0 puncte (pe scara 0–80). Dacă mașina e mai ieftină decât Expected Price, primește puncte în trepte regresive: +1.3 pct/% (0–10%), +1.0 pct/% (10–20%), +0.5 pct/% (20–30%) și un platou la 30–35% (max. legitim ~78 puncte). O reducere de peste 35% declanșează o penalizare dură de −2.0 pct/% (anomalie de fraudă). Mașinile supraevaluate pierd între −1.0 și −2.0 pct/%.",
+        "step4Desc": "Scorul pleacă de la 50.0 puncte (pe scara 0–80). Dacă mașina e mai ieftină decât Expected Price, primește puncte în trepte: +1.7 pct/% (0–10%), +1.4 pct/% (10–15%) și un platou la 15–20% (max. legitim ~74 puncte). Peste 20% ieftinire declanșează penalizări progresive (−1.5, −1.7 și −2.0 pct/%) pentru semnal de fraudă sau defect grav. Mașinile supraevaluate pierd între −1.0 și −2.0 pct/%.",
         "step5Title": "Pasul 5: Penalizări Dure & Plafonări Anti-Scam (Taxi, Avariate, Scam Cap)",
         "step5Desc": "Kilometraj suspect: −15 puncte (≤3 ani) sau −30 puncte (>3 ani). Rulaj intens de taxi (>45.000 km/an): −20 puncte. Scam Cap: dacă prețul este cu >20% sub piață ȘI kilometrajul e suspect de mic, scorul este plafonat la max. 20.0 puncte. Mașini avariate, pentru piese sau fără acte: plafonare forțată la max. 10.0 puncte."
       },
@@ -1455,11 +1457,12 @@
         "cheaper": "mai ieftin",
         "expensive": "mai scump",
         "plateau": "platou",
-        "row1Note": "Recompensă maximă pentru preț competitiv și accesibil (+13 puncte max)",
-        "row2Note": "Recompensă solidă adăugată peste primul palier (+10 puncte max)",
-        "row3Note": "Randamente descrescătoare (diminishing returns, +5 puncte max)",
-        "row4Note": "Zonă tampon neutră — plafonul maxim al unei oferte legitime (~78 pct)",
-        "row5Note": "Alertă critică de fraudă: preț prea bun pentru a fi real (−2.0 pct/%)",
+        "row1Note": "Recompensă inițială solidă pentru preț atractiv (+17 puncte max)",
+        "row2Note": "Recompensă suplimentară adăugată până la plafon (+7 puncte max, total +24)",
+        "row3Note": "Zonă de platou neutră (0 pct) — scorul maxim al unei oferte legitime",
+        "row4Note": "Începutul zonei de penalizare pentru preț suspect de mic (−1.5 pct/%)",
+        "row5Note": "Penalizare accentuată pentru discrepanță severă de preț (−1.7 pct/%)",
+        "row6CheaperNote": "Alertă critică de fraudă / defect major ascuns (−2.0 pct/%)",
         "row6Note": "Penalizare moderată pentru marjă normală de negociere",
         "row7Note": "Oferta devine neatrăgătoare comparativ cu mediana pieței",
         "row8Note": "Supraevaluare accentuată față de dotări și kilometraj",
@@ -1479,8 +1482,8 @@
         "groupingDesc": "L1 grupează după marcă, model, generație, an, capacitate motor, combustibil și cutie (min. 5 mașini). Dacă sunt sub 5, cade pe L2 (marcă, model, generație, an), iar pentru mașini rare aplică o fereastră glisantă de ±2 ani.",
         "depreciationTitle": "Rată Dinamică de Depreciere la 10.000 km (dep_per_10k)",
         "depreciationDesc": "Din mașinile aflate la ±5% de prețul median se extrage rulajul de referință (baseline_mileage), iar din diferența de preț între jumătatea cu rulaj mic și cea cu rulaj mare se calculează deprecierea reală în €/10.000 km (sau 5% din mediană fallback).",
-        "tiersTitle": "Trepte Progresive Neliniare & Penalizare „Prea Ieftin” (>35%)",
-        "tiersDesc": "Dacă mașina e mai ieftină decât Expected Price: +1.3 pct/% (0–10%), +1.0 pct/% (10–20%), +0.5 pct/% (20–30%), platou 0 pct (30–35%, max +28 pct), iar peste 35% ieftinire scade cu −2.0 pct/% (semnal de defect ascuns). Dacă e mai scumpă: −1.0 pct/% (0–15%), −1.3 pct/% (15–25%), −1.6 pct/% (25–35%) și −2.0 pct/% (>35%).",
+        "tiersTitle": "Trepte Progresive Neliniare & Penalizare „Prea Ieftin” (>20%)",
+        "tiersDesc": "Dacă mașina e mai ieftină decât Expected Price: +1.7 pct/% (0–10%), +1.4 pct/% (10–15%), platou 0 pct (15–20%, max +24 pct), iar peste 20% ieftinire scade în trepte: −1.5 pct/% (20–25%), −1.7 pct/% (25–30%) și −2.0 pct/% (>30%). Dacă e mai scumpă: −1.0 pct/% (0–15%), −1.3 pct/% (15–25%), −1.6 pct/% (25–35%) și −2.0 pct/% (>35%).",
         "penaltiesTitle": "Penalizări Rulaj Suspect, Taxi & Plafonări Anti-Scam",
         "penaltiesDesc": "Rulaj sub (vârstă × 6.000 km) sau valori spam (111.111, 123.456 etc.): −15 pct (≤3 ani) sau −30 pct (>3 ani). Dacă e și >20% sub prețul așteptat + rulaj suspect → plafonare la max 20.0 pct (Scam Cap). Rulaj >45.000 km/an (regim Taxi) → −20 pct. Mașini avariate / fără acte → plafonare la max 10.0 pct."
       },
@@ -1509,7 +1512,7 @@
         "lowMileage": "Rulaj suspect sub pragul vârstei",
         "scamCap": "Plafonare Anti-Scam activată",
         "taxi": "Penalizare uzură intensă / Taxi",
-        "tooCheap": "Penalizare >35% sub prețul așteptat",
+        "tooCheap": "Penalizare >20% sub prețul așteptat",
         "damagedCap": "Plafonare vehicul avariat / fără acte",
         "clean": "Nicio penalizare activă — calcul pur pe trepte de preț și rulaj"
       }

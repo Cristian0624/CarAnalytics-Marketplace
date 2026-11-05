@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { getListingOptions } from "../api/listings";
+import { getListingOptions, getCachedListingOptions } from "../api/listings";
 
 function useOptions(brand, model, enabled) {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState(() => (enabled ? getCachedListingOptions({ brand, model }) : null));
 
   useEffect(() => {
     if (!enabled) {
@@ -11,8 +11,13 @@ function useOptions(brand, model, enabled) {
       return;
     }
 
+    const cached = getCachedListingOptions({ brand, model });
+    if (cached) {
+      setData(cached);
+      return;
+    }
+
     let ok = true;
-    setData(null);
 
     getListingOptions({ brand, model })
       .then((d) => ok && setData(d ?? {}))
@@ -41,12 +46,14 @@ function Row({
   label,
   onCheck,
   onToggle,
-  level
+  level,
+  className = "",
+  style
 }) {
   const isChecked = Boolean(checked || inherited);
 
   return (
-    <li className={`vt-row vt-level-${level}`}>
+    <li className={`vt-row vt-level-${level} ${className}`} style={style}>
       <input
         type="checkbox"
         checked={isChecked}
@@ -84,18 +91,31 @@ function Row({
   );
 }
 
-function Status({ data, children, t }) {
+function Status({ data, children, t, level = 0 }) {
   if (!data) {
+    const skeletonCount = level === 0 ? 8 : 4;
     return (
-      <li className="vt-status">
-        {t("vehicleTree.loading")}
-      </li>
+      <ul className={`vt-skeleton-list vt-level-${level}`} aria-label={t("vehicleTree.loading")}>
+        {[...Array(skeletonCount)].map((_, i) => (
+          <li
+            key={i}
+            className="vt-skeleton-row"
+            style={{ "--stagger-delay": `${i * 45}ms` }}
+          >
+            <div className="vt-skeleton-box" />
+            <div
+              className="vt-skeleton-line"
+              style={{ width: `${52 + ((i * 19) % 38)}%` }}
+            />
+          </li>
+        ))}
+      </ul>
     );
   }
 
   if (data.failed) {
     return (
-      <li className="vt-status">
+      <li className="vt-status vt-error">
         {t("vehicleTree.loadError")}
       </li>
     );
@@ -192,8 +212,8 @@ export default function VehicleTree({
       />
 
       <ul className="vt-list">
-        <Status data={brandData} t={t}>
-          {brands.map((b) => {
+        <Status data={brandData} t={t} level={0}>
+          {brands.map((b, idx) => {
             const isOpen = openBrand === b;
             const brandInList = selBrands.includes(b);
 
@@ -215,7 +235,11 @@ export default function VehicleTree({
               brandInList && bSelModels.length > 0;
 
             return (
-              <li key={b} className="vt-branch">
+              <li
+                key={b}
+                className="vt-branch vt-fade-in"
+                style={{ "--item-delay": `${Math.min(idx * 16, 260)}ms` }}
+              >
                 <ul>
                   <Row
                     level={0}
@@ -251,8 +275,8 @@ export default function VehicleTree({
                   />
 
                   {isOpen && (
-                    <Status data={modelData} t={t}>
-                      {(modelData?.model ?? []).map((m) => {
+                    <Status data={modelData} t={t} level={1}>
+                      {(modelData?.model ?? []).map((m, mIdx) => {
                         const mOpen = openModel === m;
                         const mExplicitlyChecked = selModels.includes(m);
                         const mOn = brandOn || mExplicitlyChecked;
@@ -264,7 +288,11 @@ export default function VehicleTree({
                         const isVisuallyOn = mOn && !mPartial;
 
                         return (
-                          <li key={m} className="vt-branch">
+                          <li
+                            key={m}
+                            className="vt-branch vt-fade-in"
+                            style={{ "--item-delay": `${Math.min(mIdx * 18, 200)}ms` }}
+                          >
                             <ul>
                               <Row level={1} label={m} open={mOpen} expandable disabled={lockModels}
                                 checked={isVisuallyOn} partial={mPartial}
@@ -289,13 +317,15 @@ export default function VehicleTree({
                                 }}
                                 onToggle={() => !lockModels && setOpenModel(mOpen ? null : m)} />
                               {mOpen && (
-                                <Status data={genData} t={t}>
-                                  {(genData?.generation ?? []).map((g) => {
+                                <Status data={genData} t={t} level={2}>
+                                  {(genData?.generation ?? []).map((g, gIdx) => {
                                     const gExplicitlyChecked = selGens.includes(g);
                                     const gOn = isVisuallyOn || gExplicitlyChecked;
                                     
                                     return (
                                     <Row key={g} level={2} label={g}
+                                      className="vt-fade-in"
+                                      style={{ "--item-delay": `${Math.min(gIdx * 18, 200)}ms` }}
                                       checked={gOn}
                                       onCheck={() => {
                                         if (gOn) {
