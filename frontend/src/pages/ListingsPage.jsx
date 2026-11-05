@@ -17,7 +17,7 @@ import SaveItemButton from "../components/SaveItemButton";
 import { useComparator } from "../context/ComparatorContext";
 import "./ListingsPage.css";
 
-const ITEMS_PER_PAGE = 45;
+const ITEMS_PER_PAGE = 48;
 
 function shuffleListings(items) {
   const shuffled = [...items];
@@ -370,12 +370,6 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
     }));
 
     setSortOpen(false);
-  }
-
-  const rows = [];
-
-  for (let index = 0; index < data.items.length; index += 3) {
-    rows.push(data.items.slice(index, index + 3));
   }
 
   const saveAction =
@@ -748,52 +742,18 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
           data.items.length > 0 && (
             <>
               <div className="cars-marketplace">
-                {rows.map((row, rowIndex) => {
-                  const expandedIndex = row.findIndex(
-                    (car) => car.id === expandedCarId
-                  );
-
-                  const visibleCars = row;
-
-                  return (
-                    <div
-                      className="car-row"
-                      key={rowIndex}
-                    >
-                      {visibleCars.map((car, index) => (
-                        <CarCard
-                          key={car.id}
-                          car={car}
-                          expanded={
-                            car.id === expandedCarId
-                          }
-                          peeking={
-                            expandedIndex >= 0 &&
-                            car.id !== expandedCarId
-                          }
-                          position={
-                            [
-                              "left",
-                              "middle",
-                              "right",
-                            ][
-                              expandedIndex >= 0
-                                ? expandedIndex
-                                : index
-                            ]
-                          }
-                          onClick={() =>
-                            setExpandedCarId((current) =>
-                              current === car.id
-                                ? null
-                                : car.id
-                            )
-                          }
-                        />
-                      ))}
-                    </div>
-                  );
-                })}
+                {data.items.map((car) => (
+                  <CarCard
+                    key={car.id}
+                    car={car}
+                    expanded={car.id === expandedCarId}
+                    onClick={() =>
+                      setExpandedCarId((current) =>
+                        current === car.id ? null : car.id
+                      )
+                    }
+                  />
+                ))}
               </div>
 
               <nav

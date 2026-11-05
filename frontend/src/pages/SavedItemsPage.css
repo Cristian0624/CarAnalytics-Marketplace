@@ -213,3 +213,163 @@ min-height: 80vh; padding: 48px 24px 80px; text-align: left; font-family: 'Inter
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   SAVED ITEMS PAGE RESPONSIVE ENHANCEMENTS
+   ============================================================ */
+
+/* Laptop */
+@media (max-width: 1280px) {
+  .saved-container {
+    max-width: 100%;
+  }
+  .saved-page {
+    padding: 40px 20px 64px;
+  }
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .saved-page {
+    padding: 32px 18px 56px;
+  }
+  .saved-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+  .saved-heading h1 {
+    font-size: clamp(26px, 4vw, 36px);
+  }
+}
+
+/* Small tablet */
+@media (max-width: 768px) {
+  .saved-page {
+    padding: 24px 14px 48px;
+  }
+  .saved-grid {
+    gap: 14px;
+  }
+  .saved-tabs {
+    gap: 6px;
+    padding: 6px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+  }
+  .saved-tabs a {
+    padding: 9px 15px;
+    font-size: 13.5px;
+  }
+  .saved-card,
+  .saved-empty {
+    padding: 20px;
+  }
+  .saved-card h2,
+  .saved-empty h2 {
+    font-size: 20px;
+  }
+  .saved-actions {
+    gap: 8px;
+  }
+  .save-dialog {
+    padding: 24px 20px;
+    border-radius: 16px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .saved-page {
+    padding: 20px 12px 40px;
+  }
+  .saved-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .saved-heading h1 {
+    font-size: clamp(22px, 6vw, 30px);
+  }
+  .saved-heading p {
+    font-size: 0.9rem;
+  }
+  .saved-tabs {
+    gap: 4px;
+    padding: 5px;
+  }
+  .saved-tabs a {
+    padding: 8px 12px;
+    font-size: 13px;
+    border-radius: 7px;
+  }
+  .saved-card,
+  .saved-empty {
+    padding: 16px;
+    border-radius: 16px;
+  }
+  .saved-card h2 {
+    font-size: 18px;
+  }
+  .saved-primary,
+  .saved-secondary,
+  .saved-delete {
+    padding: 10px 14px;
+    font-size: 13.5px;
+    border-radius: 8px;
+  }
+  .save-dialog {
+    width: min(380px, calc(100% - 32px));
+    padding: 20px 16px;
+    border-radius: 14px;
+  }
+  .save-dialog h2 {
+    font-size: 20px;
+    margin: 0 0 18px;
+  }
+  .seller-type-options {
+    grid-template-columns: 1fr;
+  }
+  .saved-pagination {
+    gap: 14px;
+    margin: 20px 0;
+  }
+}
+
+/* Very small */
+@media (max-width: 360px) {
+  .saved-page {
+    padding: 16px 10px 32px;
+  }
+  .saved-tabs a {
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+}
+
+/* Big screens */
+@media (min-width: 1921px) {
+  .saved-container {
+    max-width: 1600px;
+  }
+  .saved-page {
+    padding: 60px 40px 100px;
+  }
+  .saved-heading h1 {
+    font-size: 56px;
+  }
+  .saved-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 28px;
+  }
+  .saved-card,
+  .saved-empty {
+    padding: 32px;
+    border-radius: 24px;
+  }
+  .saved-card h2 {
+    font-size: 26px;
+  }
+  .saved-tabs a {
+    padding: 12px 22px;
+    font-size: 15px;
+  }
+}

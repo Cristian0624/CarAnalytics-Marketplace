@@ -27,10 +27,17 @@
     "home": "Acasă",
     "listings": "Piață",
     "riskAnalysis": "Analiza Risc",
-    "profile": "Profilul meu",
+    "profile": "Profilul Meu",
     "login": "Autentificare",
     "register": "Înregistrare",
-    "about": "Despre Noi"
+    "about": "Despre Noi",
+    "comparator": "Comparator",
+    "features": "Funcționalități & Labs",
+    "language": "Limbă",
+    "navigation": "Navigare",
+    "account": "Cont",
+    "closeMenu": "Închide meniul",
+    "openMenu": "Deschide meniul"
   },
   "estimator": {
     "title": "Estimează prețul mașinii",
@@ -1114,12 +1121,12 @@
     "profile": "Profilul Meu",
     "myListings": "Anunțurile Mele",
     "createListing": "Creează Anunț",
-    "favourites": "Anunțuri Favorite",
+    "favourites": "Mașini Salvate",
     "savedRisks": "Analize Risc Salvate",
     "savedSearches": "Filtre Salvate",
     "logout": "Deconectare",
     "login": "Autentificare",
-    "register": "Înregistrare",
+    "register": "Creează Cont",
     "comparisons": "Comparări Salvate"
   },
   "autocomplete": {

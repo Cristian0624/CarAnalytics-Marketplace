@@ -313,3 +313,122 @@
 
 
   
+
+/* ============================================================
+   AUTHENTICATION PAGES RESPONSIVE ENHANCEMENTS
+   ============================================================ */
+
+/* Laptop */
+@media (max-width: 1280px) {
+  .auth-page {
+    padding: 52px 20px 80px;
+  }
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .auth-page {
+    padding: 48px 18px 72px;
+  }
+  .auth-form {
+    padding: 32px;
+  }
+  .auth-form h2 {
+    font-size: 27px;
+  }
+}
+
+/* Small tablet */
+@media (max-width: 768px) {
+  .auth-page {
+    padding: 40px 16px 64px;
+  }
+  .auth-form {
+    padding: 30px 26px;
+    border-radius: 20px;
+  }
+  .auth-form h2 {
+    font-size: 26px;
+    margin-bottom: 26px;
+  }
+  .auth-brand-logo {
+    height: 56px;
+  }
+}
+
+/* Mobile - extends existing 600px breakpoint */
+@media (max-width: 480px) {
+  .auth-page {
+    padding: 32px 12px 56px;
+  }
+  .auth-form {
+    padding: 24px 18px;
+    border-radius: 16px;
+  }
+  .auth-form h2 {
+    font-size: 24px;
+    letter-spacing: -0.5px;
+    margin-bottom: 22px;
+  }
+  .auth-brand-logo {
+    height: 50px;
+  }
+  .auth-input {
+    padding: 13px 13px;
+    font-size: 15px;
+    height: 48px;
+  }
+  .auth-submit {
+    padding: 13px 16px;
+    font-size: 15px;
+    min-height: 48px;
+  }
+  .auth-brand-header {
+    margin: 0 auto 22px;
+  }
+}
+
+/* Very small */
+@media (max-width: 360px) {
+  .auth-page {
+    padding: 24px 10px 48px;
+  }
+  .auth-form {
+    padding: 20px 14px;
+    border-radius: 14px;
+  }
+  .auth-form h2 {
+    font-size: 22px;
+  }
+}
+
+/* Big screens */
+@media (min-width: 1921px) {
+  .auth-page {
+    padding: 96px 24px 120px;
+  }
+  .auth-form {
+    width: min(560px, 100%);
+    padding: 52px;
+    border-radius: 28px;
+  }
+  .auth-form h2 {
+    font-size: 38px;
+    margin-bottom: 36px;
+  }
+  .auth-brand-logo {
+    height: 80px;
+  }
+  .auth-input {
+    padding: 16px 18px;
+    font-size: 16px;
+    border-radius: 12px;
+    margin-bottom: 18px;
+  }
+  .auth-submit {
+    padding: 16px 22px;
+    font-size: 16px;
+    border-radius: 12px;
+    margin-top: 12px;
+  }
+}

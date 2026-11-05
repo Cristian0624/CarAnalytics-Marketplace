@@ -30,7 +30,14 @@
     "profile": "Мой профиль",
     "login": "Войти",
     "register": "Регистрация",
-    "about": "О нас"
+    "about": "О нас",
+    "comparator": "Сравнение",
+    "features": "Возможности и Labs",
+    "language": "Язык",
+    "navigation": "Навигация",
+    "account": "Аккаунт",
+    "closeMenu": "Закрыть меню",
+    "openMenu": "Открыть меню"
   },
   "estimator": {
     "title": "Оценить стоимость автомобиля",
@@ -1045,12 +1052,12 @@
     "profile": "Мой профиль",
     "myListings": "Мои объявления",
     "createListing": "Создать объявление",
-    "favourites": "Избранные объявления",
+    "favourites": "Сохранённые авто",
     "savedRisks": "Сохранённые анализы риска",
     "savedSearches": "Сохранённые фильтры",
     "logout": "Выйти",
     "login": "Войти",
-    "register": "Регистрация",
+    "register": "Создать аккаунт",
     "comparisons": "Сохранённые сравнения"
   },
   "autocomplete": {
