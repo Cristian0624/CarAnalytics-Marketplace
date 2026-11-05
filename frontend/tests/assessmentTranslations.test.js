@@ -91,5 +91,28 @@ for (const language of ["ro", "en", "ru"]) {
     const target = { validity: { rangeOverflow: true }, max: "2027", setCustomValidity(value) { this.message = value; } };
     localizeInputValidity({ target }, t);
     assert.ok(target.message.includes("2027"));
+    for (const key of [
+      "risk.modes.url",
+      "risk.modes.manual",
+      "risk.urlSteps.0",
+      "risk.urlSteps.1",
+      "risk.urlSteps.2",
+      "risk.urlAnalyzer.title",
+      "risk.urlAnalyzer.description",
+      "risk.urlAnalyzer.analyze",
+      "anomalyRiskResults.dealGrade.label",
+      "anomalyRiskResults.dealGrade.levels.good",
+      "anomalyRiskResults.dealGrade.levels.medium",
+      "anomalyRiskResults.dealGrade.levels.bad",
+      "header.priceEstimate",
+      "home.estimator.title",
+      "home.estimator.description",
+      "priceEstimator.urlSteps.0",
+      "priceEstimator.steps.0",
+      "priceEstimator.urlAnalyzer.title",
+      "priceEstimator.urlAnalyzer.analyze",
+    ]) {
+      assert.ok(t(key).length > 0);
+    }
   });
 }
