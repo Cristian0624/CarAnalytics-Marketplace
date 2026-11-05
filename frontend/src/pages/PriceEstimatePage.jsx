@@ -372,7 +372,6 @@ export default function PriceEstimatePage() {
         <div className="risk-container">
           <header className="risk-heading">
             <h1>{t("home.estimator.title")}</h1>
-            <p>{t("home.estimator.description")}</p>
           </header>
 
           <ol className="risk-steps">
