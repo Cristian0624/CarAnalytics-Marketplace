@@ -16,11 +16,109 @@
       box-shadow 0.25s ease;
   }
   
-  .car-card:hover:not(.car-card-expanded) {
+  .car-card:hover:not(.car-card-expanded):not(.car-card-skeleton) {
     transform: translateY(-4px) scale(1.05);
   
     box-shadow:
       0 8px 22px rgba(23, 32, 42, 0.12);
+  }
+
+  /* Incremental cascade fade-in (from transparent to fully loaded, matching filters) */
+  .car-card-fade-in {
+    animation: carCardFadeIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    animation-delay: var(--card-delay, 0ms);
+  }
+
+  @keyframes carCardFadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Skeleton card while listings are fetching */
+  .car-card-skeleton {
+    cursor: default;
+    pointer-events: none;
+    animation: carSkeletonPulse 1.4s ease-in-out infinite;
+    animation-delay: var(--stagger-delay, 0ms);
+  }
+
+  .car-skeleton-title-group {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .car-skeleton-bar,
+  .car-skeleton-logo,
+  .car-skeleton-pill,
+  .car-skeleton-score {
+    background: linear-gradient(90deg, #E2E8F0 25%, #F8FAFC 50%, #E2E8F0 75%);
+    background-size: 200% 100%;
+  }
+
+  .car-skeleton-title {
+    height: 22px;
+    border-radius: 6px;
+  }
+
+  .car-skeleton-gen {
+    height: 13px;
+    border-radius: 5px;
+  }
+
+  .car-skeleton-logo {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+  }
+
+  .car-skeleton-pill {
+    height: 28px;
+    border-radius: 8px;
+  }
+
+  .car-skeleton-pill-sm {
+    width: 58px;
+  }
+
+  .car-skeleton-pill-md {
+    width: 96px;
+  }
+
+  .car-skeleton-price {
+    width: 92px;
+    height: 24px;
+    border-radius: 6px;
+  }
+
+  .car-skeleton-score {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+  }
+
+  @keyframes carSkeletonPulse {
+    0% {
+      opacity: 0.35;
+      background-position: 100% 0;
+    }
+    50% {
+      opacity: 0.85;
+      background-position: 0 0;
+    }
+    100% {
+      opacity: 0.35;
+      background-position: -100% 0;
+    }
   }
 
   

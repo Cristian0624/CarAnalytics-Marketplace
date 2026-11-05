@@ -77,14 +77,89 @@ const CAR_CLASSES = [
 ];
 
 const DROPS = [
-  { key: "fuel_type", titleKey: "fuel", options: FUEL_TYPES },
-  { key: "body_types", titleKey: "body", options: BODY_TYPES },
-  { key: "gearbox", titleKey: "gearbox", options: GEARBOXES }
+  { key: "fuel_type", titleKey: "fuel", options: FUEL_TYPES, iconType: "fuel" },
+  { key: "body_types", titleKey: "body", options: BODY_TYPES, iconType: "body" },
+  { key: "gearbox", titleKey: "gearbox", options: GEARBOXES, iconType: "gearbox" }
 ];
+
+const MORE_DROPS = [
+  { key: "drivetrains", titleKey: "drivetrain", options: DRIVETRAINS, iconType: "drivetrain" },
+  { key: "state", titleKey: "state", options: STATES, iconType: "state" },
+  { key: "seller_type", titleKey: "seller", options: SELLER_TYPES, iconType: "seller" },
+  { key: "class", titleKey: "carClass", options: CAR_CLASSES, iconType: "carClass" }
+];
+
+function DropIcon({ type }) {
+  if (type === "fuel") {
+    return (
+      <svg className="lf-drop-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M3 22V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v17"/>
+        <path d="M13 10h4a2 2 0 0 1 2 2v4a3 3 0 0 0 3 3v-7l-3-3"/>
+        <circle cx="7.5" cy="8.5" r="1.5"/>
+      </svg>
+    );
+  }
+  if (type === "body") {
+    return (
+      <svg className="lf-drop-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+        <circle cx="7" cy="17" r="2"/>
+        <circle cx="17" cy="17" r="2"/>
+      </svg>
+    );
+  }
+  if (type === "gearbox") {
+    return (
+      <svg className="lf-drop-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    );
+  }
+  if (type === "drivetrain") {
+    return (
+      <svg className="lf-drop-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <circle cx="7" cy="6" r="2"/>
+        <circle cx="17" cy="6" r="2"/>
+        <circle cx="7" cy="18" r="2"/>
+        <circle cx="17" cy="18" r="2"/>
+        <line x1="9" y1="6" x2="15" y2="6"/>
+        <line x1="9" y1="18" x2="15" y2="18"/>
+        <line x1="12" y1="6" x2="12" y2="18"/>
+      </svg>
+    );
+  }
+  if (type === "state") {
+    return (
+      <svg className="lf-drop-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <polyline points="9 12 11 14 15 10"/>
+      </svg>
+    );
+  }
+  if (type === "seller") {
+    return (
+      <svg className="lf-drop-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    );
+  }
+  if (type === "carClass") {
+    return (
+      <svg className="lf-drop-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+        <polyline points="2 17 12 22 22 17"/>
+        <polyline points="2 12 12 17 22 12"/>
+      </svg>
+    );
+  }
+  return null;
+}
 
 const fmt = (n) => Number(n).toLocaleString("ro-RO");
 
-/* Dual-thumb slider. Values are stored as strings; "" means "no limit". */
+/* Dual-thumb slider with quick presets and responsive values */
 function RangeSlider({
   min,
   max,
@@ -94,7 +169,8 @@ function RangeSlider({
   onChange,
   unit = "",
   label,
-  present = true
+  present = true,
+  presets = []
 }) {
   const { t } = useTranslation();
 
@@ -121,19 +197,6 @@ function RangeSlider({
 
   return (
     <div className="rs">
-      <div className="rs-values">
-        <span>
-          {formatValue(lo)} {unit}
-        </span>
-
-        <span>
-          {hi >= max && isYear && present
-            ? t("listing-Filters.present")
-            : `${formatValue(hi)}${hi >= max && !isYear ? "+" : ""}`}
-          {unit && ` ${unit}`}
-        </span>
-      </div>
-
       <div className="rs-track">
         <div
           className="rs-fill"
@@ -175,6 +238,26 @@ function RangeSlider({
           }
         />
       </div>
+
+      {presets.length > 0 && (
+        <div className="rs-presets">
+          {presets.map((p, idx) => {
+            const isMatch =
+              (p.min === "" ? (minValue === "" || minValue == null) : String(minValue) === String(p.min)) &&
+              (p.max === "" ? (maxValue === "" || maxValue == null) : String(maxValue) === String(p.max));
+            return (
+              <button
+                key={idx}
+                type="button"
+                className={`rs-preset-chip ${isMatch ? "active" : ""}`}
+                onClick={() => commit(p.min === "" ? min : Number(p.min), p.max === "" ? max : Number(p.max))}
+              >
+                {p.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -184,21 +267,49 @@ function RangeInput({
   maxValue,
   onMinChange,
   onMaxChange,
-  step = "1"
+  step = "1",
+  min = 0,
+  max
 }) {
   const { t } = useTranslation();
 
-  const set = (fn) => (e) =>
-    fn(e.target.value === "" ? null : e.target.value);
+  const set = (fn) => (e) => {
+    const raw = e.target.value;
+    if (raw === "") {
+      fn("");
+      return;
+    }
+    const num = Number(raw);
+    if (Number.isNaN(num)) return;
+    if (num < 0) {
+      fn(String(min ?? 0));
+      return;
+    }
+    if (max !== undefined && num > Number(max)) {
+      fn(String(max));
+      return;
+    }
+    fn(raw);
+  };
+
+  const clampMin = (fn, val) => () => {
+    if (val === "" || val == null || min === undefined) return;
+    const num = Number(val);
+    if (!Number.isNaN(num) && num < Number(min)) {
+      fn(String(min));
+    }
+  };
 
   return (
     <div className="range-inputs">
       <input
         type="number"
-        min="0"
+        min={min}
+        max={max}
         step={step}
         value={minValue ?? ""}
         onChange={set(onMinChange)}
+        onBlur={clampMin(onMinChange, minValue)}
         placeholder={t("listing-Filters.min")}
       />
 
@@ -206,10 +317,12 @@ function RangeInput({
 
       <input
         type="number"
-        min="0"
+        min={min}
+        max={max}
         step={step}
         value={maxValue ?? ""}
         onChange={set(onMaxChange)}
+        onBlur={clampMin(onMaxChange, maxValue)}
         placeholder={t("listing-Filters.max")}
       />
     </div>
@@ -242,10 +355,16 @@ function Chips({ options, selected = [], onChange, disabled }) {
   );
 }
 
-function Group({ title, children, hint }) {
+function Group({ title, children, hint, badge, headerRight }) {
   return (
     <div className="filter-group">
-      <label>{title}</label>
+      <div className="filter-group-header">
+        <div className="filter-group-title-wrap">
+          <label>{title}</label>
+          {badge && <span className="filter-group-badge">{badge}</span>}
+        </div>
+        {headerRight && <div className="filter-group-right">{headerRight}</div>}
+      </div>
       {children}
       {hint && (
         <small className="filter-disabled-hint">
@@ -313,6 +432,17 @@ export default function ListingFilters({
   useEffect(() => {
     prefetchListingOptions();
   }, []);
+
+  useEffect(() => {
+    if (!drop) return;
+    const handleOutsideClick = (e) => {
+      if (!e.target.closest(".lf-drop-wrapper")) {
+        setDrop(null);
+      }
+    };
+    document.addEventListener("pointerdown", handleOutsideClick);
+    return () => document.removeEventListener("pointerdown", handleOutsideClick);
+  }, [drop]);
 
   useEffect(() => {
     if (!floating) return;
@@ -471,29 +601,53 @@ export default function ListingFilters({
     max,
     step,
     unit,
-    present = true
-  ) => (
-    <Group title={title}>
-      <RangeSlider
-        label={title}
-        min={min}
-        max={max}
-        step={step}
-        unit={unit}
-        minValue={draft[r.min]}
-        maxValue={draft[r.max]}
-        onChange={(a, b) => {
-          update(r.min, a);
-          update(r.max, b);
-        }}
-      />
-    </Group>
-  );
+    present = true,
+    presets = []
+  ) => {
+    const lo = draft[r.min] ? Number(draft[r.min]) : min;
+    const hi = draft[r.max] ? Number(draft[r.max]) : max;
+    const isCustom = Boolean(draft[r.min] || draft[r.max]);
+    const isYear = r.min === "year_min";
+    const formatValue = isYear ? String : fmt;
 
-  const range = (title, r, step) => (
+    const loText = `${formatValue(lo)}${unit ? " " + unit : ""}`;
+    const hiText =
+      hi >= max && isYear && present
+        ? t("listing-Filters.present")
+        : `${formatValue(hi)}${hi >= max && !isYear ? "+" : ""}${unit ? " " + unit : ""}`;
+
+    const rangeDisplay = (
+      <span className={`rs-header-val ${isCustom ? "is-filtered" : ""}`}>
+        {loText} – {hiText}
+      </span>
+    );
+
+    return (
+      <Group title={title} headerRight={rangeDisplay}>
+        <RangeSlider
+          label={title}
+          min={min}
+          max={max}
+          step={step}
+          unit={unit}
+          minValue={draft[r.min]}
+          maxValue={draft[r.max]}
+          presets={presets}
+          onChange={(a, b) => {
+            update(r.min, a);
+            update(r.max, b);
+          }}
+        />
+      </Group>
+    );
+  };
+
+  const range = (title, r, step = "1", min = 0, max = undefined) => (
     <Group title={title}>
       <RangeInput
         step={step}
+        min={min}
+        max={max}
         minValue={draft[r.min]}
         maxValue={draft[r.max]}
         onMinChange={(v) => update(r.min, v)}
@@ -700,11 +854,57 @@ export default function ListingFilters({
               aria-label={t("listing-Filters.dialogLabel")}
               onClick={(e) => e.stopPropagation()}
             >
+              <header className="lf-header">
+                <div className="lf-header-left">
+                  <div className="lf-header-icon-wrap">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                    </svg>
+                  </div>
+                  <div className="lf-header-text">
+                    <h2>{t("listing-Filters.dialogLabel") || t("listing-Filters.advanced")}</h2>
+                  </div>
+                  {pills.length > 0 && (
+                    <span className="lf-header-badge">
+                      {pills.length} {pills.length === 1 ? "filtru activ" : "filtre active"}
+                    </span>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  className="lf-close-btn"
+                  onClick={() => setOpen(false)}
+                  aria-label={t("common.close") || "Închide"}
+                  title={t("common.close") || "Închide"}
+                >
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                </button>
+              </header>
+
               <div className="lf-body">
                 <aside className="lf-tree">
-                  <h3>
-                    {t("listing-Filters.brand")}
-                  </h3>
+                  <div className="lf-tree-header">
+                    <div className="lf-tree-title">
+                      <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9"/>
+                        <circle cx="12" cy="12" r="3"/>
+                        <line x1="12" y1="3" x2="12" y2="9"/>
+                        <line x1="12" y1="15" x2="12" y2="21"/>
+                        <line x1="3" y1="12" x2="9" y2="12"/>
+                        <line x1="15" y1="12" x2="21" y2="12"/>
+                      </svg>
+                      <span>{t("listing-Filters.brand")}</span>
+                    </div>
+                    {vehicle.length > 0 && (
+                      <span className="lf-tree-count-badge">
+                        {vehicle.length}
+                      </span>
+                    )}
+                  </div>
 
                   <VehicleTree
                     filters={draft}
@@ -721,7 +921,14 @@ export default function ListingFilters({
                       0,
                       100000,
                       500,
-                      "€"
+                      "€",
+                      true,
+                      [
+                        { label: "< 10.000 €", min: "", max: "10000" },
+                        { label: "10k – 25k €", min: "10000", max: "25000" },
+                        { label: "25k – 50k €", min: "25000", max: "50000" },
+                        { label: "50.000+ €", min: "50000", max: "" }
+                      ]
                     )}
 
                     {slider(
@@ -731,7 +938,13 @@ export default function ListingFilters({
                       Math.max(yearRange.year_max, Number(filters.year_max) || yearRange.year_max),
                       1,
                       "",
-                      yearRange.present
+                      yearRange.present,
+                      [
+                        { label: "2015+", min: "2015", max: "" },
+                        { label: "2018+", min: "2018", max: "" },
+                        { label: "2020+", min: "2020", max: "" },
+                        { label: "2022+", min: "2022", max: "" }
+                      ]
                     )}
 
                     {slider(
@@ -740,7 +953,14 @@ export default function ListingFilters({
                       0,
                       500000,
                       5000,
-                      "km"
+                      "km",
+                      true,
+                      [
+                        { label: "< 50.000 km", min: "", max: "50000" },
+                        { label: "< 100.000 km", min: "", max: "100000" },
+                        { label: "< 150.000 km", min: "", max: "150000" },
+                        { label: "< 200.000 km", min: "", max: "200000" }
+                      ]
                     )}
                   </div>
 
@@ -761,7 +981,7 @@ export default function ListingFilters({
                             type="button"
                             className={`lf-drop ${
                               isOpen ? "open" : ""
-                            }`}
+                            } ${selected.length ? "has-value" : ""}`}
                             aria-expanded={isOpen}
                             onClick={() =>
                               setDrop(
@@ -771,59 +991,66 @@ export default function ListingFilters({
                               )
                             }
                           >
-                            <span
-                              className={
-                                selected.length
-                                  ? "selected-value"
-                                  : ""
-                              }
-                            >
-                              {selected.length === 0
-                                ? t(
-                                    `listing-Filters.${d.titleKey}`
-                                  )
-                                : selected[0]}
-                            </span>
+                            <div className="lf-drop-label-wrap">
+                              <DropIcon type={d.iconType} />
+                              <span
+                                className={
+                                  selected.length
+                                    ? "selected-value"
+                                    : ""
+                                }
+                              >
+                                {selected.length === 0
+                                  ? t(
+                                      `listing-Filters.${d.titleKey}`
+                                    )
+                                  : selected[0]}
+                              </span>
+                            </div>
 
-                            <span
-                              className={`lf-arrow ${
-                                isOpen ? "up" : ""
-                              }`}
-                            >
-                              ▾
-                            </span>
+                            <div className="lf-drop-end">
+                              {selected.length > 1 && (
+                                <span className="lf-drop-badge">+{selected.length - 1}</span>
+                              )}
+                              <span
+                                className={`lf-arrow ${
+                                  isOpen ? "up" : ""
+                                }`}
+                              >
+                                ▾
+                              </span>
+                            </div>
                           </button>
 
                           {isOpen && (
                             <div className="lf-drop-panel">
                               {d.options.map(
-                                (option) => (
-                                  <button
-                                    key={option}
-                                    type="button"
-                                    className={`lf-option ${
-                                      selected.includes(
-                                        option
-                                      )
-                                        ? "selected"
-                                        : ""
-                                    }`}
-                                    onClick={() => {
-                                      update(
-                                        d.key,
-                                        selected.includes(
-                                          option
-                                        )
-                                          ? []
-                                          : [option]
-                                      );
-
-                                      setDrop(null);
-                                    }}
-                                  >
-                                    {option}
-                                  </button>
-                                )
+                                (option) => {
+                                  const isSelected = selected.includes(option);
+                                  return (
+                                    <button
+                                      key={option}
+                                      type="button"
+                                      className={`lf-option ${
+                                        isSelected ? "selected" : ""
+                                      }`}
+                                      onClick={() => {
+                                        update(
+                                          d.key,
+                                          isSelected ? [] : [option]
+                                        );
+                                        setDrop(null);
+                                      }}
+                                    >
+                                      <span>{option}</span>
+                                      {isSelected && (
+                                        <svg className="lf-option-check" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                          <polyline points="20 6 9 17 4 12"/>
+                                        </svg>
+                                      )}
+                                    </button>
+                                  );
+                                }
                               )}
                             </div>
                           )}
@@ -832,154 +1059,189 @@ export default function ListingFilters({
                     })}
                   </div>
 
-                  <button
-                    type="button"
-                    className="lf-more"
-                    aria-expanded={more}
-                    onClick={() =>
-                      setMore((v) => !v)
-                    }
-                  >
-                    {more
-                      ? t("listing-Filters.fewerFilters")
-                      : t("listing-Filters.moreFilters")}
-
-                    <span
-                      className={`lf-arrow ${
-                        more ? "up" : ""
-                      }`}
-                      aria-hidden="true"
+                  <div className="lf-more-wrapper">
+                    <button
+                      type="button"
+                      className={`lf-more-btn ${more ? "is-active" : ""}`}
+                      aria-expanded={more}
+                      onClick={() =>
+                        setMore((v) => !v)
+                      }
                     >
-                      ▾
-                    </span>
-                  </button>
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <line x1="4" y1="21" x2="4" y2="14"/>
+                        <line x1="4" y1="10" x2="4" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12" y2="3"/>
+                        <line x1="20" y1="21" x2="20" y2="16"/>
+                        <line x1="20" y1="12" x2="20" y2="3"/>
+                        <line x1="1" y1="14" x2="7" y2="14"/>
+                        <line x1="9" y1="8" x2="15" y2="8"/>
+                        <line x1="17" y1="16" x2="23" y2="16"/>
+                      </svg>
+                      <span>
+                        {more
+                          ? t("listing-Filters.fewerFilters")
+                          : t("listing-Filters.moreFilters")}
+                      </span>
+                      <span
+                        className={`lf-arrow ${
+                          more ? "up" : ""
+                        }`}
+                        aria-hidden="true"
+                      >
+                        ▾
+                      </span>
+                    </button>
+                  </div>
 
                   {more && (
-                    <div className="filter-grid">
-                      <Group
-                        title={t(
-                          "listing-Filters.drivetrain"
+                    <>
+                      <div className="lf-drops lf-drops-more">
+                        {MORE_DROPS.map((d) => {
+                          const selected = draft[d.key] ?? [];
+                          const isOpen = drop === d.key;
+                          const isDisabled = d.key === "class" && classDisabled;
+
+                          return (
+                            <div
+                              key={d.key}
+                              className={`lf-drop-wrapper ${isOpen ? "is-open" : ""}`}
+                            >
+                              <button
+                                type="button"
+                                disabled={isDisabled}
+                                title={
+                                  isDisabled
+                                    ? t("listing-Filters.classDisabledHint")
+                                    : undefined
+                                }
+                                className={`lf-drop ${
+                                  isOpen ? "open" : ""
+                                } ${selected.length ? "has-value" : ""}`}
+                                aria-expanded={isOpen}
+                                onClick={() =>
+                                  !isDisabled &&
+                                  setDrop(isOpen ? null : d.key)
+                                }
+                              >
+                                <div className="lf-drop-label-wrap">
+                                  <DropIcon type={d.iconType} />
+                                  <span
+                                    className={
+                                      selected.length ? "selected-value" : ""
+                                    }
+                                  >
+                                    {selected.length === 0
+                                      ? t(`listing-Filters.${d.titleKey}`)
+                                      : selected[0]}
+                                  </span>
+                                </div>
+
+                                <div className="lf-drop-end">
+                                  {selected.length > 1 && (
+                                    <span className="lf-drop-badge">
+                                      +{selected.length - 1}
+                                    </span>
+                                  )}
+                                  <span
+                                    className={`lf-arrow ${
+                                      isOpen ? "up" : ""
+                                    }`}
+                                  >
+                                    ▾
+                                  </span>
+                                </div>
+                              </button>
+
+                              {isOpen && !isDisabled && (
+                                <div className="lf-drop-panel lf-drop-down">
+                                  {d.options.map((option) => {
+                                    const isSelected =
+                                      selected.includes(option);
+                                    return (
+                                      <button
+                                        key={option}
+                                        type="button"
+                                        className={`lf-option ${
+                                          isSelected ? "selected" : ""
+                                        }`}
+                                        onClick={() => {
+                                          update(
+                                            d.key,
+                                            isSelected ? [] : [option]
+                                          );
+                                          setDrop(null);
+                                        }}
+                                      >
+                                        <span>{option}</span>
+                                        {isSelected && (
+                                          <svg
+                                            className="lf-option-check"
+                                            viewBox="0 0 24 24"
+                                            width="16"
+                                            height="16"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          >
+                                            <polyline points="20 6 9 17 4 12" />
+                                          </svg>
+                                        )}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div className="filter-grid">
+                        {range(
+                          t("listing-Filters.engine"),
+                          R.engine,
+                          "0.1",
+                          0,
+                          10
                         )}
-                      >
-                        <Chips
-                          options={DRIVETRAINS}
-                          selected={
-                            draft.drivetrains
-                          }
-                          onChange={(v) =>
-                            update(
-                              "drivetrains",
-                              v
-                            )
-                          }
-                        />
-                      </Group>
 
-                      <Group
-                        title={t(
-                          "listing-Filters.state"
+                        {range(
+                          t("listing-Filters.horsepower"),
+                          R.horsepower,
+                          "1",
+                          1,
+                          1500
                         )}
-                      >
-                        <Chips
-                          options={STATES}
-                          selected={draft.state}
-                          onChange={(v) =>
-                            update("state", v)
-                          }
-                        />
-                      </Group>
 
-                      <Group
-                        title={t(
-                          "listing-Filters.seller"
+                        {range(
+                          t("listing-Filters.doors"),
+                          R.doors,
+                          "1",
+                          2,
+                          6
                         )}
-                      >
-                        <Chips
-                          options={SELLER_TYPES}
-                          selected={
-                            draft.seller_type
-                          }
-                          onChange={(v) =>
-                            update(
-                              "seller_type",
-                              v
-                            )
-                          }
-                        />
-                      </Group>
 
-                      <Group
-                        title={t(
-                          "listing-Filters.registrationCountry"
+                        {range(
+                          t("listing-Filters.seats"),
+                          R.seats,
+                          "1",
+                          1,
+                          9
                         )}
-                      >
-                        <Chips
-                          options={
-                            REGISTRATION_COUNTRIES
-                          }
-                          selected={
-                            draft.registration_country
-                          }
-                          onChange={(v) =>
-                            update(
-                              "registration_country",
-                              v
-                            )
-                          }
-                        />
-                      </Group>
 
-                      <Group
-                        title={t(
-                          "listing-Filters.carClass"
+                        {range(
+                          t("listing-Filters.score"),
+                          R.score,
+                          "0.1",
+                          0,
+                          80
                         )}
-                        hint={
-                          classDisabled
-                            ? t(
-                                "listing-Filters.classDisabledHint"
-                              )
-                            : null
-                        }
-                      >
-                        <Chips
-                          options={CAR_CLASSES}
-                          disabled={classDisabled}
-                          selected={
-                            draft.class
-                          }
-                          onChange={(v) =>
-                            update("class", v)
-                          }
-                        />
-                      </Group>
-
-                      {range(
-                        t("listing-Filters.engine"),
-                        R.engine,
-                        "0.1"
-                      )}
-
-                      {range(
-                        t("listing-Filters.horsepower"),
-                        R.horsepower
-                      )}
-
-                      {range(
-                        t("listing-Filters.doors"),
-                        R.doors
-                      )}
-
-                      {range(
-                        t("listing-Filters.seats"),
-                        R.seats
-                      )}
-
-                      {range(
-                        t("listing-Filters.score"),
-                        R.score,
-                        "0.1"
-                      )}
-                    </div>
+                      </div>
+                    </>
                   )}
                 </div>
               </div>
@@ -990,12 +1252,13 @@ export default function ListingFilters({
                     type="button"
                     className="lf-reset"
                     onClick={onReset}
+                    title={t("listing-Filters.reset")}
                   >
-                    <span aria-hidden="true">
-                      ↺
-                    </span>
-
-                    {t("listing-Filters.reset")}
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                      <path d="M3 3v5h5"/>
+                    </svg>
+                    <span>{t("listing-Filters.reset")}</span>
                   </button>
 
                   {pills.length > 0 && (
@@ -1005,7 +1268,7 @@ export default function ListingFilters({
                           key={i}
                           className="lf-footer-pill"
                         >
-                          <span>
+                          <span className="lf-footer-pill-text">
                             {p.label}
                           </span>
 
@@ -1056,7 +1319,14 @@ export default function ListingFilters({
                       Boolean(filterError)
                     }
                   >
-                    {countText}
+                    {countLoading ? (
+                      <span className="lf-btn-spinner" />
+                    ) : (
+                      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    )}
+                    <span>{countText}</span>
                   </button>
                 </div>
               </div>

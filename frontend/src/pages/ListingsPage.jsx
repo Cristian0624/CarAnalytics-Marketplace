@@ -710,10 +710,50 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
 
         {loading && (
           <div
-            className="marketplace-loading"
+            className="cars-marketplace"
             role="status"
+            aria-label={t("listings.loading")}
           >
-            {t("listings.loading")}
+            {[0, 1, 2].map((rowIdx) => (
+              <div className="car-row" key={rowIdx}>
+                {[0, 1, 2].map((colIdx) => {
+                  const idx = rowIdx * 3 + colIdx;
+                  return (
+                    <div
+                      key={colIdx}
+                      className="car-card car-card-skeleton"
+                      style={{ "--stagger-delay": `${idx * 55}ms` }}
+                    >
+                      <div className="car-card-content">
+                        <div className="car-card-title-row">
+                          <div className="car-skeleton-title-group">
+                            <div
+                              className="car-skeleton-bar car-skeleton-title"
+                              style={{ width: `${58 + ((idx * 17) % 28)}%` }}
+                            />
+                            <div
+                              className="car-skeleton-bar car-skeleton-gen"
+                              style={{ width: `${35 + ((idx * 13) % 22)}%` }}
+                            />
+                          </div>
+                          <div className="car-skeleton-logo" />
+                        </div>
+
+                        <div className="car-details">
+                          <div className="car-skeleton-pill car-skeleton-pill-sm" />
+                          <div className="car-skeleton-pill car-skeleton-pill-md" />
+                        </div>
+
+                        <div className="car-card-bottom">
+                          <div className="car-skeleton-bar car-skeleton-price" />
+                          <div className="car-skeleton-score" />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
           </div>
         )}
 
@@ -764,6 +804,7 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
                         <CarCard
                           key={car.id}
                           car={car}
+                          fadeDelay={Math.min((rowIndex * 3 + index) * 25, 380)}
                           expanded={
                             car.id === expandedCarId
                           }

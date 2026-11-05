@@ -29,7 +29,8 @@ function CarCard({
   position,
   onClick,
   showFavourite = true,
-  peeking = false
+  peeking = false,
+  fadeDelay = 0
 }) {
   const { t } = useTranslation();
 
@@ -211,7 +212,8 @@ function CarCard({
     <>
       <article
         ref={cardRef}
-        className="car-card"
+        className="car-card car-card-fade-in"
+        style={{ "--card-delay": `${fadeDelay}ms` }}
         onClick={handleCardClick}
         tabIndex={0}
         onKeyDown={(event) => {

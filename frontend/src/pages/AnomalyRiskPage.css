@@ -354,9 +354,9 @@
 .scroll-top-button {
   --scroll-size: 56px;
   --scroll-offset: 24px;
-  --scroll-track: rgba(255, 255, 255, 0.18);
-  --scroll-accent: var(--brand-teal);
-  --scroll-bg: var(--brand-charcoal);
+  --scroll-track: #E2E8F0;
+  --scroll-accent: var(--brand-teal, #14B8A6);
+  --scroll-bg: #FFFFFF;
 
   position: fixed;
   right: var(--scroll-offset);
@@ -368,11 +368,11 @@
   display: grid;
   place-items: center;
 
-  border: 0;
-  border-radius: 16px;
+  border: 1px solid #CBD5E1;
+  border-radius: 50%;
 
   background: var(--scroll-bg);
-  color: #ffffff;
+  color: #17202A;
 
   cursor: pointer;
 
@@ -384,13 +384,14 @@
   z-index: 1000;
 
   box-shadow:
-    0 8px 24px rgba(23, 32, 42, 0.20),
-    0 2px 6px rgba(23, 32, 42, 0.10);
+    0 4px 18px rgba(15, 23, 42, 0.16),
+    0 2px 6px rgba(15, 23, 42, 0.08);
 
   transition:
     opacity 0.28s ease,
-    transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 0.25s ease;
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s ease,
+    border-color 0.2s ease;
 }
 
 .scroll-top-button.is-visible {
@@ -400,11 +401,12 @@
 }
 
 .scroll-top-button.is-visible:hover {
-  transform: scale(1.06);
+  transform: translateY(-2px) scale(1.04);
+  border-color: var(--brand-teal, #14B8A6);
 
   box-shadow:
-    0 12px 30px rgba(23, 32, 42, 0.26),
-    0 3px 8px rgba(23, 32, 42, 0.12);
+    0 8px 24px rgba(15, 23, 42, 0.22),
+    0 3px 8px rgba(15, 23, 42, 0.10);
 }
 
 .scroll-top-button:active {
@@ -464,7 +466,7 @@
     --scroll-size: 48px;
     --scroll-offset: 18px;
 
-    border-radius: 14px;
+    border-radius: 50%;
   }
 
   .scroll-top-icon {
