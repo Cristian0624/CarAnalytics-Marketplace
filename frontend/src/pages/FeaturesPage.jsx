@@ -15,24 +15,35 @@ function calculateScoreMod(pct) {
   if (pct > 0) {
     let bonus = 0;
     let remaining = pct;
+    // 0% - 10%: +1.7 per 1%
     const t1 = Math.min(remaining, 10.0);
-    bonus += t1 * 1.3;
+    bonus += t1 * 1.7;
     remaining -= t1;
+    // 10% - 15%: +1.4 per 1%
     if (remaining > 0) {
-      const t2 = Math.min(remaining, 10.0);
-      bonus += t2 * 1.0;
+      const t2 = Math.min(remaining, 5.0);
+      bonus += t2 * 1.4;
       remaining -= t2;
     }
+    // 15% - 20%: Plateau (0 pts)
     if (remaining > 0) {
-      const t3 = Math.min(remaining, 10.0);
-      bonus += t3 * 0.5;
+      const t3 = Math.min(remaining, 5.0);
+      bonus += 0;
       remaining -= t3;
     }
+    // 20% - 25%: -1.5 per 1%
     if (remaining > 0) {
       const t4 = Math.min(remaining, 5.0);
-      bonus += 0;
+      bonus -= t4 * 1.5;
       remaining -= t4;
     }
+    // 25% - 30%: -1.7 per 1%
+    if (remaining > 0) {
+      const t5 = Math.min(remaining, 5.0);
+      bonus -= t5 * 1.7;
+      remaining -= t5;
+    }
+    // > 30%: -2.0 per 1%
     if (remaining > 0) {
       bonus -= remaining * 2.0;
     }
@@ -85,10 +96,12 @@ export default function FeaturesPage() {
   let effectiveMileage = isSpamMileage ? simBaselineMileage : simMileage;
   effectiveMileage = Math.max(effectiveMileage, suspiciouslyLowThreshold);
 
-  const rawExpectedPrice =
-    simMedPrice -
-    ((effectiveMileage - simBaselineMileage) / 10000) * simDepPer10k;
-  const expectedPrice = Math.max(500, Math.round(rawExpectedPrice));
+  const rawAdjustment =
+    ((simBaselineMileage - effectiveMileage) / 10000) * simDepPer10k;
+  const maxBonus = simMedPrice * 0.12;
+  const mileageAdjustment =
+    rawAdjustment > 0 ? Math.min(rawAdjustment, maxBonus) : rawAdjustment;
+  const expectedPrice = Math.max(500, Math.round(simMedPrice + mileageAdjustment));
 
   const priceDiffPct =
     ((expectedPrice - simAskingPrice) / expectedPrice) * 100;
@@ -333,36 +346,25 @@ export default function FeaturesPage() {
                         </strong>
                       </td>
                       <td>
-                        <span className="tier-badge-mod pos">+1.3 pct / 1%</span>
+                        <span className="tier-badge-mod pos">+1.7 pct / 1%</span>
                       </td>
                       <td>{t("featuresPage.scoring.tiersTable.row1Note")}</td>
                     </tr>
                     <tr className="tier-row-good">
                       <td>
                         <strong>
-                          10% – 20% {t("featuresPage.scoring.tiersTable.cheaper")}
+                          10% – 15% {t("featuresPage.scoring.tiersTable.cheaper")}
                         </strong>
                       </td>
                       <td>
-                        <span className="tier-badge-mod pos">+1.0 pct / 1%</span>
+                        <span className="tier-badge-mod pos">+1.4 pct / 1%</span>
                       </td>
                       <td>{t("featuresPage.scoring.tiersTable.row2Note")}</td>
-                    </tr>
-                    <tr className="tier-row-good">
-                      <td>
-                        <strong>
-                          20% – 30% {t("featuresPage.scoring.tiersTable.cheaper")}
-                        </strong>
-                      </td>
-                      <td>
-                        <span className="tier-badge-mod pos">+0.5 pct / 1%</span>
-                      </td>
-                      <td>{t("featuresPage.scoring.tiersTable.row3Note")}</td>
                     </tr>
                     <tr className="tier-row-plateau">
                       <td>
                         <strong>
-                          30% – 35% {t("featuresPage.scoring.tiersTable.cheaper")}
+                          15% – 20% {t("featuresPage.scoring.tiersTable.cheaper")}
                         </strong>
                       </td>
                       <td>
@@ -370,18 +372,40 @@ export default function FeaturesPage() {
                           0.0 pct ({t("featuresPage.scoring.tiersTable.plateau")})
                         </span>
                       </td>
+                      <td>{t("featuresPage.scoring.tiersTable.row3Note")}</td>
+                    </tr>
+                    <tr className="tier-row-danger">
+                      <td>
+                        <strong>
+                          20% – 25% {t("featuresPage.scoring.tiersTable.cheaper")}
+                        </strong>
+                      </td>
+                      <td>
+                        <span className="tier-badge-mod neg">-1.5 pct / 1%</span>
+                      </td>
                       <td>{t("featuresPage.scoring.tiersTable.row4Note")}</td>
                     </tr>
                     <tr className="tier-row-danger">
                       <td>
                         <strong>
-                          &gt; 35% {t("featuresPage.scoring.tiersTable.cheaper")}
+                          25% – 30% {t("featuresPage.scoring.tiersTable.cheaper")}
+                        </strong>
+                      </td>
+                      <td>
+                        <span className="tier-badge-mod neg">-1.7 pct / 1%</span>
+                      </td>
+                      <td>{t("featuresPage.scoring.tiersTable.row5Note")}</td>
+                    </tr>
+                    <tr className="tier-row-danger">
+                      <td>
+                        <strong>
+                          &gt; 30% {t("featuresPage.scoring.tiersTable.cheaper")}
                         </strong>
                       </td>
                       <td>
                         <span className="tier-badge-mod neg">-2.0 pct / 1%</span>
                       </td>
-                      <td>{t("featuresPage.scoring.tiersTable.row5Note")}</td>
+                      <td>{t("featuresPage.scoring.tiersTable.row6CheaperNote")}</td>
                     </tr>
                     <tr className="tier-row-over">
                       <td>
@@ -658,10 +682,9 @@ export default function FeaturesPage() {
                   {Math.round(simMileage / age).toLocaleString()} km/an)
                 </span>
               )}
-              {priceDiffPct > 35 && (
+              {priceDiffPct > 20 && (
                 <span className="sim-flag-chip flag-danger">
-                  📉 {t("featuresPage.scoring.flags.tooCheap")} (-2.0 pct / 1%
-                  peste 35%)
+                  📉 {t("featuresPage.scoring.flags.tooCheap")}
                 </span>
               )}
               {simIsDamaged && (
@@ -672,7 +695,7 @@ export default function FeaturesPage() {
               {!isLowMileage &&
                 !isScamCap &&
                 !isTaxi &&
-                priceDiffPct <= 35 &&
+                priceDiffPct <= 20 &&
                 !simIsDamaged && (
                   <span className="sim-flag-chip flag-ok">
                     ✓ {t("featuresPage.scoring.flags.clean")}

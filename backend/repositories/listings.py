@@ -12,6 +12,15 @@ SORTABLE_COLUMNS = {
 }
 
 
+_OPTIONS_CACHE: dict = {}
+_STATIC_FIELDS_CACHE: dict = {}
+
+
+def clear_options_cache():
+    _OPTIONS_CACHE.clear()
+    _STATIC_FIELDS_CACHE.clear()
+
+
 class ListingsRepository:
     """Builds parameterized SQLAlchemy queries for the scraped inventory."""
 
@@ -116,6 +125,10 @@ class ListingsRepository:
 
     def get_options(self, brand=None, model=None, generation=None):
         """Return exact inventory values; only vehicle identity fields cascade."""
+        cache_key = (brand, model, generation)
+        if cache_key in _OPTIONS_CACHE:
+            return _OPTIONS_CACHE[cache_key]
+
         def distinct(column, *conditions):
             statement = select(column).where(column.is_not(None), *conditions).distinct().order_by(column)
             return self.db.scalars(statement).all()
@@ -123,12 +136,19 @@ class ListingsRepository:
         identity = [Listing.brand == brand, Listing.model == model]
         if generation is not None:
             identity.append(Listing.generation == generation)
-        return {
+
+        if not _STATIC_FIELDS_CACHE:
+            for field in ("fuel_type", "engine", "gearbox", "drivetrain", "body_type"):
+                _STATIC_FIELDS_CACHE[field] = distinct(getattr(Listing, field))
+
+        result = {
             "brand": distinct(Listing.brand),
             "model": distinct(Listing.model, Listing.brand == brand) if brand is not None else [],
             "generation": distinct(Listing.generation, Listing.brand == brand, Listing.model == model)
             if brand is not None and model is not None else [],
-            **{field: distinct(getattr(Listing, field)) for field in
-               ("fuel_type", "engine", "gearbox", "drivetrain", "body_type")},
+            **_STATIC_FIELDS_CACHE,
             "class": distinct(Listing.class_, *identity) if brand is not None and model is not None else [],
         }
+
+        _OPTIONS_CACHE[cache_key] = result
+        return result

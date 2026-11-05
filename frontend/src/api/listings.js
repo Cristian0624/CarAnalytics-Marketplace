@@ -50,16 +50,48 @@ export async function getListingYearRange(filters = {}) {
     return apiRequest(`/listings/year-range${buildQueryString(filters)}`);
 }
 
+const optionsCache = new Map();
+const resolvedCache = new Map();
+
+export function getCachedListingOptions({ brand, model, generation } = {}) {
+    const key = `${brand || ""}|${model || ""}|${generation || ""}`;
+    return resolvedCache.get(key) || null;
+}
+
 export async function getListingOptions({
     brand,
     model,
     generation,
   } = {}) {
+    const key = `${brand || ""}|${model || ""}|${generation || ""}`;
+    if (resolvedCache.has(key)) {
+      return resolvedCache.get(key);
+    }
+    if (optionsCache.has(key)) {
+      return optionsCache.get(key);
+    }
+
     const query = buildQueryString({
       brand,
       model,
       generation,
     });
-  
-    return apiRequest(`/listings/options${query}`);
-  }
+
+    const request = apiRequest(`/listings/options${query}`)
+      .then((res) => {
+        resolvedCache.set(key, res);
+        return res;
+      })
+      .catch((err) => {
+        optionsCache.delete(key);
+        resolvedCache.delete(key);
+        throw err;
+      });
+
+    optionsCache.set(key, request);
+    return request;
+}
+
+export function prefetchListingOptions() {
+    return getListingOptions().catch(() => {});
+}

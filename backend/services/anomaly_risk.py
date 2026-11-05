@@ -147,7 +147,7 @@ class AnomalyRiskService:
             ],
         }
 
-    def analyze_price_anomaly(self, actual_price, prices, comparison_level="model_generation"):
+    def analyze_price_anomaly(self, actual_price, prices, comparison_level="model_generation", expected_price=None):
         """Score against database prices for the selected model or generation."""
         actual_price = float(actual_price)
         if not np.isfinite(actual_price) or actual_price <= 0:
@@ -170,7 +170,9 @@ class AnomalyRiskService:
             return {
                 **result,
                 **dict.fromkeys(Q_NAMES),
+                "expected_price": None,
                 "deviation_from_p50_pct": None,
+                "deviation_from_expected_pct": None,
                 "direction": "unknown",
                 "price_anomaly_score": None,
                 "reason": "insufficient_market_support",
@@ -178,15 +180,24 @@ class AnomalyRiskService:
             }
 
         q = np.percentile(np.asarray(prices, dtype=float), [10, 25, 50, 75, 90])
-        direction = "unusually_cheap" if actual_price < q[0] else "unusually_expensive" if actual_price > q[4] else "normal"
-        reason = ("Asking price is below the observed P10 price." if direction == "unusually_cheap" else
-                  "Asking price is above the observed P90 price." if direction == "unusually_expensive" else
-                  "Asking price is close to the observed market median." if q[1] <= actual_price <= q[3] else
-                  "Asking price lies within P10-P90, outside the central P25-P75 band.")
+        p50 = float(q[2])
+
+        eval_price = actual_price
+        if expected_price is not None and expected_price > 0:
+            # Shift asking price by expected mileage wear/bonus relative to median
+            eval_price = actual_price - (expected_price - p50)
+
+        direction = "unusually_cheap" if eval_price < q[0] else "unusually_expensive" if eval_price > q[4] else "normal"
+        reason = ("Asking price is below the expected market range." if direction == "unusually_cheap" else
+                  "Asking price is above the expected market range." if direction == "unusually_expensive" else
+                  "Asking price is close to the expected market median." if q[1] <= eval_price <= q[3] else
+                  "Asking price lies within expected market tolerance.")
         distribution = self.compute_price_distribution(prices, actual_price, q)
         return {**result, **dict(zip(Q_NAMES, map(float, q))),
-                "deviation_from_p50_pct": float(100 * (actual_price - q[2]) / q[2]),
-                "direction": direction, "price_anomaly_score": self.spread_anomaly_score(actual_price, q), "reason": reason,
+                "expected_price": round(float(expected_price), 2) if expected_price is not None else round(p50, 2),
+                "deviation_from_p50_pct": float(100 * (actual_price - p50) / p50),
+                "deviation_from_expected_pct": float(100 * (actual_price - expected_price) / expected_price) if expected_price is not None else None,
+                "direction": direction, "price_anomaly_score": self.spread_anomaly_score(eval_price, q), "reason": reason,
                 "distribution": distribution}
 
     def mileage_anomaly_score(self, actual, stats):
@@ -490,7 +501,14 @@ class AnomalyRiskService:
             return context
         price_ratio = price["actual_price"] / price["p50"]
         mileage_ratio = mileage["actual_mileage"] / mileage["expected_median_mileage"]
-        balance = abs(price_ratio * mileage_ratio - 1.0)
+
+        # Empirical depreciation balance (4.5% - 5.0% per 10k km excess wear)
+        price_delta_pct = (price["actual_price"] - price["p50"]) / price["p50"]
+        excess_km = mileage["actual_mileage"] - mileage["expected_median_mileage"]
+        dep_rate_per_10k = 0.045
+        expected_dep_pct = -(excess_km / 10000.0) * dep_rate_per_10k
+        balance = abs(price_delta_pct - expected_dep_pct)
+
         context.update(price_ratio=float(price_ratio), mileage_ratio=float(mileage_ratio),
                        balance_deviation=float(balance), relation="not_applicable")
         deviations = (price_ratio - 1.0, mileage_ratio - 1.0)
@@ -502,7 +520,7 @@ class AnomalyRiskService:
                 or larger_deviation < self.SCORING["joint_strong_deviation"]):
             return context
         opposite = deviations[0] * deviations[1] < 0
-        moderate = 0.40 <= price_ratio <= 2.50 and 0.35 <= mileage_ratio <= 2.50
+        moderate = 0.35 <= price_ratio <= 2.50 and 0.30 <= mileage_ratio <= 3.0
         if opposite and moderate and balance <= self.SCORING["joint_balance_tolerance"]:
             context["relation"] = "consistent_opposite"
             context["coherence_strength"] = self.price_mileage_coherence_strength(
@@ -630,11 +648,30 @@ class AnomalyRiskService:
             total, weights = best_total, best_weights
         return total, weights, context
 
-    def assess_listing_risk(self, vehicle, prices, model_observations, comparison_rows):
+    def assess_listing_risk(self, vehicle, prices, model_observations, comparison_rows, text_signals=None):
         if "price" not in vehicle:
             raise ValueError("Supply price as the asking price in EUR")
         comparison_level = "model_generation" if vehicle.get("generation") else "model"
-        price = self.analyze_price_anomaly(vehicle["price"], prices, comparison_level)
+
+        # Calculate expected price based on mileage and cohort baseline
+        expected_price = None
+        if len(prices) >= 10:
+            p_arr = np.asarray([float(p) for p in prices if p is not None and float(p) > 0], dtype=float)
+            if len(p_arr) >= 5:
+                med_p = float(np.median(p_arr))
+                actual_m = vehicle.get("mileage")
+                if actual_m is not None and len(comparison_rows) > 0:
+                    ref_df = self.prepare_features(pd.DataFrame(comparison_rows))
+                    ref_m = ref_df["mileage"].dropna().to_numpy(dtype=float)
+                    if len(ref_m) >= 5:
+                        med_m = float(np.median(ref_m))
+                        dep_per_10k = med_p * 0.05
+                        raw_adj = ((med_m - float(actual_m)) / 10000.0) * dep_per_10k
+                        max_bonus = med_p * 0.12
+                        mileage_adj = min(raw_adj, max_bonus) if raw_adj > 0 else raw_adj
+                        expected_price = max(500.0, med_p + mileage_adj)
+
+        price = self.analyze_price_anomaly(vehicle["price"], prices, comparison_level, expected_price=expected_price)
         mileage = self.analyze_mileage_anomaly(vehicle, comparison_rows)
         specification = self.analyze_specification(vehicle, comparison_rows)
         price["flag"] = self.extreme_anomaly_flag(
@@ -711,6 +748,19 @@ class AnomalyRiskService:
         reasons = [price["reason"], mileage["reason"]]
         reasons += [f"{s['field']}: {s['reason']}" for s in specification["signals"] if s["severity"] != "normal"]
         reasons += confidence["reasons"]
+        if text_signals:
+            if text_signals.get("is_urgent"):
+                reasons.append("Seller indicates urgency / distress pricing in listing description.")
+            if text_signals.get("is_defective"):
+                reasons.append("Listing description indicates vehicle damage, defects, or substantial required repairs.")
+                if total is not None:
+                    total = max(total, 55.0)
+                    if level in {"low", "medium"}:
+                        level = "medium_high"
+            if text_signals.get("has_vin") is True:
+                reasons.append("Verified VIN confirmed.")
+            elif text_signals.get("has_vin") is False and mileage.get("direction") == "unusually_low":
+                reasons.append("Unverified VIN with unusually low mileage: potential odometer rollback risk.")
         if message and total is not None:
             reasons.append(message)
         if total is not None and market_support["rarity_penalty"]:

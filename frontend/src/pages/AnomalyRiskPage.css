@@ -223,6 +223,7 @@
 .risk-component-score > span, .risk-component-score small { color: #54666E; }
 .risk-component-score > strong { white-space: nowrap; font-size: 18px; color: #17202A; font-variant-numeric: tabular-nums; }
 .risk-component-score small { flex-basis: 100%; margin-left: 0; font-size: 14px; }
+.component-score-contribution strong { color: var(--brand-teal-dark, #0d9488); font-weight: 700; }
 .risk-detail-grid {
   display: grid;
   grid-column: 2;

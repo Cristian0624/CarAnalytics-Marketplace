@@ -27,6 +27,11 @@ class AnomalyRiskRequest(BaseModel):
     drivetrain: Category | None = None
     body_type: Category | None = None
     price: float = Field(gt=0, description="Asking price in EUR, compared with the exact database group.")
+    has_urgent_marker: bool | None = Field(default=None, description="Flag indicating urgent sale or distress pricing.")
+    has_damage_marker: bool | None = Field(default=None, description="Flag indicating vehicle damage, salvage, or defects.")
+    has_vin: bool | None = Field(default=None, description="Flag indicating a verified VIN is present.")
+    title: str | None = Field(default=None, max_length=500, description="Listing title for text signal extraction.")
+    description: str | None = Field(default=None, max_length=5000, description="Listing description for text signal extraction.")
 
     @model_validator(mode="after")
     def validate_year(self):
@@ -69,7 +74,9 @@ class PriceAnomaly(BaseModel):
     p50: float | None
     p75: float | None
     p90: float | None
+    expected_price: float | None = None
     deviation_from_p50_pct: float | None
+    deviation_from_expected_pct: float | None = None
     direction: Literal["unknown", "unusually_cheap", "unusually_expensive", "normal"]
     price_anomaly_score: Score | None
     score: Score | None

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { searchListingsPaginated } from "../api/listings";
+import { searchListingsPaginated, prefetchListingOptions } from "../api/listings";
 import { createSaved } from "../api/saved_items";
 import {
   listingFiltersToApi,
@@ -71,6 +71,10 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
   const [sortOpen, setSortOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [guideModalOpen, setGuideModalOpen] = useState(false);
+
+  useEffect(() => {
+    prefetchListingOptions();
+  }, []);
 
   useEffect(() => {
     function handleKeyDown(event) {
