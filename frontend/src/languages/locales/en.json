@@ -1167,7 +1167,8 @@
       "recommendations": "Could not load recommendations.",
       "risk": "Could not load the risk analysis."
     },
-    "scoreTooltip": "Deal score: {{score}}/100"
+    "scoreTooltip": "Deal score: {{score}}/80",
+    "viewFullPhoto": "View full photo"
   },
   "favouriteButton": {
     "remove": "Remove from favorites",

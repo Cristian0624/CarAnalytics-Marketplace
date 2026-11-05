@@ -38,8 +38,13 @@ function CarCard({
   const { comparedCars, addCar, removeCar } = useComparator();
   const isCompared = comparedCars.some(c => c.id === currentCar.id);
 
+  const [cardImageFailed, setCardImageFailed] = useState(false);
+  const [modalImageFailed, setModalImageFailed] = useState(false);
+
   useEffect(() => {
     setCurrentCar(car);
+    setCardImageFailed(false);
+    setModalImageFailed(false);
   }, [car]);
 
   const [isClosing, setIsClosing] = useState(false);
@@ -229,6 +234,32 @@ function CarCard({
           }
         }}
       >
+        <div className="car-card-image-wrap">
+          {currentCar.image_url && !cardImageFailed ? (
+            <img
+              src={currentCar.image_url}
+              alt={`${currentCar.brand || ""} ${currentCar.model || ""}`}
+              className="car-card-image"
+              loading="lazy"
+              decoding="async"
+              onError={() => setCardImageFailed(true)}
+            />
+          ) : (
+            <div className="car-card-image-placeholder">
+              <img
+                src={`/logos/${getLogoFileName(currentCar.brand)}`}
+                alt={currentCar.brand}
+                className="car-placeholder-logo"
+                loading="lazy"
+                decoding="async"
+                onError={(e) => {
+                  e.target.style.display = "none";
+                }}
+              />
+            </div>
+          )}
+        </div>
+
         <div className="car-card-content">
           <div className="car-card-title-row">
             <div>
@@ -358,97 +389,136 @@ function CarCard({
                   ✕
                 </button>
 
-                <div className="expanded-header">
-                  <div style={{ maxWidth: "50%" }}>
-                    <h2
-                      style={{
-                        textTransform: "uppercase",
-                        margin: "0 0 4px 0",
-                        fontSize: "24px",
-                        color: "#17202A",
-                        fontWeight: 800,
-                        textAlign: "left"
-                      }}
-                    >
-                      {formatValue(currentCar.brand)}{" "}
-                      {formatValue(currentCar.model)}
-
-                      {currentCar.year ? (
-                        <span
-                          style={{
-                            display: "block",
-                            fontSize: "20px",
-                            fontWeight: 700,
-                            marginTop: "4px"
-                          }}
+                <div className="expanded-hero">
+                  <div className="expanded-hero-photo-wrap">
+                    {currentCar.image_url && !modalImageFailed ? (
+                      <div className="expanded-hero-photo-box">
+                        <img
+                          src={currentCar.image_url}
+                          alt={`${currentCar.brand || ""} ${currentCar.model || ""}`}
+                          className="expanded-hero-photo"
+                          loading="lazy"
+                          decoding="async"
+                          onError={() => setModalImageFailed(true)}
+                        />
+                        <a
+                          href={currentCar.image_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="expanded-photo-zoom-btn"
+                          title={t("carCard.viewFullPhoto")}
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          ({currentCar.year})
-                        </span>
-                      ) : (
-                        ""
-                      )}
-                    </h2>
-
-                    {currentCar.generation && (
-                      <p
-                        style={{
-                          margin: "0 0 12px 0",
-                          color: "#54666E",
-                          textAlign: "left"
-                        }}
-                      >
-                        {typeof currentCar.generation === "string"
-                          ? currentCar.generation.trim()
-                          : currentCar.generation}
-                      </p>
-                    )}
-
-                    <div className="expanded-price">
-                      <span>{t("carCard.price")}</span>
-                      <strong>€{formatNumber(currentCar.price_eur)}</strong>
-                    </div>
-                  </div>
-
-                  <img
-                    src={`/logos/${getLogoFileName(currentCar.brand)}`}
-                    alt={currentCar.brand}
-                    className="expanded-car-logo" loading="lazy" decoding="async"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.style.display = "none";
-                    }}
-                  />
-
-                  {currentCar.score !== null &&
-                    currentCar.score !== undefined && (
-                      <div
-                        className={`expanded-score-circular ${getScoreClass(
-                          score
-                        )}`}
-                      >
-                        <span className="score-label">
-                          {t("carCard.accountScore")}
-                        </span>
-
-                        <div
-                          className="score-circle"
-                          style={{
-                            "--progress": `${Math.min(
-                              100,
-                              Math.max(0, (score / 80) * 100)
-                            )}%`
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <polyline points="15 3 21 3 21 9" />
+                            <polyline points="9 21 3 21 3 15" />
+                            <line x1="21" y1="3" x2="14" y2="10" />
+                            <line x1="3" y1="21" x2="10" y2="14" />
+                          </svg>
+                          <span>{t("carCard.viewFullPhoto")}</span>
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="expanded-hero-photo-placeholder">
+                        <img
+                          src={`/logos/${getLogoFileName(currentCar.brand)}`}
+                          alt={currentCar.brand}
+                          className="expanded-placeholder-logo"
+                          loading="lazy"
+                          decoding="async"
+                          onError={(e) => {
+                            e.target.style.display = "none";
                           }}
-                        >
-                          <span className="score-main">
-                            {score.toFixed(0)}
-                          </span>
-
-                          <span className="score-sub">
-                            {score.toFixed(0)}/80
-                          </span>
-                        </div>
+                        />
                       </div>
                     )}
+                  </div>
+
+                  <div className="expanded-hero-details">
+                    <div className="expanded-hero-headline">
+                      <div className="expanded-hero-title-group">
+                        <h2 className="expanded-hero-title">
+                          {formatValue(currentCar.brand)}{" "}
+                          {formatValue(currentCar.model)}
+                          {currentCar.year ? (
+                            <span className="expanded-hero-year">
+                              {" "}({currentCar.year})
+                            </span>
+                          ) : (
+                            ""
+                          )}
+                        </h2>
+
+                        {currentCar.generation && (
+                          <p className="expanded-hero-gen">
+                            {typeof currentCar.generation === "string"
+                              ? currentCar.generation.trim()
+                              : currentCar.generation}
+                          </p>
+                        )}
+                      </div>
+
+                      <img
+                        src={`/logos/${getLogoFileName(currentCar.brand)}`}
+                        alt={currentCar.brand}
+                        className="expanded-hero-brand-logo"
+                        loading="lazy"
+                        decoding="async"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.style.display = "none";
+                        }}
+                      />
+                    </div>
+
+                    <div className="expanded-hero-metrics">
+                      <div className="expanded-price">
+                        <span>{t("carCard.price")}</span>
+                        <strong>€{formatNumber(currentCar.price_eur)}</strong>
+                      </div>
+
+                      {currentCar.score !== null &&
+                        currentCar.score !== undefined && (
+                          <div
+                            className={`expanded-score-circular ${getScoreClass(
+                              score
+                            )}`}
+                          >
+                            <span className="score-label">
+                              {t("carCard.accountScore")}
+                            </span>
+
+                            <div
+                              className="score-circle"
+                              style={{
+                                "--progress": `${Math.min(
+                                  100,
+                                  Math.max(0, (score / 80) * 100)
+                                )}%`
+                              }}
+                            >
+                              <span className="score-main">
+                                {score.toFixed(0)}
+                              </span>
+
+                              <span className="score-sub">
+                                {score.toFixed(0)}/80
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="expanded-main">

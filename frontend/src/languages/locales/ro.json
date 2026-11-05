@@ -1167,7 +1167,8 @@
       "recommendations": "Nu am putut încărca recomandările.",
       "risk": "Nu am putut încărca analiza riscului."
     },
-    "scoreTooltip": "Scor ofertă: {{score}}/100"
+    "scoreTooltip": "Scor ofertă: {{score}}/80",
+    "viewFullPhoto": "Deschide fotografia completă"
   },
   "favouriteButton": {
     "remove": "Elimină din favorite",

@@ -63,6 +63,7 @@ class Listing(Base):
     mileage_was_corrected = Column(Boolean)
     class_ = Column("class", String)
     score = Column("Score", Numeric)
+    image_url = Column(String)
 
 
 class UserQuery(Base):
@@ -128,6 +129,7 @@ class CarListing(Base):
     mileage_was_corrected = Column(Boolean, nullable=True)
     class_ = Column("class", Text, nullable=True, index=True)
     score = Column("Score", Numeric, nullable=True)
+    image_url = Column(Text, nullable=True)
 
 
 class ModelClass(Base):

@@ -724,6 +724,7 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
                       className="car-card car-card-skeleton"
                       style={{ "--stagger-delay": `${idx * 55}ms` }}
                     >
+                      <div className="car-card-skeleton-image car-skeleton-bar" />
                       <div className="car-card-content">
                         <div className="car-card-title-row">
                           <div className="car-skeleton-title-group">
