@@ -1238,7 +1238,12 @@
       "risk": "Could not load the risk analysis."
     },
     "scoreTooltip": "Deal score: {{score}}/80",
-    "viewFullPhoto": "View full photo"
+    "viewFullPhoto": "View full photo",
+    "backToPrevious": "Back to {{car}}",
+    "backToOriginal": "Back to original car ({{car}})",
+    "viewingRecommendation": "From recommendations",
+    "navigatedFrom": "Opened from recommendations for {{car}}",
+    "previous": "Previous"
   },
   "favouriteButton": {
     "remove": "Remove from favorites",

@@ -1238,7 +1238,12 @@
       "risk": "Nu am putut încărca analiza riscului."
     },
     "scoreTooltip": "Scor ofertă: {{score}}/80",
-    "viewFullPhoto": "Deschide fotografia completă"
+    "viewFullPhoto": "Deschide fotografia completă",
+    "backToPrevious": "Înapoi la {{car}}",
+    "backToOriginal": "Înapoi la mașina inițială ({{car}})",
+    "viewingRecommendation": "Din recomandări",
+    "navigatedFrom": "Deschis din recomandările pentru {{car}}",
+    "previous": "Pasul anterior"
   },
   "favouriteButton": {
     "remove": "Elimină din favorite",

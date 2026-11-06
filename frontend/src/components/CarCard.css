@@ -383,6 +383,7 @@
   .car-modal-top-left {
     display: flex;
     align-items: center;
+    gap: 10px;
     min-height: 40px;
   }
 
@@ -390,6 +391,152 @@
     margin-bottom: 0 !important;
     padding-right: 0 !important;
     min-height: unset !important;
+  }
+
+  .car-modal-back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    padding: 0 14px;
+    border-radius: 10px;
+    background: var(--brand-teal-tint, rgba(20, 184, 166, 0.1));
+    border: 1px solid var(--brand-teal, #14b8a6);
+    color: var(--brand-teal-dark, #0d9488);
+    font-size: 13.5px;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    max-width: 280px;
+    flex-shrink: 0;
+  }
+
+  .car-modal-back-button svg {
+    flex-shrink: 0;
+    transition: transform 0.18s ease;
+  }
+
+  .car-modal-back-button span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .car-modal-back-button:hover {
+    background: var(--brand-teal, #14b8a6);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(20, 184, 166, 0.25);
+  }
+
+  .car-modal-back-button:hover svg {
+    transform: translateX(-2px);
+  }
+
+  .modal-history-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    background: linear-gradient(135deg, #f0fdfa 0%, #e6fffa 100%);
+    border: 1px solid rgba(20, 184, 166, 0.35);
+    border-radius: 12px;
+    padding: 10px 16px;
+    margin-bottom: 20px;
+    animation: modalHistoryIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  @keyframes modalHistoryIn {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .modal-history-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  .modal-history-badge {
+    display: inline-flex;
+    align-items: center;
+    background: var(--brand-teal, #14b8a6);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+
+  .modal-history-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0f172a;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .modal-history-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .modal-history-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px;
+    background: var(--brand-teal-dark, #0d9488);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .modal-history-btn-primary:hover {
+    background: #0f766e;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(13, 148, 136, 0.3);
+  }
+
+  .modal-history-btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 32px;
+    padding: 0 10px;
+    background: #ffffff;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .modal-history-btn-secondary:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #1e293b;
   }
 
   .car-modal-top-actions {
@@ -1191,8 +1338,27 @@
 
 .recommendations-mini-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.recommendation-card {
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+  border: 1px solid var(--brand-border);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.recommendation-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+  border-color: var(--brand-teal, #14b8a6);
+}
+
+.recommendation-card .car-card-image-wrap {
+  aspect-ratio: 16 / 10;
+  height: 155px;
 }
 
 .loading-state, .error-state {
@@ -1455,6 +1621,26 @@
   }
   .car-modal-top-bar {
     gap: 8px;
+    flex-wrap: wrap;
+  }
+  .car-modal-back-button {
+    height: 36px;
+    padding: 0 10px;
+    font-size: 12px;
+    max-width: 140px;
+  }
+  .modal-history-banner {
+    padding: 8px 10px;
+    gap: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .modal-history-actions {
+    width: 100%;
+  }
+  .modal-history-btn-primary {
+    flex: 1;
+    justify-content: center;
   }
   .car-modal-top-actions {
     gap: 6px;

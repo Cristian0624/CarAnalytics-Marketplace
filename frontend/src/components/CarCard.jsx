@@ -23,6 +23,114 @@ function formatNumber(value) {
   return number.toLocaleString();
 }
 
+function RecommendationCard({ car, onClick, isCompared, t }) {
+  const [imgFailed, setImgFailed] = useState(false);
+  const score = Number(car.score);
+
+  return (
+    <article
+      className="car-card recommendation-card"
+      onClick={onClick}
+      style={{ cursor: "pointer", margin: 0 }}
+    >
+      <div className="car-card-image-wrap">
+        {isCompared && (
+          <div
+            className="car-card-compare-badge"
+            title={t("comparatorPage.compared")}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="12"
+              height="12"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M7 16V4M7 4L3 8M7 4l4 4M17 8v12M17 20l4-4M17 20l-4-4" />
+            </svg>
+            <span>{t("comparatorPage.compared")}</span>
+          </div>
+        )}
+
+        {car.image_url && !imgFailed ? (
+          <img
+            src={car.image_url}
+            alt={`${car.brand || ""} ${car.model || ""}`}
+            className="car-card-image"
+            loading="lazy"
+            decoding="async"
+            onError={() => setImgFailed(true)}
+          />
+        ) : (
+          <div className="car-card-image-placeholder">
+            <img
+              src={`/logos/${getLogoFileName(car.brand)}`}
+              alt={car.brand}
+              className="car-card-brand-fallback-logo"
+              loading="lazy"
+              decoding="async"
+              onError={(e) => {
+                e.target.style.display = "none";
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      <div className="car-card-content">
+        <div className="car-card-title-row">
+          <div>
+            <h3>
+              {formatValue(car.brand)} {formatValue(car.model)}
+            </h3>
+
+            {car.generation && (
+              <p className="car-generation">
+                {typeof car.generation === "string"
+                  ? car.generation.trim()
+                  : car.generation}
+              </p>
+            )}
+          </div>
+
+          <img
+            src={`/logos/${getLogoFileName(car.brand)}`}
+            alt={car.brand}
+            className="collapsed-car-logo"
+            loading="lazy"
+            decoding="async"
+            onError={(ev) => {
+              ev.target.onerror = null;
+              ev.target.style.display = "none";
+            }}
+          />
+        </div>
+
+        <div className="car-details">
+          <span>{formatValue(car.year)}</span>
+          <span>
+            {formatNumber(car.mileage)} {t("carCard.mileageUnit")}
+          </span>
+        </div>
+
+        <div className="car-card-bottom">
+          <strong>€{formatNumber(car.price_eur)}</strong>
+
+          {car.score !== null && car.score !== undefined && (
+            <span className={`score-badge ${getScoreClass(score)}`}>
+              {score.toFixed(0)}
+            </span>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}
+
 function CarCard({
   car,
   expanded,
@@ -35,6 +143,7 @@ function CarCard({
   const { t } = useTranslation();
 
   const [currentCar, setCurrentCar] = useState(car);
+  const [carHistory, setCarHistory] = useState([]);
   const { comparedCars, addCar, removeCar } = useComparator();
   const isCompared = comparedCars.some(c => c.id === currentCar.id);
 
@@ -43,6 +152,7 @@ function CarCard({
 
   useEffect(() => {
     setCurrentCar(car);
+    setCarHistory([]);
     setCardImageFailed(false);
     setModalImageFailed(false);
   }, [car]);
@@ -82,6 +192,7 @@ function CarCard({
     if (!expanded) {
       setViewMode(null);
       setCurrentCar(car);
+      setCarHistory([]);
     }
   }, [expanded, car]);
 
@@ -109,7 +220,47 @@ function CarCard({
     setTimeout(() => {
       setIsClosing(false);
       onClick();
+      setCurrentCar(car);
+      setCarHistory([]);
+      setViewMode(null);
     }, 200);
+  }
+
+  function handleSelectRecommendedCar(e, recommendedCar) {
+    e.stopPropagation();
+    setCarHistory((prev) => [...prev, currentCar]);
+    setCurrentCar(recommendedCar);
+    setModalImageFailed(false);
+    setViewMode(null);
+    if (modalRef.current) {
+      modalRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
+
+  function handleGoBack(e) {
+    if (e) e.stopPropagation();
+    if (carHistory.length === 0) return;
+    const previousCar = carHistory[carHistory.length - 1];
+    setCarHistory((prev) => prev.slice(0, -1));
+    setCurrentCar(previousCar);
+    setModalImageFailed(false);
+    setViewMode(null);
+    if (modalRef.current) {
+      modalRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
+
+  function handleBackToOriginal(e) {
+    if (e) e.stopPropagation();
+    if (carHistory.length === 0) return;
+    const originalCar = carHistory[0];
+    setCarHistory([]);
+    setCurrentCar(originalCar);
+    setModalImageFailed(false);
+    setViewMode(null);
+    if (modalRef.current) {
+      modalRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
   }
 
   function handleCardClick(event) {
@@ -348,6 +499,36 @@ function CarCard({
               <div className="car-expanded-content">
                 <div className="car-modal-top-bar">
                   <div className="car-modal-top-left">
+                    {carHistory.length > 0 && (
+                      <button
+                        type="button"
+                        className="car-modal-back-button"
+                        onClick={handleGoBack}
+                        title={t("carCard.backToPrevious", {
+                          car: `${carHistory[carHistory.length - 1]?.brand || ""} ${carHistory[carHistory.length - 1]?.model || ""}`
+                        })}
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.4"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <line x1="19" y1="12" x2="5" y2="12" />
+                          <polyline points="12 19 5 12 12 5" />
+                        </svg>
+                        <span>
+                          {t("carCard.backToPrevious", {
+                            car: `${carHistory[carHistory.length - 1]?.brand || ""} ${carHistory[carHistory.length - 1]?.model || ""}`
+                          })}
+                        </span>
+                      </button>
+                    )}
                     {showFavourite && <FavouriteButton car={currentCar} />}
                   </div>
 
@@ -435,6 +616,65 @@ function CarCard({
                     </button>
                   </div>
                 </div>
+
+                {carHistory.length > 0 && (
+                  <div className="modal-history-banner">
+                    <div className="modal-history-info">
+                      <span className="modal-history-badge">
+                        {t("carCard.viewingRecommendation")}
+                      </span>
+                      <span className="modal-history-text">
+                        {t("carCard.navigatedFrom", {
+                          car: `${carHistory[0]?.brand || ""} ${carHistory[0]?.model || ""}`
+                        })}
+                      </span>
+                    </div>
+
+                    <div className="modal-history-actions">
+                      {carHistory.length > 1 && (
+                        <button
+                          type="button"
+                          className="modal-history-btn-secondary"
+                          onClick={handleGoBack}
+                          title={t("carCard.backToPrevious", {
+                            car: `${carHistory[carHistory.length - 1]?.brand || ""} ${carHistory[carHistory.length - 1]?.model || ""}`
+                          })}
+                        >
+                          ← {t("carCard.previous")}
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        className="modal-history-btn-primary"
+                        onClick={handleBackToOriginal}
+                        title={t("carCard.backToOriginal", {
+                          car: `${carHistory[0]?.brand || ""} ${carHistory[0]?.model || ""}`
+                        })}
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <polyline points="9 14 4 9 9 4" />
+                          <path d="M20 20v-7a4 4 0 0 0-4-4H4" />
+                        </svg>
+                        <span>
+                          {t("carCard.backToOriginal", {
+                            car: `${carHistory[0]?.brand || ""} ${carHistory[0]?.model || ""}`
+                          })}
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 <div className="expanded-hero">
                   <div className="expanded-hero-photo-wrap">
@@ -1011,76 +1251,17 @@ function CarCard({
                                 {recommendations
                                   .slice(0, visibleCount)
                                   .map((c) => (
-                                    <article
+                                    <RecommendationCard
                                       key={c.id}
-                                      className="car-card"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setCurrentCar(c);
-                                        setViewMode(null);
-                                      }}
-                                      style={{
-                                        cursor: "pointer",
-                                        margin: 0
-                                      }}
-                                    >
-                                      <div className="car-card-content">
-                                        <div className="car-card-title-row">
-                                          <div>
-                                            <h3>
-                                              {formatValue(c.brand)}{" "}
-                                              {formatValue(c.model)}
-                                            </h3>
-
-                                            {c.generation && (
-                                              <p className="car-generation">
-                                                {typeof c.generation ===
-                                                "string"
-                                                  ? c.generation.trim()
-                                                  : c.generation}
-                                              </p>
-                                            )}
-                                          </div>
-
-                                          <img
-                                            src={`/logos/${getLogoFileName(
-                                              c.brand
-                                            )}`}
-                                            alt={c.brand}
-                                            className="collapsed-car-logo" loading="lazy" decoding="async"
-                                            onError={(ev) => {
-                                              ev.target.onerror = null;
-                                              ev.target.style.display = "none";
-                                            }}
-                                          />
-                                        </div>
-
-                                        <div className="car-details">
-                                          <span>{formatValue(c.year)}</span>
-                                          <span>
-                                            {formatNumber(c.mileage)}{" "}
-                                            {t("carCard.mileageUnit")}
-                                          </span>
-                                        </div>
-
-                                        <div className="car-card-bottom">
-                                          <strong>
-                                            €{formatNumber(c.price_eur)}
-                                          </strong>
-
-                                          {c.score !== null &&
-                                            c.score !== undefined && (
-                                              <span
-                                                className={`score-badge ${getScoreClass(
-                                                  c.score
-                                                )}`}
-                                              >
-                                                {Number(c.score).toFixed(0)}
-                                              </span>
-                                            )}
-                                        </div>
-                                      </div>
-                                    </article>
+                                      car={c}
+                                      onClick={(e) =>
+                                        handleSelectRecommendedCar(e, c)
+                                      }
+                                      isCompared={comparedCars.some(
+                                        (comp) => comp.id === c.id
+                                      )}
+                                      t={t}
+                                    />
                                   ))}
                               </div>
 

@@ -1169,7 +1169,12 @@
       "risk": "Не удалось загрузить анализ риска."
     },
     "scoreTooltip": "Оценка предложения: {{score}}/80",
-    "viewFullPhoto": "Открыть фото целиком"
+    "viewFullPhoto": "Открыть фото целиком",
+    "backToPrevious": "Назад к {{car}}",
+    "backToOriginal": "Назад к исходному авто ({{car}})",
+    "viewingRecommendation": "Из рекомендаций",
+    "navigatedFrom": "Открыто из рекомендаций для {{car}}",
+    "previous": "Назад"
   },
   "favouriteButton": {
     "remove": "Удалить из избранного",
