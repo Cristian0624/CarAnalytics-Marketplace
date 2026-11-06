@@ -1482,53 +1482,145 @@
   }
 }
 
-/* ---------- Responsive ---------- */
+/* ---------- Responsive (Tablet & Below) ---------- */
 @media (max-width: 800px) {
-  .lf-overlay { padding: 0; top: 0; }
+  .lf-overlay {
+    position: fixed;
+    inset: 0;
+    padding: 0;
+    top: 0;
+    overflow: hidden;
+  }
   .lf-panel {
     width: 100%;
     height: 100%;
-    max-height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
     border-radius: 0;
     border: none;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
   .lf-header {
-    padding: 12px 16px;
+    flex: 0 0 54px;
+    height: 54px;
+    min-height: 54px;
+    max-height: 54px;
+    padding: 0 16px;
   }
   .lf-body {
+    flex: 1 1 0;
+    min-height: 0;
     grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: #f8fafc;
   }
   .lf-tree {
     border-right: none;
-    border-bottom: 1px solid #e2e8f0;
-    max-height: 280px;
-    padding: 14px;
+    border-bottom: 8px solid #f1f5f9;
+    background: #ffffff;
+    max-height: none;
+    padding: 16px;
+    flex: none;
+    overflow: visible;
   }
   .lf-tree .vt-list {
-    max-height: 200px;
+    max-height: 240px;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 6px;
   }
   .lf-main {
-    padding: 16px;
+    padding: 16px 16px 24px;
     overflow: visible;
+    flex: none;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
   .lf-drops {
     grid-template-columns: 1fr;
-    margin-top: 18px;
+    margin-top: 6px;
     padding-top: 0;
+    gap: 10px;
   }
   .filter-grid {
     grid-template-columns: 1fr;
   }
+  .rs-presets {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    width: 100%;
+    margin-top: 8px;
+  }
+  .rs-preset-chip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 38px;
+    padding: 6px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
+    text-align: center;
+    box-sizing: border-box;
+  }
   .lf-footer {
-    padding: 12px 16px;
+    flex: 0 0 auto;
+    position: sticky;
+    bottom: 0;
+    z-index: 100;
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.08);
+    padding: 10px 16px max(10px, env(safe-area-inset-bottom));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 64px;
+    height: auto;
+  }
+  .lf-footer-left {
+    flex: 0 0 auto;
+  }
+  .lf-footer-pills {
+    display: none;
+  }
+  .lf-reset {
+    height: 46px;
+    padding: 0 14px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    font-weight: 650;
+    border: 1.5px solid #e2e8f0;
+    background: #f8fafc;
+    color: #475569;
   }
   .lf-footer-actions {
-    width: 100%;
+    flex: 1 1 auto;
+    width: auto;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
   }
   .apply-filters-button {
-    flex: 1;
-    min-width: 140px;
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    height: 46px;
+    border-radius: 12px;
+    font-size: 14.5px;
+    font-weight: 750;
+    box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
   }
 }
 @media (prefers-reduced-motion: reduce) { .lf-panel { animation: none; } }
@@ -1910,104 +2002,326 @@
   }
 
   .lf-overlay {
-    inset: 0;
-    padding: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
-    align-items: stretch;
+    position: fixed !important;
+    inset: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    z-index: 99999 !important;
   }
 
   .lf-panel {
-    width: 100%;
-    height: 100vh;
-    height: 100dvh;
-    max-height: 100vh;
-    max-height: 100dvh;
-    min-width: 0;
-    border: 0;
-    border-radius: 0;
-    overflow-x: hidden;
+    width: 100% !important;
+    height: 100% !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    min-width: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    background: #ffffff !important;
+  }
+
+  .lf-header {
+    flex: 0 0 54px !important;
+    height: 54px !important;
+    min-height: 54px !important;
+    max-height: 54px !important;
+    padding: 0 16px !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    background: #ffffff !important;
+    box-sizing: border-box !important;
   }
 
   .lf-body {
-    min-width: 0;
-    grid-template-columns: minmax(0, 1fr);
-    overflow-x: hidden;
-  }
-
-  .lf-tree,
-  .lf-main {
-    min-width: 0;
-    box-sizing: border-box;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
+    grid-template-columns: 1fr !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    background: #f8fafc !important;
   }
 
   .lf-tree {
-    padding: 14px 16px;
+    border-right: none !important;
+    border-bottom: 8px solid #f1f5f9 !important;
+    background: #ffffff !important;
+    padding: 14px 16px !important;
+    max-height: none !important;
+    overflow: visible !important;
+    flex: none !important;
+    box-sizing: border-box !important;
+  }
+
+  .lf-tree .vt-list {
+    max-height: 220px !important;
+    background: #f8fafc !important;
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    padding: 6px !important;
   }
 
   .lf-main {
-    padding: 16px;
+    padding: 14px 14px 20px !important;
+    background: #f8fafc !important;
+    flex: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+    min-width: 0 !important;
+  }
+
+  .filter-grid.lf-single {
+    gap: 14px !important;
+  }
+
+  .filter-group {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    padding: 14px 14px 16px !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .filter-group-header {
+    height: auto !important;
+    min-height: 24px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .filter-group-header > label {
+    font-size: 15px !important;
+    font-weight: 750 !important;
+    color: #0f172a !important;
+  }
+
+  .rs-header-val {
+    font-size: 13px !important;
+    font-weight: 650 !important;
+    padding: 3px 8px !important;
+    border-radius: 6px !important;
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+  }
+
+  .rs-header-val.is-filtered {
+    background: #f0fdfa !important;
+    border-color: rgba(20, 184, 166, 0.3) !important;
+    color: var(--lf-accent) !important;
+  }
+
+  .rs-presets {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    margin-top: 10px !important;
+  }
+
+  .rs-preset-chip {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-height: 38px !important;
+    padding: 8px 10px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    border: 1.5px solid #e2e8f0 !important;
+    background: #ffffff !important;
+    color: #334155 !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
+  }
+
+  .rs-preset-chip.active {
+    background: #f0fdfa !important;
+    border-color: var(--lf-accent) !important;
+    color: var(--lf-accent) !important;
+    font-weight: 700 !important;
+    box-shadow: 0 1px 4px rgba(20, 184, 166, 0.2) !important;
+  }
+
+  .rs-track {
+    height: 28px !important;
+  }
+
+  .rs-track input[type="range"]::-webkit-slider-thumb {
+    width: 24px !important;
+    height: 24px !important;
+    border-width: 3.5px !important;
+  }
+
+  .lf-drops,
+  .lf-drops.lf-drops-more {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    margin-top: 4px !important;
+  }
+
+  .lf-drop {
+    height: 48px !important;
+    min-height: 48px !important;
+    border-radius: 12px !important;
+    padding: 0 16px !important;
+    background: #ffffff !important;
+    border: 1.5px solid #e2e8f0 !important;
+    font-size: 14.5px !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+  }
+
+  .lf-drop.has-value {
+    background: #f0fdfa !important;
+    border-color: rgba(20, 184, 166, 0.45) !important;
+  }
+
+  .lf-drop-panel {
+    position: static !important;
+    width: 100% !important;
+    margin-top: 6px !important;
+    margin-bottom: 4px !important;
+    max-height: 240px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08) !important;
+    animation: none !important;
+    border: 1.5px solid #e2e8f0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .lf-option {
+    min-height: 42px !important;
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    border-radius: 8px !important;
+  }
+
+  .lf-more-wrapper {
+    margin: 8px 0 !important;
+    width: 100% !important;
+  }
+
+  .lf-more-btn {
+    width: 100% !important;
+    height: 46px !important;
+    justify-content: center !important;
+    border-radius: 12px !important;
+    border: 1.5px solid #e2e8f0 !important;
+    background: #ffffff !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: #334155 !important;
   }
 
   .lf-footer {
-    align-items: stretch;
-    flex-wrap: wrap;
-    gap: 10px;
-    padding: 12px 16px max(12px, env(safe-area-inset-bottom));
-    border-radius: 0;
+    flex: 0 0 auto !important;
+    position: sticky !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 100 !important;
+    background: #ffffff !important;
+    border-top: 1px solid #e2e8f0 !important;
+    box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.08) !important;
+    padding: 10px 14px max(10px, env(safe-area-inset-bottom, 0px)) !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+    box-sizing: border-box !important;
+    min-height: 64px !important;
+    height: auto !important;
   }
 
   .lf-footer-left {
-    flex-wrap: wrap;
-    flex-basis: 100%;
-    gap: 8px;
+    flex: 0 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    width: auto !important;
+    min-width: 0 !important;
+    flex-basis: auto !important;
   }
 
   .lf-footer-pills {
-    flex-basis: 100%;
-    flex-wrap: wrap;
-    overflow: visible;
-    white-space: normal;
-    padding: 0;
+    display: none !important;
   }
 
-  .lf-footer-pill {
-    max-width: 100%;
-    white-space: normal;
-    overflow-wrap: anywhere;
+  .lf-reset {
+    height: 46px !important;
+    padding: 0 14px !important;
+    border-radius: 12px !important;
+    font-size: 13.5px !important;
+    font-weight: 650 !important;
+    border: 1.5px solid #e2e8f0 !important;
+    background: #f8fafc !important;
+    color: #475569 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex: none !important;
+    box-sizing: border-box !important;
   }
 
-  .filter-validation-error,
   .lf-footer-actions {
-    width: 100%;
-    min-width: 0;
-    margin-left: 0;
-  }
-
-  .lf-footer-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .lf-actions-extra.visible {
-    max-width: 100%;
-    justify-content: flex-start;
+    flex: 1 1 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    margin-left: 0 !important;
+    min-width: 0 !important;
+    width: auto !important;
+    flex-direction: row !important;
   }
 
   .apply-filters-button {
-    box-sizing: border-box;
-    max-width: 100%;
-    width: 100%;
-    min-width: 0;
-    min-height: 46px;
+    flex: 1 1 auto !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 46px !important;
+    border-radius: 12px !important;
+    font-size: 14.5px !important;
+    font-weight: 750 !important;
+    background: var(--lf-accent) !important;
+    color: #ffffff !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3) !important;
   }
 
-  .lf-drops {
-    grid-template-columns: minmax(0, 1fr);
+  .filter-validation-error {
+    position: absolute !important;
+    bottom: 100% !important;
+    left: 14px !important;
+    right: 14px !important;
+    background: #fef2f2 !important;
+    color: #dc2626 !important;
+    border: 1px solid #fecaca !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    font-size: 12.5px !important;
+    margin-bottom: 6px !important;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.1) !important;
   }
 
   .range-inputs,
-  .filter-group,
   .filter-grid {
     min-width: 0;
     max-width: 100%;
@@ -2034,14 +2348,6 @@
     height: 18px;
     font-size: 11px;
   }
-  .lf-drops,
-  .lf-drops.lf-drops-more {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-  .lf-drop {
-    min-height: 44px;
-  }
   .lf-btn-text {
     display: inline-block;
   }
@@ -2049,20 +2355,6 @@
     bottom: 12px;
     left: 10px;
     gap: 6px;
-  }
-  .lf-footer {
-    min-height: 60px;
-    padding: 10px 12px;
-  }
-  .apply-filters-button {
-    min-width: 150px;
-    height: 40px;
-    font-size: 14px;
-  }
-  .lf-reset {
-    height: 40px;
-    padding: 0 14px;
-    font-size: 13px;
   }
   .marketplace-head-title {
     font-size: clamp(20px, 6vw, 30px);
