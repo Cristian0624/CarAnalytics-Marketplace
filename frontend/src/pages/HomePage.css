@@ -169,14 +169,6 @@ h2 {
   object-fit: contain;
   filter: drop-shadow(0 15px 25px rgba(0,0,0,0.2));
   mix-blend-mode: multiply;
-  animation: float 6s ease-in-out infinite;
-  will-change: transform;
-}
-
-@keyframes float {
-  0% { transform: translate(var(--x-offset, 0px), 0); }
-  50% { transform: translate(var(--x-offset, 0px), -10px); }
-  100% { transform: translate(var(--x-offset, 0px), 0); }
 }
 
 /* PARTNERS */
@@ -217,9 +209,9 @@ h2 {
 
 .estimator-car-image {
   position: absolute;
-  top: -50px;
+  top: -65px;
   right: -140px;
-  width: clamp(400px, 26vw, 500px);
+  width: clamp(470px, 30vw, 590px);
   height: auto;
   z-index: 0;
   pointer-events: none;
@@ -624,9 +616,9 @@ h2 {
 
 .why-car-image {
   position: absolute;
-  top: -110px;
+  top: -125px;
   left: -100px;
-  width: clamp(380px, 25vw, 480px);
+  width: clamp(450px, 28vw, 550px);
   height: auto;
   z-index: 0;
   pointer-events: none;
@@ -1458,13 +1450,13 @@ h2 {
     font-size: clamp(2.2rem, 3.5vw, 3rem);
   }
   .estimator-car-image {
-    width: clamp(320px, 26vw, 400px);
-    top: -35px;
+    width: clamp(380px, 30vw, 470px);
+    top: -45px;
     right: -110px;
   }
   .why-car-image {
-    width: clamp(300px, 25vw, 380px);
-    top: -85px;
+    width: clamp(360px, 28vw, 440px);
+    top: -95px;
     left: -80px;
   }
   .why-grid {
@@ -1486,14 +1478,14 @@ h2 {
     gap: 24px;
   }
   .estimator-car-image {
-    width: clamp(230px, 30vw, 300px);
-    top: -25px;
+    width: clamp(280px, 34vw, 360px);
+    top: -30px;
     right: -80px;
     opacity: 0.85;
   }
   .why-car-image {
-    width: clamp(220px, 28vw, 290px);
-    top: -65px;
+    width: clamp(260px, 32vw, 340px);
+    top: -75px;
     left: -60px;
     opacity: 0.85;
   }
@@ -1553,14 +1545,14 @@ h2 {
     padding: 6px 14px;
   }
   .estimator-car-image {
-    width: clamp(150px, 38vw, 200px);
-    top: -15px;
+    width: clamp(180px, 42vw, 240px);
+    top: -20px;
     right: -50px;
     opacity: 0.65;
   }
   .why-car-image {
-    width: clamp(140px, 36vw, 190px);
-    top: -40px;
+    width: clamp(170px, 40vw, 230px);
+    top: -45px;
     left: -35px;
     opacity: 0.65;
   }
@@ -1637,14 +1629,14 @@ h2 {
     font-size: 1.7rem;
   }
   .estimator-car-image {
-    width: 140px;
-    top: -10px;
+    width: 165px;
+    top: -15px;
     right: -40px;
     opacity: 0.55;
   }
   .why-car-image {
-    width: 135px;
-    top: -30px;
+    width: 160px;
+    top: -35px;
     left: -30px;
     opacity: 0.55;
   }
@@ -1661,13 +1653,13 @@ h2 {
     font-size: 4.5rem;
   }
   .estimator-car-image {
-    width: clamp(540px, 28vw, 650px);
-    top: -60px;
+    width: clamp(620px, 32vw, 750px);
+    top: -80px;
     right: -160px;
   }
   .why-car-image {
-    width: clamp(520px, 26vw, 620px);
-    top: -135px;
+    width: clamp(590px, 30vw, 700px);
+    top: -150px;
     left: -120px;
   }
   .features-grid {
