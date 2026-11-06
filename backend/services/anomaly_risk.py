@@ -655,24 +655,30 @@ class AnomalyRiskService:
         if pct > 0:
             bonus = 0.0
             remaining = float(pct)
+            # 0% - 10%: +2.1 per 1%
             t1 = min(remaining, 10.0)
-            bonus += t1 * 1.7
+            bonus += t1 * 2.1
             remaining -= t1
+            # 10% - 15%: +1.8 per 1% (reaches +30 bonus -> max score 80)
             if remaining > 0:
                 t2 = min(remaining, 5.0)
-                bonus += t2 * 1.4
+                bonus += t2 * 1.8
                 remaining -= t2
+            # 15% - 18%: Plateau zone (+0) (max score 80 maintained)
             if remaining > 0:
-                t3 = min(remaining, 5.0)
+                t3 = min(remaining, 3.0)
                 remaining -= t3
+            # 18% - 23%: -1.5 per 1%
             if remaining > 0:
                 t4 = min(remaining, 5.0)
                 bonus -= t4 * 1.5
                 remaining -= t4
+            # 23% - 28%: -1.7 per 1%
             if remaining > 0:
                 t5 = min(remaining, 5.0)
                 bonus -= t5 * 1.7
                 remaining -= t5
+            # > 28%: -2.0 per 1%
             if remaining > 0:
                 bonus -= remaining * 2.0
             return bonus

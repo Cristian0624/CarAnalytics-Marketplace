@@ -208,6 +208,21 @@ class UrlAndDealScoreTests(unittest.TestCase):
         self.assertEqual(score, 80.0)
         self.assertEqual(level, "good")
 
+    def test_deal_score_mod_plateau_and_max_80(self):
+        # 0% cheaper -> bonus 0.0, score 50.0
+        self.assertAlmostEqual(self.service._deal_score_mod(0.0), 0.0)
+        # 10% cheaper -> 10 * 2.1 = 21.0, score 71.0
+        self.assertAlmostEqual(self.service._deal_score_mod(10.0), 21.0)
+        # 15% cheaper -> 21.0 + 5 * 1.8 = 30.0, reaches max score 80.0
+        self.assertAlmostEqual(self.service._deal_score_mod(15.0), 30.0)
+        # Plateau zone (15% to 18%) -> maintains +30.0 bonus (score 80.0)
+        self.assertAlmostEqual(self.service._deal_score_mod(16.5), 30.0)
+        self.assertAlmostEqual(self.service._deal_score_mod(18.0), 30.0)
+        # 20% cheaper -> 30.0 - (2.0 * 1.5) = 27.0
+        self.assertAlmostEqual(self.service._deal_score_mod(20.0), 27.0)
+        # 23% cheaper -> 30.0 - (5.0 * 1.5) = 22.5
+        self.assertAlmostEqual(self.service._deal_score_mod(23.0), 22.5)
+
     def test_price_estimate_from_url_uses_database_first_and_returns_estimate(self):
         with TestClient(self.app) as client:
             res = client.post("/price-estimate/from-url", json={"url": "https://999.md/ro/10000000"})
