@@ -1279,6 +1279,7 @@
     "min": "Min",
     "max": "Max",
     "classDisabledHint": "Remove the model to choose car classes.",
+    "variantsSelected": "{{count}} options selected",
     "errors": {
       "modelAndClass": "Choose either a model or car class(es).",
       "modelNeedsBrand": "Choose the brand before the model.",

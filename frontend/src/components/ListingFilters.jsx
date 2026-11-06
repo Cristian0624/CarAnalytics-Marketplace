@@ -972,6 +972,16 @@ export default function ListingFilters({
                       const isOpen =
                         drop === d.key;
 
+                      const labelText =
+                        selected.length === 0
+                          ? t(`listing-Filters.${d.titleKey}`)
+                          : selected.length === 1
+                          ? selected[0]
+                          : t("listing-Filters.variantsSelected", {
+                              count: selected.length,
+                              defaultValue: `${selected.length} variante alese`
+                            });
+
                       return (
                         <div
                           key={d.key}
@@ -1000,18 +1010,11 @@ export default function ListingFilters({
                                     : ""
                                 }
                               >
-                                {selected.length === 0
-                                  ? t(
-                                      `listing-Filters.${d.titleKey}`
-                                    )
-                                  : selected[0]}
+                                {labelText}
                               </span>
                             </div>
 
                             <div className="lf-drop-end">
-                              {selected.length > 1 && (
-                                <span className="lf-drop-badge">+{selected.length - 1}</span>
-                              )}
                               <span
                                 className={`lf-arrow ${
                                   isOpen ? "up" : ""
@@ -1035,11 +1038,10 @@ export default function ListingFilters({
                                         isSelected ? "selected" : ""
                                       }`}
                                       onClick={() => {
-                                        update(
-                                          d.key,
-                                          isSelected ? [] : [option]
-                                        );
-                                        setDrop(null);
+                                        const next = isSelected
+                                          ? selected.filter((item) => item !== option)
+                                          : [...selected, option];
+                                        update(d.key, next);
                                       }}
                                     >
                                       <span>{option}</span>
@@ -1103,6 +1105,16 @@ export default function ListingFilters({
                           const isOpen = drop === d.key;
                           const isDisabled = d.key === "class" && classDisabled;
 
+                          const labelText =
+                            selected.length === 0
+                              ? t(`listing-Filters.${d.titleKey}`)
+                              : selected.length === 1
+                              ? selected[0]
+                              : t("listing-Filters.variantsSelected", {
+                                  count: selected.length,
+                                  defaultValue: `${selected.length} variante alese`
+                                });
+
                           return (
                             <div
                               key={d.key}
@@ -1132,18 +1144,11 @@ export default function ListingFilters({
                                       selected.length ? "selected-value" : ""
                                     }
                                   >
-                                    {selected.length === 0
-                                      ? t(`listing-Filters.${d.titleKey}`)
-                                      : selected[0]}
+                                    {labelText}
                                   </span>
                                 </div>
 
                                 <div className="lf-drop-end">
-                                  {selected.length > 1 && (
-                                    <span className="lf-drop-badge">
-                                      +{selected.length - 1}
-                                    </span>
-                                  )}
                                   <span
                                     className={`lf-arrow ${
                                       isOpen ? "up" : ""
@@ -1167,11 +1172,10 @@ export default function ListingFilters({
                                           isSelected ? "selected" : ""
                                         }`}
                                         onClick={() => {
-                                          update(
-                                            d.key,
-                                            isSelected ? [] : [option]
-                                          );
-                                          setDrop(null);
+                                          const next = isSelected
+                                            ? selected.filter((x) => x !== option)
+                                            : [...selected, option];
+                                          update(d.key, next);
                                         }}
                                       >
                                         <span>{option}</span>

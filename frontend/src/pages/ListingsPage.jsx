@@ -33,17 +33,48 @@ function shuffleListings(items) {
 
 export default function ListingsPage() {
   const location = useLocation();
+
+  let initialFilters = location.state?.savedFilters;
+  let initialPage = location.state?.savedPage;
+  let initialSortBy = location.state?.savedSortBy;
+  let initialSortOrder = location.state?.savedSortOrder;
+
+  if (!initialFilters && !location.state?.clearSaved) {
+    try {
+      const stored = sessionStorage.getItem("listings_active_state");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === "object") {
+          initialFilters = parsed.filters;
+          initialPage = parsed.page;
+          initialSortBy = parsed.sort_by;
+          initialSortOrder = parsed.sort_order;
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
   return (
     <ListingSearch
       key={location.key}
-      initialFilters={location.state?.savedFilters}
-      initialPage={location.state?.savedPage}
+      initialFilters={initialFilters}
+      initialPage={initialPage}
+      initialSortBy={initialSortBy}
+      initialSortOrder={initialSortOrder}
       keepFiltersClosed={location.state?.keepFiltersClosed}
     />
   );
 }
 
-function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = false }) {
+function ListingSearch({
+  initialFilters,
+  initialPage = 1,
+  initialSortBy,
+  initialSortOrder,
+  keepFiltersClosed = false,
+}) {
   const { t } = useTranslation();
   const { comparedCars } = useComparator();
 
@@ -54,8 +85,10 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
   // Draft edits never change the filters used for pagination or saving.
   const [query, setQuery] = useState(() => ({
     filters: listingFiltersToApi(listingFiltersToForm(initialFilters)),
-    page: initialPage,
-    applied: Boolean(initialFilters),
+    page: initialPage || 1,
+    applied: Boolean(initialFilters && Object.keys(initialFilters).length > 0),
+    sort_by: initialSortBy,
+    sort_order: initialSortOrder,
   }));
 
   const [data, setData] = useState({
@@ -296,12 +329,35 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
     };
   }, [filters]);
 
+  useEffect(() => {
+    try {
+      const hasContent =
+        Boolean(query.filters && Object.keys(query.filters).length > 0) ||
+        Boolean(query.sort_by) ||
+        (query.page && query.page > 1);
+
+      if (hasContent) {
+        sessionStorage.setItem(
+          "listings_active_state",
+          JSON.stringify({
+            filters: query.filters,
+            sort_by: query.sort_by,
+            sort_order: query.sort_order,
+            page: query.page,
+          })
+        );
+      } else {
+        sessionStorage.removeItem("listings_active_state");
+      }
+    } catch {
+      // ignore
+    }
+  }, [query]);
+
   function scrollToResults() {
     document
       .getElementById("listings-results-start")
       ?.scrollIntoView({ behavior: "smooth" });
-
-      
   }
 
   function scrollToTop() {
@@ -329,16 +385,21 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
       return;
     }
 
-    setQuery({
+    setQuery((prev) => ({
+      ...prev,
       filters: listingFiltersToApi(values),
       page: 1,
       applied: true,
-    });
-
-    scrollToResults();
+    }));
   }
 
   function handleReset() {
+    try {
+      sessionStorage.removeItem("listings_active_state");
+    } catch {
+      // ignore
+    }
+
     setFilters(emptyListingFilters());
 
     setQuery({
@@ -460,7 +521,7 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
           onReset={handleReset}
           loading={loading}
           actions={saveAction}
-          initiallyOpen={Boolean(initialFilters) && !keepFiltersClosed}
+          initiallyOpen={Boolean(location.state?.openFilters)}
           resultCount={filterCount}
           countLoading={countLoading}
           sortingActive={Boolean(query.sort_by)}
@@ -664,7 +725,12 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
           floatingCompare={
             <Link 
               to="/comparator" 
-              state={{ savedFilters: query.filters, savedPage: query.page }} 
+              state={{ 
+                savedFilters: query.filters, 
+                savedPage: query.page,
+                savedSortBy: query.sort_by,
+                savedSortOrder: query.sort_order,
+              }} 
               className="floating-compare-btn"
               title={t("comparatorPage.openComparison", { count: comparedCars.length })}
             >

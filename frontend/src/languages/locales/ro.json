@@ -1279,6 +1279,7 @@
     "min": "Min",
     "max": "Max",
     "classDisabledHint": "Eliminați modelul pentru a alege clasele mașinii.",
+    "variantsSelected": "{{count}} variante alese",
     "errors": {
       "modelAndClass": "Alegeți fie modelul, fie clasa/clasele mașinii.",
       "modelNeedsBrand": "Alegeți marca înainte de model.",
