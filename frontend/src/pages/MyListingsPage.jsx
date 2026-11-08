@@ -9,8 +9,7 @@ import {
 } from "../api/analysis";
 
 import { useAuth } from "../context/AuthContext";
-import { savedPaths } from "../api/saved_items";
-import BackgroundTriangles from "../components/BackgroundTriangles";
+import AccountLayout from "../components/AccountLayout";
 
 import "./SavedItemsPage.css";
 import "./MyListingsPage.css";
@@ -222,10 +221,7 @@ export default function MyListingsPage() {
   }
 
   return (
-    <main className="saved-page">
-      <BackgroundTriangles />
-
-      <div className="saved-container">
+    <AccountLayout active="myListings">
         <header className="saved-heading">
           <span className="saved-eyebrow">
             {t("myListings.account")}
@@ -238,37 +234,6 @@ export default function MyListingsPage() {
           </p>
         </header>
 
-        <nav
-          className="saved-tabs"
-          aria-label={t("myListings.tabs.savedItems")}
-        >
-          <Link to={savedPaths.favourites}>
-            {t("myListings.tabs.favourites")}
-          </Link>
-
-          <Link to={savedPaths.risks}>
-            {t("myListings.tabs.risks")}
-          </Link>
-
-          <Link to={savedPaths.searches}>
-            {t("myListings.tabs.searches")}
-          </Link>
-
-          <Link to="/saved-comparisons">
-            {t("myListings.tabs.comparisons", { defaultValue: "Comparări Salvate" })}
-          </Link>
-
-          <Link to="/profile">
-            {t("myListings.tabs.profile")}
-          </Link>
-
-          <Link
-            to="/my-listings"
-            aria-current="page"
-          >
-            {t("myListings.tabs.myListings")}
-          </Link>
-        </nav>
 
         {error && (
           <p
@@ -858,7 +823,6 @@ export default function MyListingsPage() {
             </div>
           </div>
         )}
-      </div>
-    </main>
+    </AccountLayout>
   );
 }

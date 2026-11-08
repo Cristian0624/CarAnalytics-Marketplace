@@ -320,14 +320,6 @@ function Header() {
                 </div>
               </div>
 
-              <Link
-                to="/create-listing"
-                className="mobile-create-listing-btn"
-                onClick={() => setMenuOpen(false)}
-              >
-                <span>+</span> {t("authButton.createListing", "Create Listing")}
-              </Link>
-
               <div className="mobile-user-links">
                 <Link
                   to="/profile"
@@ -335,13 +327,6 @@ function Header() {
                   onClick={() => setMenuOpen(false)}
                 >
                   <span>👤</span> {t("authButton.profile", "My Profile")}
-                </Link>
-                <Link
-                  to="/my-listings"
-                  className="mobile-user-link"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <span>📋</span> {t("authButton.myListings", "My Listings")}
                 </Link>
                 <Link
                   to="/favourites"

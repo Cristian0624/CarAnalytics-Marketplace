@@ -1,7 +1,18 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { describeFilters, emptyListingFilters, listingFiltersToApi, listingFiltersToForm } from "../src/utils/listingFilters.js";
-import { findFavourite, savedError } from "../src/utils/savedItems.js";
+import { favouriteCar, findFavourite, savedError } from "../src/utils/savedItems.js";
+
+test("favourites use current photos for older snapshots and retain archived photos", () => {
+  const oldSnapshot = { brand: "Toyota", model: "Yaris", price_eur: 5000 };
+  const current = { price_eur: 4800, image_url: "/current.jpg" };
+  assert.equal(favouriteCar({ snapshot: oldSnapshot, current_listing: current }).image_url, "/current.jpg");
+  assert.equal(favouriteCar({ snapshot: oldSnapshot, current_listing: current }).price_eur, 4800);
+  assert.equal(favouriteCar({ snapshot: { ...oldSnapshot, image_url: "/saved.jpg" }, current_listing: null }).image_url, "/saved.jpg");
+  assert.equal(favouriteCar({ snapshot: { image_url: "/saved.jpg" }, current_listing: { image_url: null } }).image_url, "/saved.jpg");
+  assert.equal(favouriteCar({ snapshot: oldSnapshot }).image_url, null);
+  assert.equal(oldSnapshot.price_eur, 5000);
+});
 
 test("saved filters round trip all supported fields including classes and zero", () => {
   const filters = { brand: ["BMW", "Toyota"], class: ["D-segment (Mid-size)"],

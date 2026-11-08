@@ -1,6 +1,8 @@
 .comparator-page {
+  width: 100%;
   padding: 40px 20px;
-  max-width: 1200px;
+  max-width: 1480px;
+  box-sizing: border-box;
   margin: 0 auto;
 }
 
@@ -73,10 +75,13 @@
 }
 
 .comparator-table {
-  width: 100%;
+  width: calc(var(--label-width, 200px) + var(--car-count) * var(--car-width, 280px));
   border-collapse: collapse;
-  min-width: 800px;
+  table-layout: fixed;
 }
+
+.comparison-label-column { width: var(--label-width, 200px); }
+.comparison-car-column { width: var(--car-width, 280px); }
 
 .comparator-table th,
 .comparator-table td {
@@ -91,11 +96,9 @@
   background: #F8FAFC;
   font-weight: 600;
   color: #475569;
-  width: 20%;
 }
 
 .comparator-table td {
-  width: calc(80% / var(--car-count));
   color: #17202A;
 }
 
@@ -112,6 +115,7 @@
 .car-header-cell {
   position: relative;
   text-align: center !important;
+  padding-top: 44px !important;
 }
 
 .car-header-cell img {

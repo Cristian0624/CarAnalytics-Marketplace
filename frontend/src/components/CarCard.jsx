@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import "./CarCard.css";
+import { CompareIcon } from "./ComparisonIcons";
+import "./ComparisonSelection.css";
 import { getLogoFileName, getScoreClass } from "../utils/carCard";
 import FavouriteButton from "./FavouriteButton";
 import { assessAnomalyRisk } from "../api/anomaly_risk";
@@ -145,7 +147,7 @@ function CarCard({
   const [currentCar, setCurrentCar] = useState(car);
   const [carHistory, setCarHistory] = useState([]);
   const { comparedCars, addCar, removeCar } = useComparator();
-  const isCompared = comparedCars.some(c => c.id === currentCar.id);
+  const isCompared = comparedCars.some(c => String(c.id) === String(currentCar.id));
 
   const [cardImageFailed, setCardImageFailed] = useState(false);
   const [modalImageFailed, setModalImageFailed] = useState(false);
@@ -386,6 +388,21 @@ function CarCard({
         }}
       >
         <div className="car-card-image-wrap">
+          <button
+            type="button"
+            className={`car-card-quick-compare${isCompared ? " is-selected" : ""}`}
+            aria-pressed={isCompared}
+            aria-label={t(isCompared ? "comparatorPage.removeFromComparison" : "comparatorPage.addToComparison")}
+            title={t(isCompared ? "comparatorPage.removeFromComparison" : "comparatorPage.addToComparison")}
+            onClick={event => {
+              event.stopPropagation();
+              if (isCompared) removeCar(currentCar.id);
+              else addCar(currentCar);
+            }}
+          >
+            <CompareIcon />
+            <span>{t(isCompared ? "comparatorPage.compared" : "comparatorPage.compare")}</span>
+          </button>
           {isCompared && (
             <div
               className="car-card-compare-badge"

@@ -525,7 +525,7 @@
       "hints": [
         "Filtrează ofertele din Filtre avansate.",
         "Alege din Afișare cum sunt ordonate rezultatele.",
-        "Selectează până la 3 mașini și apasă Compară ca să le vezi una lângă alta."
+        "Adaugă mașini folosind butonul de comparare de pe fiecare anunț, apoi deschide comparația ca să le vezi una lângă alta."
       ]
     }
   },
@@ -750,7 +750,7 @@
       "compareCount": "Compară {{count}} mașini"
     },
     "badges": {
-      "favourite": "★ FAVORIT",
+      "favourite": "FAVORIT",
       "removedFromMarket": "Scos De Pe Piață",
       "risk": "ANALIZĂ",
       "search": "CĂUTARE",
@@ -797,7 +797,7 @@
       }
     },
     "detail": {
-      "back": "← Toate salvările",
+      "back": "Toate salvările",
       "savedAt": "Salvat la {{date}}",
       "savedCriteria": "Criterii salvate",
       "searchDescription": "Anunțurile se actualizează la deschiderea căutării.",
@@ -1334,11 +1334,12 @@
   },
   "comparatorPage": {
     "title": "Comparare",
-    "titleCount": "Comparare ({{count}}/3)",
+    "titleCount": "Comparație ({{count}})",
     "emptyTitle": "Nu ai nicio mașină în comparare",
-    "emptyDescription": "Compară până la 3 mașini simultan! Adaugă mașinile preferate din piață pentru a le analiza în detaliu specificațiile, prețul și evaluarea de risc, astfel încât să faci cea mai bună alegere.",
+    "emptyDescription": "Adaugă mașini din piață pentru a compara specificațiile, prețurile și analizele de risc, una lângă alta.",
     "findCars": "Găsește mașini pe piață",
-    "backToMarket": "< Înapoi la piață",
+    "backToMarket": "Înapoi la piață",
+    "backToSaved": "Înapoi la comparările salvate",
     "saveComparison": "Salvează compararea",
     "specs": "Specificații",
     "price": "Preț",
@@ -1357,7 +1358,49 @@
     "compared": "În comparare",
     "addToComparison": "Adaugă în comparare",
     "removeFromComparison": "Elimină din comparare",
-    "openComparison": "Deschide comparare ({{count}}/3 mașini)"
+    "openComparison": "Deschide comparația ({{count}} mașini)",
+    "clearSelection": "Golește comparația",
+    "selectionHint": "Selectează o mașină pentru a ajunge la coloana ei. Derulează orizontal pentru a vedea mai multe.",
+    "selectionTitle": "Mașini selectate",
+    "present": "prezent",
+    "values": {
+      "class": {
+        "A-segment (Mini)": "A (Mini)",
+        "B-segment (Supermini)": "B (Clasă mică)",
+        "C-segment (Compact)": "C (Compactă)",
+        "D-segment (Mid-size)": "D (Clasă medie)",
+        "E (Groot Midden)": "E (Clasă medie superioară)",
+        "F (Groot)": "F (Clasă mare)",
+        "G (Sportief)": "G (Coupé sportiv)",
+        "H (Sport)": "H (Sport)",
+        "I (Luxe)": "I (Lux)",
+        "J (Lower-Mpv)": "J (Monovolum compact)",
+        "K (Upper-Mpv)": "K (Monovolum mare)",
+        "L (Lower-Suv)": "L (SUV compact)",
+        "M (Upper-Suv)": "M (SUV mare)",
+        "N (Bestelauto)": "N (Autoutilitară)"
+      },
+      "registration_country": {
+        "Republica Moldova": "Republica Moldova",
+        "Moldova": "Republica Moldova",
+        "Germania": "Germania",
+        "România": "România",
+        "Franța": "Franța",
+        "Italia": "Italia",
+        "Altele": "Altele",
+        "Bulgaria": "Bulgaria",
+        "Ucraina": "Ucraina",
+        "Rusia": "Rusia",
+        "Lituania": "Lituania",
+        "Polonia": "Polonia",
+        "SUA": "SUA",
+        "Belgia": "Belgia",
+        "Olanda": "Țările de Jos",
+        "Elveția": "Elveția",
+        "Marea Britanie": "Regatul Unit",
+        "Spania": "Spania"
+      }
+    }
   },
   "assessment": {
     "locale": "ro-RO",
@@ -1699,7 +1742,7 @@
         "2": {
           "shortTitle": "Comparator 3 Mașini",
           "title": "3. Comparare Side-by-Side pentru Până la 3 Mașini",
-          "description": "Adaugi până la 3 vehicule în comparator și analizezi în paralel prețul, scorul de ofertă, scorul de anomalie (risc) și toate specificațiile tehnice.",
+          "description": "Adaugi vehicule în comparator și analizezi în paralel prețul, scorul de ofertă, scorul de anomalie (risc) și toate specificațiile tehnice.",
           "badges": [
             "Până la 3 Mașini",
             "Scor + Risc în Paralel",

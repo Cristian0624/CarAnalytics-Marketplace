@@ -4,17 +4,10 @@ import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../context/AuthContext";
 import { apiRequest } from "../api/api";
-import BackgroundTriangles from "../components/BackgroundTriangles";
+import AccountLayout from "../components/AccountLayout";
 import PasswordInput from "../components/PasswordInput";
 
 import "./SavedItemsPage.css";
-
-const savedPaths = {
-  favourites: "/favourites",
-  risks: "/saved-risk-assessments",
-  searches: "/saved-searches",
-  myListings: "/my-listings",
-};
 
 export default function ProfilePage() {
   const { t } = useTranslation();
@@ -133,10 +126,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="saved-page">
-      <BackgroundTriangles />
-
-      <div className="saved-container">
+    <AccountLayout active="profile">
         <header className="saved-heading">
           <span className="saved-eyebrow">
             {t("profile.account")}
@@ -149,39 +139,6 @@ export default function ProfilePage() {
           </p>
         </header>
 
-        <nav
-          className="saved-tabs"
-          aria-label={t(
-            "profile.tabs.savedItems"
-          )}
-        >
-          <Link to={savedPaths.favourites}>
-            {t("profile.tabs.favourites")}
-          </Link>
-
-          <Link to={savedPaths.risks}>
-            {t("profile.tabs.risks")}
-          </Link>
-
-          <Link to={savedPaths.searches}>
-            {t("profile.tabs.searches")}
-          </Link>
-
-          <Link to="/saved-comparisons">
-            {t("profile.tabs.comparisons", { defaultValue: "Comparări Salvate" })}
-          </Link>
-
-          <Link
-            to="/profile"
-            aria-current="page"
-          >
-            {t("profile.tabs.profile")}
-          </Link>
-
-          <Link to={savedPaths.myListings}>
-            {t("profile.tabs.myListings")}
-          </Link>
-        </nav>
 
         {error && (
           <p
@@ -517,7 +474,6 @@ export default function ProfilePage() {
             </form>
           </section>
         )}
-      </div>
-    </main>
+    </AccountLayout>
   );
 }
