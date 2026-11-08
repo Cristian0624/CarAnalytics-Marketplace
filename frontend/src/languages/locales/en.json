@@ -525,7 +525,7 @@
       "hints": [
         "Filter listings in Advanced filters.",
         "Use Sort to choose how results are ordered.",
-        "Select up to 3 cars and press Compare to see them side by side."
+        "Add cars using the comparison button on each listing, then open Compare to see them side by side."
       ]
     }
   },
@@ -750,7 +750,7 @@
       "compareCount": "Compare {{count}} cars"
     },
     "badges": {
-      "favourite": "★ FAVORITE",
+      "favourite": "FAVORITE",
       "removedFromMarket": "Removed from market",
       "risk": "ANALYSIS",
       "search": "SEARCH",
@@ -797,7 +797,7 @@
       }
     },
     "detail": {
-      "back": "← All saved items",
+      "back": "All saved items",
       "savedAt": "Saved at {{date}}",
       "savedCriteria": "Saved criteria",
       "searchDescription": "Listings are updated when you open the search.",
@@ -1334,11 +1334,12 @@
   },
   "comparatorPage": {
     "title": "Comparison",
-    "titleCount": "Comparison ({{count}}/3)",
+    "titleCount": "Comparison ({{count}})",
     "emptyTitle": "You have no cars in comparison",
-    "emptyDescription": "Compare up to 3 cars simultaneously! Add your favorite vehicles from the market to analyze their specifications, price, and risk evaluation in detail, so you can make the best choice.",
+    "emptyDescription": "Add cars from the market to compare their specifications, prices and risk assessments side by side.",
     "findCars": "Find cars on the market",
-    "backToMarket": "< Back to market",
+    "backToMarket": "Back to market",
+    "backToSaved": "Back to saved comparisons",
     "saveComparison": "Save comparison",
     "specs": "Specifications",
     "price": "Price",
@@ -1357,7 +1358,49 @@
     "compared": "Compared",
     "addToComparison": "Add to comparison",
     "removeFromComparison": "Remove from comparison",
-    "openComparison": "Open comparison ({{count}}/3 cars)"
+    "openComparison": "Open comparison ({{count}} cars)",
+    "clearSelection": "Clear comparison",
+    "selectionHint": "Select a car to jump to its column. Scroll across to see more cars.",
+    "selectionTitle": "Selected cars",
+    "present": "present",
+    "values": {
+      "class": {
+        "A-segment (Mini)": "A (Mini)",
+        "B-segment (Supermini)": "B (Supermini)",
+        "C-segment (Compact)": "C (Compact)",
+        "D-segment (Mid-size)": "D (Mid-size)",
+        "E (Groot Midden)": "E (Executive)",
+        "F (Groot)": "F (Large)",
+        "G (Sportief)": "G (Sports coupé)",
+        "H (Sport)": "H (Sports car)",
+        "I (Luxe)": "I (Luxury)",
+        "J (Lower-Mpv)": "J (Compact MPV)",
+        "K (Upper-Mpv)": "K (Large MPV)",
+        "L (Lower-Suv)": "L (Compact SUV)",
+        "M (Upper-Suv)": "M (Large SUV)",
+        "N (Bestelauto)": "N (Van)"
+      },
+      "registration_country": {
+        "Republica Moldova": "Republic of Moldova",
+        "Moldova": "Republic of Moldova",
+        "Germania": "Germany",
+        "România": "Romania",
+        "Franța": "France",
+        "Italia": "Italy",
+        "Altele": "Other",
+        "Bulgaria": "Bulgaria",
+        "Ucraina": "Ukraine",
+        "Rusia": "Russia",
+        "Lituania": "Lithuania",
+        "Polonia": "Poland",
+        "SUA": "USA",
+        "Belgia": "Belgium",
+        "Olanda": "Netherlands",
+        "Elveția": "Switzerland",
+        "Marea Britanie": "United Kingdom",
+        "Spania": "Spain"
+      }
+    }
   },
   "assessment": {
     "locale": "en-GB",
@@ -1699,7 +1742,7 @@
         "2": {
           "shortTitle": "3-Car Comparator",
           "title": "3. Side-by-Side Comparison for Up to 3 Cars",
-          "description": "Add up to 3 vehicles to the comparator to evaluate asking price, deal score, anomaly risk score, and full technical specifications side by side.",
+          "description": "Add vehicles to the comparator to evaluate asking price, deal score, anomaly risk score, and full technical specifications side by side.",
           "badges": [
             "Up to 3 Vehicles",
             "Score + Risk Side-by-Side",

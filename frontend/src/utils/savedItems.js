@@ -34,6 +34,14 @@ export function findFavourite(items, car) {
   );
 }
 
+export function favouriteCar(item) {
+  return {
+    ...item.snapshot,
+    ...item.current_listing,
+    image_url: item.current_listing?.image_url || item.snapshot?.image_url || null,
+  };
+}
+
 export const savedDate = (value, language = "ro") =>
   new Intl.DateTimeFormat(language, {
     dateStyle: "medium",

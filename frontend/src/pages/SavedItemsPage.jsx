@@ -10,7 +10,6 @@ import {
   updateSaved,
 } from "../api/saved_items";
 import { useAuth } from "../context/AuthContext";
-import { getLogoFileName, getScoreClass, getAnomalyScoreClass } from "../utils/carCard";
 import { useFavourites } from "../context/FavouritesContext";
 import {
   describeFilters,
@@ -18,11 +17,13 @@ import {
   listingFiltersToForm,
   listingFilterError,
 } from "../utils/listingFilters";
-import { savedDate, savedError } from "../utils/savedItems";
+import { favouriteCar, savedDate, savedError } from "../utils/savedItems";
 import AnomalyRiskResults from "../components/AnomalyRiskResults";
 import CarCard from "../components/CarCard";
 import ListingFilters from "../components/ListingFilters";
-import BackgroundTriangles from "../components/BackgroundTriangles";
+import AccountLayout from "../components/AccountLayout";
+import SavedEntry from "../components/SavedEntry";
+import SavedIcon from "../components/SavedIcon";
 import { useComparator } from "../context/ComparatorContext";
 import "./AnomalyRiskPage.css";
 import "./SavedItemsPage.css";
@@ -32,26 +33,8 @@ export default function SavedItemsPage({ kind }) {
   const { user, loading } = useAuth();
   const { id } = useParams();
 
-  const allPaths = {
-    ...savedPaths,
-    comparisons: "/saved-comparisons",
-    profile: "/profile",
-    myListings: "/my-listings",
-  };
-
-  const tabKeys = [
-    "favourites",
-    "risks",
-    "searches",
-    "comparisons",
-    "profile",
-    "myListings",
-  ];
   return (
-    <main className="saved-page">
-      <BackgroundTriangles />
-
-      <div className="saved-container">
+    <AccountLayout active={kind}>
         <header className="saved-heading">
           <span className="saved-eyebrow">
             {t("savedItems.account")}
@@ -66,27 +49,14 @@ export default function SavedItemsPage({ kind }) {
           </p>
         </header>
 
-        <nav
-          className="saved-tabs"
-          aria-label={t("savedItems.tabs.ariaLabel")}
-        >
-          {tabKeys.map((key) => (
-            <Link
-              key={key}
-              to={allPaths[key]}
-              aria-current={key === kind ? "page" : undefined}
-            >
-              {t(`savedItems.titles.${key}`)}
-            </Link>
-          ))}
-        </nav>
 
         {loading ? (
-          <p role="status">
+          <p className="saved-loading" role="status">
             {t("savedItems.loading")}
           </p>
         ) : !user ? (
           <div className="saved-empty">
+            <div className="saved-empty-symbol"><SavedIcon name={kind} /></div>
             <h2>
               {t("savedItems.loginRequired.title")}
             </h2>
@@ -114,8 +84,7 @@ export default function SavedItemsPage({ kind }) {
             kind={kind}
           />
         )}
-      </div>
-    </main>
+    </AccountLayout>
   );
 }
 
@@ -129,10 +98,20 @@ function RemovedListingBadge({ item }) {
 }
 
 function ItemSummary({ kind, item }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   if (kind === "comparisons") {
-    return <p style={{color: '#64748B'}}>{t("savedItems.summary.compareCount", { count: item.filters?.cars?.length || 0 })}</p>;
+    const cars = item.filters?.cars || [];
+    return (
+      <>
+        <p>{t("savedItems.summary.compareCount", { count: cars.length })}</p>
+        <ul className="saved-comparison-preview">
+          {cars.slice(0, 3).map((car, index) => (
+            <li key={car.id ?? index}><span>{car.brand} {car.model}</span><small>{car.year}</small></li>
+          ))}
+        </ul>
+      </>
+    );
   }
 
   if (kind === "searches") {
@@ -148,12 +127,12 @@ function ItemSummary({ kind, item }) {
   const car =
     kind === "risks"
       ? item.input
-      : item.snapshot;
+      : favouriteCar(item);
 
   return (
     <>
       <p>
-        {[car.brand, car.model, car.generation, car.year]
+        {(kind === "favourites" ? [car.generation, car.year] : [car.brand, car.model, car.generation, car.year])
           .filter(Boolean)
           .join(" · ")}
       </p>
@@ -162,7 +141,7 @@ function ItemSummary({ kind, item }) {
         <strong className="saved-price">
           {car.price_eur == null
             ? t("savedItems.summary.unspecifiedPrice")
-            : `${Number(car.price_eur).toLocaleString("ro-RO")} €`}
+            : `${Number(car.price_eur).toLocaleString(i18n.resolvedLanguage || i18n.language)} €`}
         </strong>
       )}
 
@@ -173,7 +152,7 @@ function ItemSummary({ kind, item }) {
             : t("savedItems.summary.anomalyScore", {
                 score: Number(
                   item.result.anomaly_score
-                ).toLocaleString("ro-RO", {
+                ).toLocaleString(i18n.resolvedLanguage || i18n.language, {
                   maximumFractionDigits: 1,
                 }),
               })}
@@ -186,8 +165,8 @@ function ItemSummary({ kind, item }) {
 function itemTitle(kind, item) {
   return kind === "favourites"
     ? [
-        item.snapshot.brand,
-        item.snapshot.model,
+        favouriteCar(item).brand,
+        favouriteCar(item).model,
       ]
         .filter(Boolean)
         .join(" ")
@@ -207,8 +186,6 @@ function SavedCollection({ kind }) {
   const [busy, setBusy] = useState(false);
 
   const favourites = useFavourites();
-  const navigate = useNavigate();
-  const { loadComparator } = useComparator();
 
   const favouriteRevision =
     kind === "favourites"
@@ -319,220 +296,27 @@ function SavedCollection({ kind }) {
       )}
 
       {loading ? (
-        <p role="status">
+        <p className="saved-loading" role="status">
           {t("savedItems.loading")}
         </p>
       ) : data?.items.length ? (
         <>
           <div className="saved-grid">
             {data.items.map((item) => (
-              <article
-                className="saved-card"
+              <SavedEntry
                 key={item.id}
+                kind={kind}
+                item={item}
+                title={itemTitle(kind, item)}
+                onEdit={() => setEditing(item)}
+                onDelete={() => setDeleting(item.id)}
+                confirming={deleting === item.id}
+                onConfirm={() => remove(item)}
+                onCancel={() => setDeleting(null)}
+                busy={busy}
               >
-                <div className="saved-card-top">
-                  <span className="saved-eyebrow">
-                    {kind === "favourites"
-                      ? t("savedItems.badges.favourite")
-                      : kind === "risks"
-                        ? t("savedItems.badges.risk")
-                        : kind === "comparisons"
-                          ? t("savedItems.badges.comparison")
-                          : t("savedItems.badges.search")}
-                  </span>
-
-                  <time dateTime={item.created_at}>
-                    {savedDate(item.created_at)}
-                  </time>
-                </div>
-
-                {kind === "favourites" && <RemovedListingBadge item={item} />}
-
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    marginTop: "12px",
-                    textAlign: "left",
-                  }}
-                >
-                  <div style={{ textAlign: "left" }}>
-                    <h2
-                      style={{
-                        marginTop: 0,
-                        textAlign: "left",
-                      }}
-                    >
-                      <Link
-                        to={`${savedPaths[kind]}/${item.id}`}
-                      >
-                        {itemTitle(kind, item)}
-                      </Link>
-                    </h2>
-
-                    <ItemSummary
-                      kind={kind}
-                      item={item}
-                    />
-                  </div>
-
-                  {(kind === "favourites" ||
-                    kind === "risks") && (
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: "8px",
-                      }}
-                    >
-                      <img
-                        src={`/logos/${getLogoFileName(
-                          kind === "risks"
-                            ? item.input.brand
-                            : item.snapshot.brand
-                        )}`}
-                        alt={t(
-                          "savedItems.summary.logoAlt"
-                        )}
-                        style={{
-                          width: "50px",
-                          height: "50px",
-                          objectFit: "contain",
-                        }}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.style.display =
-                            "none";
-                        }}
-                      />
-
-                      {(
-                        (kind === "favourites" &&
-                          item.snapshot.score != null) ||
-                        (kind === "risks" &&
-                          item.result.anomaly_score != null)
-                      ) && (
-                        <span
-                          className={`score-badge ${
-                            kind === "risks"
-                              ? getAnomalyScoreClass(item.result.anomaly_score)
-                              : getScoreClass(item.snapshot.score)
-                          }`}
-                          style={{
-                            fontSize: "14px",
-                            padding: "4px 8px",
-                          }}
-                        >
-                          {Number(
-                            kind === "risks"
-                              ? item.result.anomaly_score
-                              : item.snapshot.score
-                          ).toFixed(0)}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <div className="saved-actions">
-                  <Link
-                    className="saved-primary"
-                    to={`${savedPaths[kind]}/${item.id}`}
-                  >
-                    {t("savedItems.actions.open")}
-                  </Link>
-
-                  {kind === "searches" && (
-                    <button
-                      className="saved-secondary"
-                      onClick={() =>
-                        navigate("/listings", {
-                          state: {
-                            savedFilters:
-                              item.filters,
-                          },
-                        })
-                      }
-                    >
-                      {t("savedItems.actions.viewListings")}
-                    </button>
-                  )}
-
-                  {kind === "comparisons" && (
-                    <button
-                      className="saved-secondary"
-                      onClick={() => {
-                        loadComparator(item.filters.cars);
-                        navigate("/comparator");
-                      }}
-                    >
-                      {t("savedItems.actions.openComparison")}
-                    </button>
-                  )}
-
-                  <button
-                    className="saved-secondary"
-                    onClick={() =>
-                      setEditing(item)
-                    }
-                  >
-                    {kind === "risks"
-                      ? t("savedItems.actions.rename")
-                      : t("savedItems.actions.edit")}
-                  </button>
-
-                  <button
-                    className="saved-delete"
-                    onClick={() =>
-                      setDeleting(item.id)
-                    }
-                  >
-                    {t("savedItems.actions.delete")}
-                  </button>
-                </div>
-
-                {deleting === item.id && (
-                  <div className="saved-confirm">
-                    <p>
-                      {t(
-                        "savedItems.deleteConfirm"
-                      )}
-                    </p>
-
-                    <div className="saved-actions">
-                      <button
-                        className="saved-delete"
-                        disabled={busy}
-                        onClick={() =>
-                          remove(item)
-                        }
-                      >
-                        {busy
-                          ? t(
-                              "savedItems.actions.deleting"
-                            )
-                          : t(
-                              "savedItems.actions.deleteConfirm"
-                            )}
-                      </button>
-
-                      <button
-                        className="saved-secondary"
-                        disabled={busy}
-                        onClick={() =>
-                          setDeleting(null)
-                        }
-                      >
-                        {t(
-                          "savedItems.actions.cancel"
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </article>
+                <ItemSummary kind={kind} item={item} />
+              </SavedEntry>
             ))}
           </div>
           {data.pages > 1 && (
@@ -549,6 +333,7 @@ function SavedCollection({ kind }) {
                   setPage(page - 1)
                 }
               >
+                <SavedIcon name="back" />
                 {t(
                   "savedItems.pagination.previous"
                 )}
@@ -569,7 +354,7 @@ function SavedCollection({ kind }) {
               >
                 {t(
                   "savedItems.pagination.next"
-                )}
+                )}<SavedIcon name="forward" />
               </button>
             </nav>
           )}
@@ -577,6 +362,7 @@ function SavedCollection({ kind }) {
       ) : (
         !error && (
           <div className="saved-empty">
+            <div className="saved-empty-symbol"><SavedIcon name={kind} /></div>
             <h2>
               {t("savedItems.empty.title")}
             </h2>
@@ -621,14 +407,13 @@ function SavedCollection({ kind }) {
 }
 
 function SavedDetail({ kind, id }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [item, setItem] = useState(null);
   const [error, setError] = useState("");
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [revision, setRevision] = useState(0);
-  const [expanded, setExpanded] = useState(true);
 
   const navigate = useNavigate();
   const { loadComparator } = useComparator();
@@ -644,6 +429,11 @@ function SavedDetail({ kind, id }) {
     )
       .then((record) => {
         if (!controller.signal.aborted) {
+          if (kind === "comparisons") {
+            loadComparator(record.filters.cars);
+            navigate("/comparator", { replace: true, state: { savedComparisonId: record.id } });
+            return;
+          }
           setItem(record);
         }
       })
@@ -654,7 +444,7 @@ function SavedDetail({ kind, id }) {
       });
 
     return () => controller.abort();
-  }, [kind, id, revision]);
+  }, [kind, id, revision, loadComparator, navigate, t]);
 
   async function reanalyse() {
     if (busy) return;
@@ -689,7 +479,7 @@ function SavedDetail({ kind, id }) {
     );
   }
 
-  const backPath = savedPaths[kind] || (kind === "comparisons" ? "/saved-comparisons" : "/");
+  const backPath = kind === "comparisons" ? "/saved-comparisons" : savedPaths[kind];
 
   return (
     <>
@@ -697,7 +487,7 @@ function SavedDetail({ kind, id }) {
         className="saved-back"
         to={backPath}
       >
-        {t("savedItems.detail.back")}
+        <SavedIcon name="back" />{t("savedItems.detail.back")}
       </Link>
 
       {error && (
@@ -719,22 +509,24 @@ function SavedDetail({ kind, id }) {
 
       {!item ? (
         !error && (
-          <p role="status">
+          <p className="saved-loading" role="status">
             {t("savedItems.loading")}
           </p>
         )
       ) : (
         <>
           <section className="saved-card saved-detail-heading">
+            <div className="saved-detail-title">
             <h2>
               {itemTitle(kind, item)}
             </h2>
 
             <p>
               {t("savedItems.detail.savedAt", {
-                date: savedDate(item.created_at),
+                date: savedDate(item.created_at, i18n.resolvedLanguage || i18n.language),
               })}
             </p>
+            </div>
 
             <div className="saved-actions">
               <button
@@ -744,6 +536,7 @@ function SavedDetail({ kind, id }) {
                 }
                 disabled={busy}
               >
+                <SavedIcon name="edit" />
                 {kind === "risks"
                   ? t(
                       "savedItems.actions.rename"
@@ -768,6 +561,7 @@ function SavedDetail({ kind, id }) {
                   {t(
                     "savedItems.actions.viewCurrentListings"
                   )}
+                  <SavedIcon name="forward" />
                 </button>
               )}
 
@@ -779,7 +573,7 @@ function SavedDetail({ kind, id }) {
                     navigate("/comparator");
                   }}
                 >
-                  {t("savedItems.actions.openComparison")}
+                  {t("savedItems.actions.openComparison")}<SavedIcon name="forward" />
                 </button>
               )}
 
@@ -789,6 +583,7 @@ function SavedDetail({ kind, id }) {
                   disabled={busy}
                   onClick={reanalyse}
                 >
+                  <SavedIcon name="refresh" />
                   {busy
                     ? t(
                         "savedItems.actions.reanalyzing"
@@ -872,16 +667,11 @@ function SavedDetail({ kind, id }) {
                 <RemovedListingBadge item={item} />
                 <CarCard
                   car={
-                    item.current_listing ??
-                    item.snapshot
+                    favouriteCar(item)
                   }
-                  expanded={expanded}
+                  expanded
                   position="left"
-                  onClick={() =>
-                    setExpanded(
-                      (value) => !value
-                    )
-                  }
+                  onClick={() => navigate(savedPaths.favourites, { replace: true })}
                   showFavourite={false}
                 />
               </div>

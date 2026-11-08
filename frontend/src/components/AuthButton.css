@@ -172,7 +172,9 @@
 }
 
 .auth-dropdown-item {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   width: 100%;
   box-sizing: border-box;
   padding: 10px 12px;
@@ -191,6 +193,10 @@
 .auth-dropdown-item:hover {
   background-color: var(--brand-teal-tint);
 }
+
+.auth-dropdown-item > .saved-icon { width: 18px; height: 18px; color: #6c8581; }
+.auth-dropdown-item[aria-current="page"] { background: #e8f3ef; color: #0e7c70; font-weight: 650; }
+.auth-button__content .chevron .saved-icon { width: 13px; height: 13px; transform: rotate(90deg); }
 
 .auth-logout {
   color: #f87171;
