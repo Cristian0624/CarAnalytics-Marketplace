@@ -203,13 +203,40 @@ export default function VehicleTree({
 
   return (
     <div className="vt">
-      <input
-        className="vt-search"
-        type="search"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder={t("vehicleTree.searchBrand")}
-      />
+      <div className="vt-search-wrapper">
+        <svg
+          className="vt-search-icon"
+          viewBox="0 0 24 24"
+          width="15"
+          height="15"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input
+          className="vt-search"
+          type="text"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder={t("vehicleTree.searchBrand")}
+        />
+        {q && (
+          <button
+            type="button"
+            className="vt-search-clear"
+            onClick={() => setQ("")}
+            aria-label="Șterge"
+          >
+            ×
+          </button>
+        )}
+      </div>
 
       <ul className="vt-list">
         <Status data={brandData} t={t} level={0}>

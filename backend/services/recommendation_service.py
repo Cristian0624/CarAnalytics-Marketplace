@@ -496,6 +496,7 @@ def get_recommendations_by_attributes(
             registration_country=cand.registration_country,
             car_class=cand.class_,
             score=float(cand.score) if getattr(cand, 'score', None) is not None else None,
+            image_url=getattr(cand, "image_url", None),
             similarity_score=score,
             price_diff_eur=p_diff,
             price_diff_percent=p_pct,

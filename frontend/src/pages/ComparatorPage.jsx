@@ -29,6 +29,20 @@ export default function ComparatorPage() {
   const navigate = useNavigate();
   const savedFilters = location.state?.savedFilters || {};
   const savedPage = location.state?.savedPage || 1;
+  const savedSortBy = location.state?.savedSortBy;
+  const savedSortOrder = location.state?.savedSortOrder;
+
+  const handleBackToMarket = () => {
+    navigate("/listings", {
+      state: {
+        savedFilters,
+        savedPage,
+        savedSortBy,
+        savedSortOrder,
+        keepFiltersClosed: true,
+      },
+    });
+  };
 
   const [anomalyScores, setAnomalyScores] = useState({});
 
@@ -72,13 +86,13 @@ export default function ComparatorPage() {
         <BackgroundTriangles />
         <div className="comparator-header">
           <h1>{t("comparatorPage.title")}</h1>
-          <button onClick={() => navigate(-1)} className="back-to-market-btn">
+          <button onClick={handleBackToMarket} className="back-to-market-btn">
             ← {t("comparatorPage.backToMarket")}</button>
         </div>
         <div className="comparator-empty">
           <h2>{t("comparatorPage.emptyTitle")}</h2>
           <p>{t("comparatorPage.emptyDescription")}</p>
-          <button onClick={() => navigate(-1)} className="back-to-market-btn">
+          <button onClick={handleBackToMarket} className="back-to-market-btn">
             {t("comparatorPage.findCars")}</button>
         </div>
       </main>
@@ -120,7 +134,7 @@ export default function ComparatorPage() {
             path="/saved-searches" 
             onSave={(name) => createSaved("searches", { name, filters: { is_comparison: true, cars: comparedCars } })} 
           />
-          <button onClick={() => navigate(-1)} className="back-to-market-btn">
+          <button onClick={handleBackToMarket} className="back-to-market-btn">
             ← {t("comparatorPage.backToMarket")}</button>
         </div>
       </div>

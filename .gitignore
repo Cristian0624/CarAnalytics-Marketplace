@@ -6,3 +6,4 @@ __pycache__/
 backend/ML_models/anomaly_risk/
 node_modules/
 .DS_Store
+*.md

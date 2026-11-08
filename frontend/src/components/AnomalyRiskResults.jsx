@@ -219,6 +219,17 @@ export default function AnomalyRiskResults({ result, vehicle }) {
   const lowConfidence = result.market_confidence === "low";
   const priceAvailable = price.score != null;
 
+  const dealScore = result.deal_score != null ? Number(result.deal_score) : null;
+  const dealLevel =
+    result.deal_level ||
+    (dealScore != null
+      ? dealScore >= 60
+        ? "good"
+        : dealScore >= 30
+          ? "medium"
+          : "bad"
+      : null);
+
   const distMin = price.distribution?.min_price ?? Math.min(price.p10, price.actual_price);
   const distMax = price.distribution?.max_price ?? Math.max(price.p90, price.actual_price);
 
@@ -320,6 +331,33 @@ export default function AnomalyRiskResults({ result, vehicle }) {
                   <p>
                     {partial ? t("assessment.partialDescription") : t("anomalyRiskResults.overview.insufficientScore")}
                   </p>
+                </>
+              )}
+            </article>
+
+            <article className="risk-summary-card risk-deal-grade-card">
+              <span>{t("anomalyRiskResults.dealGrade.label")}</span>
+
+              {dealScore != null && dealLevel ? (
+                <div className="risk-deal-grade-row">
+                  <span
+                    className={`risk-deal-badge risk-deal-badge-${dealLevel}`}
+                  >
+                    {Math.round(dealScore)}
+                  </span>
+                  <div className="risk-deal-grade-meta">
+                    <strong>
+                      {t(`anomalyRiskResults.dealGrade.levels.${dealLevel}`)}
+                    </strong>
+                    <small>{number(dealScore, 1)} / 80</small>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <h3>{t("anomalyRiskResults.dealGrade.unavailable")}</h3>
+                  <small>
+                    {t("anomalyRiskResults.overview.insufficientScore")}
+                  </small>
                 </>
               )}
             </article>

@@ -93,3 +93,19 @@ test("changing vehicles resets a narrowed year range while other filter edits pr
     assert.equal(next.year_max, "1978");
   }
 });
+
+test("multi-selection on fuel, body and gearbox supports multiple choices and serializes cleanly to API", () => {
+  let form = emptyListingFilters();
+  form = updateListingFilter(form, "fuel_type", ["Benzină", "Diesel"]);
+  form = updateListingFilter(form, "body_types", ["Sedan", "SUV", "Crossover"]);
+  form = updateListingFilter(form, "gearbox", ["Automată", "Mecanică"]);
+
+  assert.deepEqual(form.fuel_type, ["Benzină", "Diesel"]);
+  assert.deepEqual(form.body_types, ["Sedan", "SUV", "Crossover"]);
+  assert.deepEqual(form.gearbox, ["Automată", "Mecanică"]);
+
+  const apiParams = listingFiltersToApi(form);
+  assert.deepEqual(apiParams.fuel_type, ["Benzină", "Diesel"]);
+  assert.deepEqual(apiParams.body_types, ["Sedan", "SUV", "Crossover"]);
+  assert.deepEqual(apiParams.gearbox, ["Automată", "Mecanică"]);
+});

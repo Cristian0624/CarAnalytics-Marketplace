@@ -1002,3 +1002,220 @@
   }
 }
 
+
+/* ============================================================
+   FEATURES PAGE RESPONSIVE ENHANCEMENTS
+   ============================================================ */
+
+/* Laptop */
+@media (max-width: 1280px) {
+  .features-page {
+    padding: 44px 20px 72px;
+  }
+  .feature-lab-card {
+    gap: 28px;
+    padding: 32px;
+  }
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .features-page {
+    padding: 36px 16px 60px;
+  }
+  .features-hero {
+    margin: 0 auto 40px;
+  }
+  .features-hero h1 {
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+  }
+  .feature-lab-card {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 28px 20px;
+    border-radius: 20px;
+  }
+  .sim-slider-row-2col {
+    grid-template-columns: 1fr;
+  }
+  .pipeline-steps-tabs {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .sim-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .strategy-metrics {
+    grid-template-columns: 1fr;
+  }
+  .feature-pipeline-section {
+    padding: 28px 20px;
+  }
+}
+
+/* Small tablet */
+@media (max-width: 768px) {
+  .features-page {
+    padding: 28px 14px 52px;
+  }
+  .features-hero {
+    margin: 0 auto 32px;
+  }
+  .features-hero h1 {
+    font-size: clamp(1.6rem, 5vw, 2.3rem);
+  }
+  .features-subtitle {
+    font-size: 1rem;
+  }
+  .features-pill-link {
+    padding: 8px 15px;
+    font-size: 12px;
+  }
+  .feature-lab-card {
+    padding: 22px 16px;
+    margin-bottom: 24px;
+  }
+  .feature-lab-info h2 {
+    font-size: clamp(1.3rem, 3.5vw, 1.8rem);
+  }
+  .sim-subscore-row {
+    grid-template-columns: 110px 1fr 48px;
+    gap: 10px;
+  }
+  .pipeline-step-detail {
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+  }
+  .tiers-table-container {
+    padding: 14px;
+    overflow-x: auto;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .features-page {
+    padding: 22px 12px 44px;
+  }
+  .features-brand-emblem-wrap {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+  }
+  .features-brand-emblem {
+    width: 36px;
+    height: 36px;
+  }
+  .features-hero h1 {
+    font-size: clamp(1.4rem, 6.5vw, 2rem);
+    letter-spacing: -0.5px;
+  }
+  .features-quick-nav {
+    gap: 8px;
+  }
+  .features-pill-link {
+    padding: 7px 12px;
+    font-size: 11.5px;
+  }
+  .feature-lab-card {
+    padding: 18px 14px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+  }
+  .feature-lab-interactive {
+    padding: 18px 14px;
+    border-radius: 16px;
+  }
+  .sim-subscore-row {
+    grid-template-columns: 90px 1fr 42px;
+    gap: 8px;
+    font-size: 12px;
+  }
+  .pipeline-steps-tabs {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .sim-metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .pipeline-tab-btn {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+  .algo-step-item {
+    padding: 14px 14px;
+  }
+  .features-home-btn {
+    padding: 13px 24px;
+    font-size: 15px;
+    width: 100%;
+    justify-content: center;
+  }
+  .feature-pipeline-section {
+    padding: 22px 14px;
+    border-radius: 20px;
+  }
+  .feature-pipeline-section {
+    margin-bottom: 32px;
+  }
+  .strategy-price-range strong {
+    font-size: 1.35rem;
+  }
+  .sim-verdict-note {
+    font-size: 12.5px;
+  }
+}
+
+/* Very small */
+@media (max-width: 360px) {
+  .features-page {
+    padding: 18px 10px 36px;
+  }
+  .sim-subscore-row {
+    grid-template-columns: 75px 1fr 38px;
+    font-size: 11.5px;
+  }
+  .features-hero h1 {
+    font-size: 1.3rem;
+  }
+}
+
+/* Big screens */
+@media (min-width: 1921px) {
+  .features-page-container {
+    max-width: 1600px;
+  }
+  .features-hero h1 {
+    font-size: 4.2rem;
+  }
+  .features-hero {
+    max-width: 1000px;
+    margin: 0 auto 72px;
+  }
+  .feature-lab-card {
+    gap: 48px;
+    padding: 52px;
+  }
+  .sim-subscore-row {
+    grid-template-columns: 190px 1fr 68px;
+    font-size: 15px;
+  }
+  .sim-metrics-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .pipeline-steps-tabs {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .algo-step-header h4 {
+    font-size: 16px;
+  }
+  .algo-step-item p {
+    font-size: 15px;
+  }
+  .feature-pipeline-section {
+    padding: 52px;
+  }
+}

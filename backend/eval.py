@@ -181,31 +181,31 @@ def evaluate_and_update_db(table_name="listings_cleaned", price_col="price_eur",
         if pct > 0:
             bonus = 0.0
             remaining = pct
-            # 0% - 10%: +1.7 per 1%
+            # 0% - 10%: +2.1 per 1%
             t1 = min(remaining, 10.0)
-            bonus += t1 * 1.7
+            bonus += t1 * 2.1
             remaining -= t1
-            # 10% - 15%: +1.4 per 1%
+            # 10% - 15%: +1.8 per 1% (reaches +30 bonus -> max score 80)
             if remaining > 0:
                 t2 = min(remaining, 5.0)
-                bonus += t2 * 1.4
+                bonus += t2 * 1.8
                 remaining -= t2
-            # 15% - 20%: Plateau zone (+0)
+            # 15% - 18%: Plateau zone (+0)
             if remaining > 0:
-                t3 = min(remaining, 5.0)
+                t3 = min(remaining, 3.0)
                 bonus += 0.0
                 remaining -= t3
-            # 20% - 25%: -1.5 per 1%
+            # 18% - 23%: -1.5 per 1%
             if remaining > 0:
                 t4 = min(remaining, 5.0)
                 bonus -= t4 * 1.5
                 remaining -= t4
-            # 25% - 30%: -1.7 per 1%
+            # 23% - 28%: -1.7 per 1%
             if remaining > 0:
                 t5 = min(remaining, 5.0)
                 bonus -= t5 * 1.7
                 remaining -= t5
-            # > 30%: -2.0 per 1%
+            # > 28%: -2.0 per 1%
             if remaining > 0:
                 bonus -= remaining * 2.0
             return bonus
@@ -316,7 +316,7 @@ def evaluate_and_update_db(table_name="listings_cleaned", price_col="price_eur",
     # TANDEM LOGIC REMOVED due to extreme processing time on 60k rows.
     # The Outlier filtering + Bucket Expansion already mathematically fixes the Deal Score.
 
-    df['final_score'] = df['calc_score'].clip(0, 100).round(2)
+    df['final_score'] = df['calc_score'].clip(0, 80).round(2)
     df.loc[df['med_price'].isna(), 'final_score'] = 50.0
 
     updates = [{"score": float(score), "row_id": int(row_id)} for score, row_id in zip(df['final_score'], df['id'])]

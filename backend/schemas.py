@@ -77,6 +77,7 @@ class ListingResponse(BaseModel):
     mileage_was_corrected: bool | None = None
     class_: str | None = Field(default=None, serialization_alias="class")
     score: Decimal | None = None
+    image_url: str | None = None
 
 
 class PaginatedListingsResponse(BaseModel):
@@ -186,6 +187,7 @@ class CarListingBase(BaseModel):
     registration_country: str | None = None
     car_class: str | None = Field(default=None, alias="class", validation_alias=None)
     score: float | None = None
+    image_url: str | None = None
 
     @field_validator("engine", mode="before")
     @classmethod
@@ -229,6 +231,7 @@ class CarListingBase(BaseModel):
             registration_country=getattr(listing, "registration_country", None),
             car_class=getattr(listing, "class_", None),
             score=float(listing.score) if getattr(listing, 'score', None) is not None else None,
+            image_url=getattr(listing, "image_url", None),
         )
 
     model_config = {

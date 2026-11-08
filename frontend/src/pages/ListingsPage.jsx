@@ -17,7 +17,7 @@ import SaveItemButton from "../components/SaveItemButton";
 import { useComparator } from "../context/ComparatorContext";
 import "./ListingsPage.css";
 
-const ITEMS_PER_PAGE = 45;
+const ITEMS_PER_PAGE = 48;
 
 function shuffleListings(items) {
   const shuffled = [...items];
@@ -33,17 +33,48 @@ function shuffleListings(items) {
 
 export default function ListingsPage() {
   const location = useLocation();
+
+  let initialFilters = location.state?.savedFilters;
+  let initialPage = location.state?.savedPage;
+  let initialSortBy = location.state?.savedSortBy;
+  let initialSortOrder = location.state?.savedSortOrder;
+
+  if (!initialFilters && !location.state?.clearSaved) {
+    try {
+      const stored = sessionStorage.getItem("listings_active_state");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed && typeof parsed === "object") {
+          initialFilters = parsed.filters;
+          initialPage = parsed.page;
+          initialSortBy = parsed.sort_by;
+          initialSortOrder = parsed.sort_order;
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
   return (
     <ListingSearch
       key={location.key}
-      initialFilters={location.state?.savedFilters}
-      initialPage={location.state?.savedPage}
+      initialFilters={initialFilters}
+      initialPage={initialPage}
+      initialSortBy={initialSortBy}
+      initialSortOrder={initialSortOrder}
       keepFiltersClosed={location.state?.keepFiltersClosed}
     />
   );
 }
 
-function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = false }) {
+function ListingSearch({
+  initialFilters,
+  initialPage = 1,
+  initialSortBy,
+  initialSortOrder,
+  keepFiltersClosed = false,
+}) {
   const { t } = useTranslation();
   const { comparedCars } = useComparator();
 
@@ -54,8 +85,10 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
   // Draft edits never change the filters used for pagination or saving.
   const [query, setQuery] = useState(() => ({
     filters: listingFiltersToApi(listingFiltersToForm(initialFilters)),
-    page: initialPage,
-    applied: Boolean(initialFilters),
+    page: initialPage || 1,
+    applied: Boolean(initialFilters && Object.keys(initialFilters).length > 0),
+    sort_by: initialSortBy,
+    sort_order: initialSortOrder,
   }));
 
   const [data, setData] = useState({
@@ -296,12 +329,35 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
     };
   }, [filters]);
 
+  useEffect(() => {
+    try {
+      const hasContent =
+        Boolean(query.filters && Object.keys(query.filters).length > 0) ||
+        Boolean(query.sort_by) ||
+        (query.page && query.page > 1);
+
+      if (hasContent) {
+        sessionStorage.setItem(
+          "listings_active_state",
+          JSON.stringify({
+            filters: query.filters,
+            sort_by: query.sort_by,
+            sort_order: query.sort_order,
+            page: query.page,
+          })
+        );
+      } else {
+        sessionStorage.removeItem("listings_active_state");
+      }
+    } catch {
+      // ignore
+    }
+  }, [query]);
+
   function scrollToResults() {
     document
       .getElementById("listings-results-start")
       ?.scrollIntoView({ behavior: "smooth" });
-
-      
   }
 
   function scrollToTop() {
@@ -329,16 +385,21 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
       return;
     }
 
-    setQuery({
+    setQuery((prev) => ({
+      ...prev,
       filters: listingFiltersToApi(values),
       page: 1,
       applied: true,
-    });
-
-    scrollToResults();
+    }));
   }
 
   function handleReset() {
+    try {
+      sessionStorage.removeItem("listings_active_state");
+    } catch {
+      // ignore
+    }
+
     setFilters(emptyListingFilters());
 
     setQuery({
@@ -370,12 +431,6 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
     }));
 
     setSortOpen(false);
-  }
-
-  const rows = [];
-
-  for (let index = 0; index < data.items.length; index += 3) {
-    rows.push(data.items.slice(index, index + 3));
   }
 
   const saveAction =
@@ -466,7 +521,7 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
           onReset={handleReset}
           loading={loading}
           actions={saveAction}
-          initiallyOpen={Boolean(initialFilters) && !keepFiltersClosed}
+          initiallyOpen={Boolean(location.state?.openFilters)}
           resultCount={filterCount}
           countLoading={countLoading}
           sortingActive={Boolean(query.sort_by)}
@@ -670,7 +725,12 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
           floatingCompare={
             <Link 
               to="/comparator" 
-              state={{ savedFilters: query.filters, savedPage: query.page }} 
+              state={{ 
+                savedFilters: query.filters, 
+                savedPage: query.page,
+                savedSortBy: query.sort_by,
+                savedSortOrder: query.sort_order,
+              }} 
               className="floating-compare-btn"
               title={t("comparatorPage.openComparison", { count: comparedCars.length })}
             >
@@ -710,10 +770,44 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
 
         {loading && (
           <div
-            className="marketplace-loading"
+            className="cars-marketplace"
             role="status"
+            aria-label={t("listings.loading")}
           >
-            {t("listings.loading")}
+            {Array.from({ length: 12 }, (_, idx) => (
+              <div
+                key={idx}
+                className="car-card car-card-skeleton"
+                style={{ "--stagger-delay": `${idx * 45}ms` }}
+              >
+                <div className="car-card-skeleton-image car-skeleton-bar" />
+                <div className="car-card-content">
+                  <div className="car-card-title-row">
+                    <div className="car-skeleton-title-group">
+                      <div
+                        className="car-skeleton-bar car-skeleton-title"
+                        style={{ width: `${58 + ((idx * 17) % 28)}%` }}
+                      />
+                      <div
+                        className="car-skeleton-bar car-skeleton-gen"
+                        style={{ width: `${35 + ((idx * 13) % 22)}%` }}
+                      />
+                    </div>
+                    <div className="car-skeleton-logo" />
+                  </div>
+
+                  <div className="car-details">
+                    <div className="car-skeleton-pill car-skeleton-pill-sm" />
+                    <div className="car-skeleton-pill car-skeleton-pill-md" />
+                  </div>
+
+                  <div className="car-card-bottom">
+                    <div className="car-skeleton-bar car-skeleton-price" />
+                    <div className="car-skeleton-score" />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
@@ -748,52 +842,19 @@ function ListingSearch({ initialFilters, initialPage = 1, keepFiltersClosed = fa
           data.items.length > 0 && (
             <>
               <div className="cars-marketplace">
-                {rows.map((row, rowIndex) => {
-                  const expandedIndex = row.findIndex(
-                    (car) => car.id === expandedCarId
-                  );
-
-                  const visibleCars = row;
-
-                  return (
-                    <div
-                      className="car-row"
-                      key={rowIndex}
-                    >
-                      {visibleCars.map((car, index) => (
-                        <CarCard
-                          key={car.id}
-                          car={car}
-                          expanded={
-                            car.id === expandedCarId
-                          }
-                          peeking={
-                            expandedIndex >= 0 &&
-                            car.id !== expandedCarId
-                          }
-                          position={
-                            [
-                              "left",
-                              "middle",
-                              "right",
-                            ][
-                              expandedIndex >= 0
-                                ? expandedIndex
-                                : index
-                            ]
-                          }
-                          onClick={() =>
-                            setExpandedCarId((current) =>
-                              current === car.id
-                                ? null
-                                : car.id
-                            )
-                          }
-                        />
-                      ))}
-                    </div>
-                  );
-                })}
+                {data.items.map((car, index) => (
+                  <CarCard
+                    key={car.id}
+                    car={car}
+                    fadeDelay={Math.min(index * 25, 380)}
+                    expanded={car.id === expandedCarId}
+                    onClick={() =>
+                      setExpandedCarId((current) =>
+                        current === car.id ? null : car.id
+                      )
+                    }
+                  />
+                ))}
               </div>
 
               <nav
