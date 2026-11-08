@@ -7,7 +7,8 @@ import useListingYearRange from "../hooks/useListingYearRange";
 import { prefetchListingOptions } from "../api/listings";
 import {
   listingFilterError,
-  updateListingFilter
+  updateListingFilter,
+  FILTER_PRESETS
 } from "../utils/listingFilters";
 
 const FUEL_TYPES = [
@@ -923,12 +924,7 @@ export default function ListingFilters({
                       500,
                       "€",
                       true,
-                      [
-                        { label: "< 10.000 €", min: "", max: "10000" },
-                        { label: "10k – 25k €", min: "10000", max: "25000" },
-                        { label: "25k – 50k €", min: "25000", max: "50000" },
-                        { label: "50.000+ €", min: "50000", max: "" }
-                      ]
+                      FILTER_PRESETS.price
                     )}
 
                     {slider(
@@ -939,12 +935,7 @@ export default function ListingFilters({
                       1,
                       "",
                       yearRange.present,
-                      [
-                        { label: "2015+", min: "2015", max: "" },
-                        { label: "2018+", min: "2018", max: "" },
-                        { label: "2020+", min: "2020", max: "" },
-                        { label: "2022+", min: "2022", max: "" }
-                      ]
+                      FILTER_PRESETS.year
                     )}
 
                     {slider(
@@ -955,12 +946,7 @@ export default function ListingFilters({
                       5000,
                       "km",
                       true,
-                      [
-                        { label: "< 50.000 km", min: "", max: "50000" },
-                        { label: "< 100.000 km", min: "", max: "100000" },
-                        { label: "< 150.000 km", min: "", max: "150000" },
-                        { label: "< 200.000 km", min: "", max: "200000" }
-                      ]
+                      FILTER_PRESETS.mileage
                     )}
                   </div>
 

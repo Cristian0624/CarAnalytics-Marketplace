@@ -1,7 +1,16 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { highlightParts } from "../src/utils/autocomplete.js";
-import { emptyListingFilters, listingFilterError, listingFiltersToApi, listingFiltersToForm, updateListingFilter } from "../src/utils/listingFilters.js";
+import {
+  emptyListingFilters,
+  listingFilterError,
+  listingFiltersToApi,
+  listingFiltersToForm,
+  updateListingFilter,
+  FILTER_PRESETS,
+  applyFilterPreset,
+  isPresetActive
+} from "../src/utils/listingFilters.js";
 import { filterVehicleOptions } from "../src/utils/anomalyRisk.js";
 
 test("generation punctuation is literal text, including incomplete parentheses", () => {
@@ -108,4 +117,63 @@ test("multi-selection on fuel, body and gearbox supports multiple choices and se
   assert.deepEqual(apiParams.fuel_type, ["Benzină", "Diesel"]);
   assert.deepEqual(apiParams.body_types, ["Sedan", "SUV", "Crossover"]);
   assert.deepEqual(apiParams.gearbox, ["Automată", "Mecanică"]);
+});
+
+test("[REQ-FLT-02] mobile filter presets define valid bounds and match active filter selections", () => {
+  let form = emptyListingFilters();
+
+  // Initially, no preset is active for price
+  const priceUnder10k = FILTER_PRESETS.price[0];
+  assert.equal(isPresetActive(form, "price", priceUnder10k), false);
+
+  // Apply price preset (< 10.000 €)
+  form = applyFilterPreset(form, "price", priceUnder10k);
+  assert.equal(isPresetActive(form, "price", priceUnder10k), true);
+  assert.equal(form.price_min, "");
+  assert.equal(form.price_max, "10000");
+
+  let apiParams = listingFiltersToApi(form);
+  assert.equal(apiParams.price_max, 10000);
+  assert.equal(apiParams.price_min, undefined);
+
+  // Apply year preset (2020+)
+  const year2020 = FILTER_PRESETS.year[2];
+  form = applyFilterPreset(form, "year", year2020);
+  assert.equal(isPresetActive(form, "year", year2020), true);
+  assert.equal(form.year_min, "2020");
+  assert.equal(form.year_max, "");
+
+  // Apply mileage preset (< 150.000 km)
+  const mileage150k = FILTER_PRESETS.mileage[2];
+  form = applyFilterPreset(form, "mileage", mileage150k);
+  assert.equal(isPresetActive(form, "mileage", mileage150k), true);
+  assert.equal(form.mileage_min, "");
+  assert.equal(form.mileage_max, "150000");
+
+  apiParams = listingFiltersToApi(form);
+  assert.equal(apiParams.price_max, 10000);
+  assert.equal(apiParams.year_min, 2020);
+  assert.equal(apiParams.mileage_max, 150000);
+});
+
+test("[REQ-FLT-02] applyFilterPreset updates target range without mutating unrelated filter criteria", () => {
+  let form = {
+    ...emptyListingFilters(),
+    brandText: "BMW",
+    modelText: "X5",
+    fuel_type: ["Diesel"],
+    price_min: "5000",
+    price_max: "15000"
+  };
+
+  const highMileagePreset = FILTER_PRESETS.mileage[3]; // < 200.000 km
+  form = applyFilterPreset(form, "mileage", highMileagePreset);
+
+  assert.equal(form.brandText, "BMW");
+  assert.equal(form.modelText, "X5");
+  assert.deepEqual(form.fuel_type, ["Diesel"]);
+  assert.equal(form.price_min, "5000");
+  assert.equal(form.price_max, "15000");
+  assert.equal(form.mileage_min, "");
+  assert.equal(form.mileage_max, "200000");
 });
