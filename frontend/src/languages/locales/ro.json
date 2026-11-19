@@ -936,10 +936,17 @@
       "limitedSupport": " Suport de preț limitat (10–19 anunțuri).",
       "chartAriaLabel": "Prețul ofertei și intervalul observat",
       "asking": "Preț cerut",
+      "realPrice": "Preț real (cerut)",
+      "expectedPrice": "Preț așteptat",
+      "expectedPriceSub": "Ajustat pentru rulaj",
+      "marketMedian": "Mediană piață (P50)",
+      "difference": "Diferență față de așteptat",
+      "mileageAdj": "ajustare rulaj",
       "median": "Mediană (P50)",
       "percentile10": "Percentila 10 (P10)",
       "percentile90": "Percentila 90 (P90)",
       "deviation": "Prețul cerut este {{percent}}% {{direction}} mediana observată. Intervalul P10–P90 cuprinde zona centrală a prețurilor cerute în baza de date, nu garantează prețul de vânzare.",
+      "deviationExpected": "Prețul real ({{actual}} €) este cu {{percent}}% {{direction}} prețul așteptat ({{expected}} €), calculat din mediana pieței ({{median}} €) ajustată după rulaj.",
       "below": "sub",
       "above": "peste",
       "equal": "față de",
@@ -949,11 +956,30 @@
       "distributionBadge": "Distribuție reală de piață ({{count}} anunțuri în DB)",
       "distributionDensity": "Densitate mare de oferte"
     },
+    "steps": {
+      "mileageStep": "Pasul 1 · Verificare kilometraj",
+      "priceStep": "Pasul 2 · Preț real vs. Preț așteptat",
+      "specStep": "Pasul 3 · Configurație"
+    },
+    "breakdown": {
+      "title": "Structura punctelor de risc",
+      "mileage": "Rulaj",
+      "price": "Preț",
+      "specs": "Specificații",
+      "rarity": "Raritate",
+      "pointsAdded": "Puncte de risc adăugate",
+      "pts": "pct"
+    },
     "mileage": {
       "label": "Kilometraj",
       "unspecified": "Nespecificat",
       "inListing": "În anunț",
+      "realMileage": "Rulaj real",
+      "medianShort": "Mediană",
       "observedMedian": "Mediană observată",
+      "deviation": "Abatere față de mediană",
+      "normalBand": "Zonă normală (±25%)",
+      "youngLeniency": "Toleranță aplicată pentru vehicul nou (~{{age}} ani)",
       "examplesAvailable": "Exemple disponibile",
       "unavailable": "Indisponibilă",
       "notEvaluated": "Neevaluat",
@@ -1060,7 +1086,9 @@
       "years": "ani",
       "flaggedMileage": "{{message}} Comparația folosește",
       "mileageEscalating": "Kilometrajul are o abatere mare față de mediană; contribuția sa crește progresiv. Comparația folosește",
-      "mileageCompared": "{{description}} față de"
+      "mileageCompared": "{{description}} față de",
+      "mileageFirstSummary": "Pasul 1 (Kilometraj): rulajul se abate cu {{percent}}% față de mediana grupului ({{median}} km) și adaugă +{{points}} puncte de risc.",
+      "priceExpectedSummary": "Pasul 2 (Preț vs. Preț așteptat): prețul real ({{actual}} €) este cu {{percent}}% {{direction}} prețul așteptat ({{expected}} €) și adaugă +{{points}} puncte de risc."
     }
   },
   "fields": {

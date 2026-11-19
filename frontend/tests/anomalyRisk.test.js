@@ -323,3 +323,31 @@ test("extreme flags identify the component and direction without inventing alert
   assert.equal(extremeAnomalyMessage(null), null);
   assert.equal(extremeAnomalyMessage("unknown"), null);
 });
+
+test("v2.19 mileage-first and expected-price policy is recognized and summarizes both sequential steps", () => {
+  const result = {
+    scoring_policy_version: "anomaly-risk-v2.19-mileage-first-expected-price",
+    assessment_status: "full",
+    anomaly_score: 55.6,
+    risk_level: "medium_high",
+    market_support: { model_generation_observations: 35, rarity_penalty: 0 },
+    confidence: { p10_p90_width: 4000, relative_interval_width: 0.33 },
+    effective_weights: { mileage: 0.5, price: 0.7 },
+    scoring_context: { mode: "additive_mileage_first", relation: "not_applicable", override_scores: {} },
+    components: {
+      mileage_anomaly: {
+        score: 71.2, risk_points: 35.6, actual_mileage: 45000, expected_median_mileage: 160000,
+        deviation_from_median_pct: -71.9, sample_size: 35, direction: "unusually_low", comparison_level: "model_generation",
+      },
+      price_anomaly: {
+        source: "database", score: 28.6, risk_points: 20.0, actual_price: 9200, expected_price: 13440,
+        p50: 12000, p25: 11000, p75: 13000, deviation_from_expected_pct: -31.5, count: 35, direction: "unusually_cheap",
+      },
+      specification_anomaly: { score: 0, risk_points: 0, supported_fields: 6, signals: [] },
+    },
+  };
+  assert.equal(usesCurrentRiskPolicy(result), true);
+  const items = riskExplanationItems(result, { brand: "Audi", model: "A4", generation: "B9", mileage: 45000 });
+  assert.ok(items.some((item) => item.text.includes("Pasul 1 (Kilometraj)") && item.text.includes("+35,6")));
+  assert.ok(items.some((item) => item.text.includes("Pasul 2 (Preț vs. Preț așteptat)") && item.text.includes("13.440") && item.text.includes("+20")));
+});

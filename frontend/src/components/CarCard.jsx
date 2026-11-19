@@ -176,6 +176,13 @@ function CarCard({
     if (!expanded || isClosing) return;
 
     function handleClickOutside(event) {
+      if (
+        event.target?.closest?.(
+          ".language-selector, .language-dropdown, .mobile-menu-toggle, .mobile-menu-drawer, .mobile-menu-backdrop, .mobile-lang-pills"
+        )
+      ) {
+        return;
+      }
       if (modalRef.current && !modalRef.current.contains(event.target)) {
         handleClose(event);
       }
@@ -1332,20 +1339,11 @@ function CarCard({
                       !viewError &&
                       viewMode === "risk" &&
                       riskResult && (
-                        <div
-                          className="risk-container"
-                          style={{
-                            background: "var(--brand-teal-tint)",
-                            padding: "16px",
-                            borderRadius: "12px",
-                            marginTop: "16px",
-                            border: "1px solid var(--brand-teal)"
-                          }}
-                        >
+                        <div className="car-modal-risk-shell">
                           <AnomalyRiskResults
                             result={riskResult}
                             vehicle={{
-                              ...car,
+                              ...currentCar,
                               price: currentCar.price_eur,
                               engine: currentCar.engine_size
                             }}

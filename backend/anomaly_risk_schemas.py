@@ -76,11 +76,13 @@ class PriceAnomaly(BaseModel):
     p75: float | None
     p90: float | None
     expected_price: float | None = None
+    mileage_adjustment_eur: float | None = None
     deviation_from_p50_pct: float | None
     deviation_from_expected_pct: float | None = None
     direction: Literal["unknown", "unusually_cheap", "unusually_expensive", "normal"]
     price_anomaly_score: Score | None
     score: Score | None
+    risk_points: Score | None = None
     reason: str
     distribution: PriceDistribution | None = None
 
@@ -91,6 +93,7 @@ class MileageAnomaly(BaseModel):
     age_adjustment_factor: float = Field(default=1.0, ge=0, le=1)
     actual_mileage: float | None
     expected_median_mileage: float | None
+    deviation_from_median_pct: float | None = None
     p05: float | None
     p10: float | None
     p25: float | None
@@ -100,6 +103,7 @@ class MileageAnomaly(BaseModel):
     p95: float | None
     mileage_anomaly_score: Score | None
     score: Score | None
+    risk_points: Score | None = None
     direction: Literal["unknown", "unusually_low", "unusually_high", "normal"]
     sample_size: int
     comparison_level: Literal["unsupported", "exact_year", "nearby_years", "model_generation", "model"]
@@ -119,6 +123,7 @@ class SpecificationSignal(BaseModel):
 class SpecificationAnomaly(BaseModel):
     specification_anomaly_score: Score | None
     score: Score | None
+    risk_points: Score | None = None
     sample_size: int
     supported_fields: int
     signals: list[SpecificationSignal]
@@ -138,7 +143,7 @@ class MarketSupport(BaseModel):
 
 class ScoringContext(BaseModel):
     relation: Literal["unavailable", "not_applicable", "consistent_opposite", "inconsistent"]
-    mode: Literal["weighted", "contextual_weighted", "extreme", "blended"]
+    mode: Literal["weighted", "contextual_weighted", "extreme", "blended", "additive_mileage_first"]
     price_ratio: float | None
     mileage_ratio: float | None
     balance_deviation: float | None

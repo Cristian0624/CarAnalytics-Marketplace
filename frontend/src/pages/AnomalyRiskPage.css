@@ -120,7 +120,9 @@
   align-items: start;
 }
 .risk-overview {
-  grid-row: span 2;
+  grid-row: auto;
+  position: sticky;
+  top: 92px;
   border: 1px solid var(--brand-border);
   border-radius: 22px;
   background: white;
@@ -291,7 +293,8 @@
   .risk-report-layout { grid-template-columns: 1fr; }
   .risk-overview { grid-row: auto; }
   .risk-detail-grid { grid-column: auto; }
-  .risk-summary { grid-template-columns: 1.2fr 1fr 1fr; }
+  .risk-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .risk-overall { grid-column: 1 / -1; }
   .risk-summary-card + .risk-summary-card { border-top: 0; border-left: 1px solid var(--brand-border); }
   .risk-price-card .risk-price-chart { min-height: 270px; }
 }
@@ -702,7 +705,8 @@
 .risk-deal-grade-row {
   display: flex;
   align-items: center;
-  gap: 14px;
+  flex-wrap: wrap;
+  gap: 12px 14px;
   margin: 14px 0 0;
 }
 
@@ -710,11 +714,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 56px;
-  height: 56px;
-  padding: 0 14px;
+  flex-shrink: 0;
+  min-width: 54px;
+  height: 54px;
+  padding: 0 12px;
   border-radius: 14px;
-  font-size: 26px;
+  font-size: 25px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.8px;
@@ -743,13 +748,16 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
+  flex: 1 1 115px;
 }
 
 .risk-deal-grade-meta strong {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 750;
   color: #17202A;
   line-height: 1.25;
+  overflow-wrap: break-word;
 }
 
 .risk-deal-grade-meta small {
@@ -1015,5 +1023,604 @@
   }
   .risk-steps {
     max-width: 900px;
+  }
+}
+
+
+/* ============================================================
+   V2.19 SEQUENTIAL MILEAGE-FIRST & EXPECTED-PRICE RISK UI
+   ============================================================ */
+
+.risk-steps-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.risk-breakdown-box {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.risk-breakdown-title {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #94a3b8;
+  margin-bottom: 10px;
+}
+
+.risk-breakdown-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.risk-breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #e2e8f0;
+}
+
+.risk-breakdown-row strong {
+  font-size: 14px;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  color: #ffffff;
+}
+
+.risk-step-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.risk-step-badge-1 {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.risk-step-badge-2 {
+  background: #f0fdfa;
+  color: #0f766e;
+  border: 1px solid #99f6e4;
+}
+
+.risk-step-badge-3 {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+.risk-leniency-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+  font-size: 12.5px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+/* 3-Column KPI Strip (Real vs Expected vs Deviation) */
+.risk-kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 18px 0 22px;
+}
+
+.risk-kpi-box {
+  padding: 16px 18px;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.risk-kpi-box span {
+  font-size: 12.5px;
+  font-weight: 650;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+.risk-kpi-box strong {
+  font-size: 22px;
+  font-weight: 800;
+  color: #17202A;
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.risk-kpi-box small {
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.risk-kpi-real {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.risk-kpi-expected {
+  background: #f0fdfa;
+  border-color: #99f6e4;
+}
+
+.risk-kpi-expected span,
+.risk-kpi-expected strong {
+  color: #0f766e;
+}
+
+.risk-kpi-tone-positive {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+.risk-kpi-tone-positive strong { color: #15803d; }
+
+.risk-kpi-tone-warning {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+.risk-kpi-tone-warning strong { color: #b45309; }
+
+.risk-kpi-tone-danger {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+.risk-kpi-tone-danger strong { color: #b91c1c; }
+
+/* Step 1: Visual Mileage Gauge */
+.risk-mileage-gauge {
+  margin: 12px 0 22px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.risk-gauge-top-labels,
+.risk-gauge-bottom-labels {
+  position: relative;
+  height: 44px;
+  width: 100%;
+}
+
+.risk-gauge-top-labels {
+  margin-bottom: 8px;
+}
+
+.risk-gauge-bottom-labels {
+  margin-top: 10px;
+}
+
+.risk-gauge-pill {
+  position: absolute;
+  transform: translateX(-50%);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 9px;
+  white-space: nowrap;
+  line-height: 1.25;
+}
+
+.risk-gauge-pill span {
+  font-size: 11px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.risk-gauge-pill strong {
+  font-size: 13.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.risk-gauge-pill-median {
+  top: 0;
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  color: #0f766e;
+}
+
+.risk-gauge-pill-real {
+  bottom: 0;
+  background: #17202A;
+  color: #ffffff;
+  box-shadow: 0 3px 10px rgba(23, 32, 42, 0.16);
+}
+
+.risk-mileage-track {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+.risk-mileage-normal-zone {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: 999px;
+  background: rgba(20, 184, 166, 0.28);
+  border: 1px solid rgba(15, 118, 110, 0.35);
+}
+
+/* Shared Delta Connector Bar (Expected <-> Real) & Toned Pins */
+.risk-delta-connector {
+  position: absolute;
+  top: 2px;
+  height: 6px;
+  border-radius: 999px;
+  z-index: 1;
+}
+
+.risk-mileage-track .risk-delta-connector {
+  top: 3px;
+}
+
+.risk-delta-connector-positive { background: #10b981; }
+.risk-delta-connector-warning { background: #f59e0b; }
+.risk-delta-connector-danger { background: #ef4444; }
+.risk-delta-connector-neutral { background: #64748b; }
+
+.risk-expected-marker {
+  background: #0d9488;
+  width: 4px;
+  height: 20px;
+  top: -5px;
+  border-radius: 3px;
+  z-index: 2;
+}
+
+.risk-raw-median-tick {
+  position: absolute;
+  top: -2px;
+  height: 14px;
+  width: 2px;
+  background: #94a3b8;
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+.risk-asking {
+  z-index: 3;
+}
+
+.risk-pin-positive {
+  background: #17202A;
+  box-shadow: 0 0 0 1.5px #17202A;
+}
+
+.risk-pin-warning {
+  background: #d97706;
+  box-shadow: 0 0 0 1.5px #d97706;
+}
+
+.risk-pin-danger {
+  background: #dc2626;
+  box-shadow: 0 0 0 1.5px #dc2626;
+}
+
+/* Step 2: Modern Collision-Free Price Chart (Expected vs Real) */
+.risk-price-chart-modern {
+  margin: 6px 0 20px;
+  padding: 18px 20px 16px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.risk-chart-top-track,
+.risk-chart-bottom-track {
+  position: relative;
+  height: 46px;
+  width: 100%;
+}
+
+.risk-chart-top-track {
+  margin-bottom: 6px;
+}
+
+.risk-chart-bottom-track {
+  margin-top: 12px;
+}
+
+.risk-chart-marker-pill {
+  position: absolute;
+  transform: translateX(-50%);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 10px;
+  white-space: nowrap;
+  line-height: 1.25;
+}
+
+.risk-chart-marker-pill span {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.risk-chart-marker-pill strong {
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.risk-marker-pill-expected {
+  top: 0;
+  background: #0f766e;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.24);
+}
+
+.risk-marker-pill-expected span {
+  color: #ccfbf1;
+}
+
+.risk-marker-pill-real {
+  bottom: 0;
+  background: #17202A;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(23, 32, 42, 0.22);
+}
+
+.risk-marker-pill-real span {
+  color: #cbd5e1;
+}
+
+.risk-marker-pill-warning {
+  background: #b45309;
+  box-shadow: 0 4px 12px rgba(180, 83, 9, 0.25);
+}
+
+.risk-marker-pill-warning span {
+  color: #fef3c7;
+}
+
+.risk-marker-pill-danger {
+  background: #b91c1c;
+  box-shadow: 0 4px 12px rgba(185, 28, 28, 0.26);
+}
+
+.risk-marker-pill-danger span {
+  color: #fee2e2;
+}
+
+.risk-chart-footer-legend {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.risk-legend-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
+}
+
+.risk-legend-item span {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.risk-legend-item strong {
+  font-size: 14.5px;
+  font-weight: 750;
+  color: #1e293b;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Footer Risk Points Pill & Alert Note */
+.risk-component-score-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.risk-pts-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 15px !important;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.risk-pts-pill-positive {
+  background: #dcfce7;
+  color: #166534 !important;
+  border: 1px solid #86efac;
+}
+
+.risk-pts-pill-warning {
+  background: #fef3c7;
+  color: #92400e !important;
+  border: 1px solid #fcd34d;
+}
+
+.risk-pts-pill-danger {
+  background: #fee2e2;
+  color: #991b1b !important;
+  border: 1px solid #fca5a5;
+}
+
+.risk-pts-pill-neutral {
+  background: #e2e8f0;
+  color: #334155 !important;
+  border: 1px solid #cbd5e1;
+}
+
+.risk-alert-note {
+  margin: 14px 0 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Step 3: 2-Column Spec Grid */
+.risk-spec-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 24px;
+}
+
+/* Embedded inside CarCard Listing Modal: Full-Width Clean Responsive Layout */
+.car-modal-risk-shell {
+  margin-top: 18px;
+  padding: 20px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #f0fdfa 0%, #f8fafc 100%);
+  border: 1px solid #99f6e4;
+}
+
+.car-modal-risk-shell .risk-results {
+  margin-top: 0;
+}
+
+.car-modal-risk-shell .risk-results-heading {
+  margin-bottom: 18px;
+}
+
+.car-modal-risk-shell .risk-results-heading h2 {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.car-modal-risk-shell .risk-report-layout {
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
+
+.car-modal-risk-shell .risk-overview {
+  position: static;
+}
+
+.car-modal-risk-shell .risk-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.car-modal-risk-shell .risk-overall {
+  grid-column: 1 / -1;
+  padding: 24px 26px;
+}
+
+.car-modal-risk-shell .risk-summary-card {
+  padding: 22px 20px;
+}
+
+.car-modal-risk-shell .risk-summary-card + .risk-summary-card {
+  border-top: 0;
+  border-left: 1px solid var(--brand-border);
+}
+
+.car-modal-risk-shell .risk-summary-card h3 {
+  font-size: 26px;
+}
+
+.car-modal-risk-shell .risk-score-number {
+  font-size: 52px;
+  margin: 12px 0 10px;
+}
+
+.car-modal-risk-shell .risk-detail-card {
+  --risk-card-padding: 24px;
+}
+
+@media (max-width: 1000px) {
+  .risk-overview {
+    position: static;
+  }
+  .car-modal-risk-shell .risk-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .car-modal-risk-shell .risk-overall {
+    grid-column: 1 / -1;
+  }
+  .car-modal-risk-shell .risk-summary-card {
+    border-top: 1px solid var(--brand-border);
+  }
+  .car-modal-risk-shell .risk-summary-card + .risk-summary-card {
+    border-left: 0;
+  }
+  .car-modal-risk-shell .risk-summary-card:nth-child(odd) {
+    border-left: 1px solid var(--brand-border);
+  }
+}
+
+@media (max-width: 720px) {
+  .risk-kpi-strip {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .risk-spec-grid {
+    grid-template-columns: 1fr;
+  }
+  .risk-chart-footer-legend {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+  .risk-card-heading {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .car-modal-risk-shell {
+    padding: 12px;
+  }
+  .car-modal-risk-shell .risk-summary {
+    grid-template-columns: 1fr;
+  }
+  .car-modal-risk-shell .risk-summary-card,
+  .car-modal-risk-shell .risk-summary-card:nth-child(odd) {
+    border-left: 0;
+    border-top: 1px solid var(--brand-border);
+  }
+  .car-modal-risk-shell .risk-detail-card {
+    --risk-card-padding: 18px;
   }
 }

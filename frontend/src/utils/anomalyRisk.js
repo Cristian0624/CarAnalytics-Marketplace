@@ -57,7 +57,7 @@ export function hasOverallScore(result) {
 }
 
 export function usesCurrentRiskPolicy(result) {
-  return ["anomaly-risk-v2.6-selected-group", "anomaly-risk-v2.7-extreme-signals", "anomaly-risk-v2.8-extreme-override", "anomaly-risk-v2.9-median-override", "anomaly-risk-v2.10-gradual-override", "anomaly-risk-v2.12-unified-scores", "anomaly-risk-v2.13-adaptive-context", "anomaly-risk-v2.14-mileage-price-reduction", "anomaly-risk-v2.15-risk-bands", "anomaly-risk-v2.16-joint-contributions", "anomaly-risk-v2.17-smooth-extremes", "anomaly-risk-v2.18-young-mileage"].includes(result.scoring_policy_version)
+  return ["anomaly-risk-v2.6-selected-group", "anomaly-risk-v2.7-extreme-signals", "anomaly-risk-v2.8-extreme-override", "anomaly-risk-v2.9-median-override", "anomaly-risk-v2.10-gradual-override", "anomaly-risk-v2.12-unified-scores", "anomaly-risk-v2.13-adaptive-context", "anomaly-risk-v2.14-mileage-price-reduction", "anomaly-risk-v2.15-risk-bands", "anomaly-risk-v2.16-joint-contributions", "anomaly-risk-v2.17-smooth-extremes", "anomaly-risk-v2.18-young-mileage", "anomaly-risk-v2.19-mileage-first-expected-price"].includes(result.scoring_policy_version)
     && result.components.price_anomaly.source === "database";
 }
 
@@ -90,6 +90,30 @@ export function riskExplanationItems(result, vehicle, t) {
     group: tr(vehicle.generation ? "selectedGeneration" : "unspecifiedGeneration"),
   }), { metric: "Încredere", direction: result.market_support.model_generation_observations >= 16 ? "up" : "down" });
   const context = result.scoring_context;
+  if (result.scoring_policy_version === "anomaly-risk-v2.19-mileage-first-expected-price") {
+    if (mileage.score != null && mileage.expected_median_mileage != null) {
+      const mPts = mileage.risk_points ?? (mileage.score * (result.effective_weights?.mileage ?? 0.5));
+      const mDev = mileage.deviation_from_median_pct ?? ((mileage.actual_mileage - mileage.expected_median_mileage) / mileage.expected_median_mileage * 100);
+      add(tr("mileageFirstSummary", {
+        percent: format(Math.abs(mDev), 1),
+        median: format(mileage.expected_median_mileage),
+        points: format(mPts, 1),
+      }), { metric: "Anomalie", direction: mPts > 0 ? "up" : "down" });
+    }
+    if (price.score != null && (price.expected_price != null || price.p50 != null)) {
+      const expected = price.expected_price ?? price.p50;
+      const pPts = price.risk_points ?? (price.score * (result.effective_weights?.price ?? 0.7));
+      const pDev = price.deviation_from_expected_pct ?? price.deviation_from_p50_pct ?? 0;
+      const dirKey = pDev < 0 ? "below" : pDev > 0 ? "above" : "equal";
+      add(tr("priceExpectedSummary", {
+        actual: format(price.actual_price),
+        percent: format(Math.abs(pDev), 1),
+        direction: translateAssessment(t, `anomalyRiskResults.price.${dirKey}`),
+        expected: format(expected),
+        points: format(pPts, 1),
+      }), { metric: "Anomalie", direction: pPts > 0 ? "up" : "down" });
+    }
+  }
   if (["anomaly-risk-v2.12-unified-scores", "anomaly-risk-v2.13-adaptive-context", "anomaly-risk-v2.14-mileage-price-reduction", "anomaly-risk-v2.15-risk-bands", "anomaly-risk-v2.16-joint-contributions", "anomaly-risk-v2.17-smooth-extremes", "anomaly-risk-v2.18-young-mileage"].includes(result.scoring_policy_version)) {
     if (context?.relation === "consistent_opposite" && (context.coherence_strength ?? 1) > 0) {
       const pairing = tr(context.price_ratio < 1 ? "cheaperHigher" : "dearerLower");

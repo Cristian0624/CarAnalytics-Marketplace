@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
@@ -47,6 +47,8 @@ function formatDate(dateStr, language) {
 
 export default function MyListingsPage() {
   const { t, i18n } = useTranslation();
+  const tRef = useRef(t);
+  tRef.current = t;
 
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -79,7 +81,7 @@ export default function MyListingsPage() {
       } catch (err) {
         if (!cancelled) {
           setError(
-            err?.message || t("myListings.errors.load")
+            err?.message || tRef.current("myListings.errors.load")
           );
         }
       } finally {
@@ -94,7 +96,7 @@ export default function MyListingsPage() {
     return () => {
       cancelled = true;
     };
-  }, [user, t]);
+  }, [user]);
 
   async function handleDelete(id) {
     if (busy) return;

@@ -936,10 +936,17 @@
       "limitedSupport": " Limited price support (10–19 listings).",
       "chartAriaLabel": "Offer price and observed range",
       "asking": "Asking price",
+      "realPrice": "Real price (asking)",
+      "expectedPrice": "Expected price",
+      "expectedPriceSub": "Mileage-adjusted",
+      "marketMedian": "Market median (P50)",
+      "difference": "Gap vs. expected",
+      "mileageAdj": "mileage adj.",
       "median": "Median (P50)",
       "percentile10": "10th percentile (P10)",
       "percentile90": "90th percentile (P90)",
       "deviation": "The asking price is {{percent}}% {{direction}} the observed median. The P10–P90 range covers the central area of asking prices in the database and does not guarantee the selling price.",
+      "deviationExpected": "The real price ({{actual}} €) is {{percent}}% {{direction}} the expected price ({{expected}} €), calculated from the market median ({{median}} €) adjusted for vehicle mileage.",
       "below": "below",
       "above": "above",
       "equal": "from",
@@ -949,11 +956,30 @@
       "distributionBadge": "Real market price distribution ({{count}} listings in DB)",
       "distributionDensity": "High listing density"
     },
+    "steps": {
+      "mileageStep": "Step 1 · Mileage Check",
+      "priceStep": "Step 2 · Real Price vs. Expected Price",
+      "specStep": "Step 3 · Specifications"
+    },
+    "breakdown": {
+      "title": "Risk points breakdown",
+      "mileage": "Mileage",
+      "price": "Price",
+      "specs": "Specs",
+      "rarity": "Rarity",
+      "pointsAdded": "Risk points added",
+      "pts": "pts"
+    },
     "mileage": {
       "label": "Mileage",
       "unspecified": "Unspecified",
       "inListing": "In listing",
+      "realMileage": "Real mileage",
+      "medianShort": "Median",
       "observedMedian": "Observed median",
+      "deviation": "Deviation from median",
+      "normalBand": "Normal zone (±25%)",
+      "youngLeniency": "Young-vehicle tolerance applied (~{{age}} yr)",
       "examplesAvailable": "Available examples",
       "unavailable": "Unavailable",
       "notEvaluated": "Not evaluated",
@@ -1060,7 +1086,9 @@
       "years": "years",
       "flaggedMileage": "{{message}} The comparison uses",
       "mileageEscalating": "Mileage deviates substantially from the median; its contribution increases progressively. The comparison uses",
-      "mileageCompared": "{{description}} compared with"
+      "mileageCompared": "{{description}} compared with",
+      "mileageFirstSummary": "Step 1 (Mileage): listing mileage deviates by {{percent}}% from the peer median ({{median}} km), adding +{{points}} risk points.",
+      "priceExpectedSummary": "Step 2 (Price vs. Expected Price): real price ({{actual}} €) is {{percent}}% {{direction}} expected price ({{expected}} €), adding +{{points}} risk points."
     }
   },
   "fields": {

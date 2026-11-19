@@ -214,6 +214,9 @@ function ListingSearch({
     };
   }, []);
 
+  const tRef = useRef(t);
+  tRef.current = t;
+
   useEffect(() => {
     let current = true;
 
@@ -221,7 +224,7 @@ function ListingSearch({
     setError("");
 
     const validationError = listingFilterError(
-      listingFiltersToForm(query.filters), t
+      listingFiltersToForm(query.filters), tRef.current
     );
 
     if (validationError) {
@@ -256,7 +259,7 @@ function ListingSearch({
       .catch((err) => {
         if (current) {
           setError(
-            err.message || t("listings.errors.load")
+            err.message || tRef.current("listings.errors.load")
           );
         }
       })
@@ -269,7 +272,7 @@ function ListingSearch({
     return () => {
       current = false;
     };
-  }, [query, t]);
+  }, [query]);
 
   useEffect(() => {
     function handleScroll() {
