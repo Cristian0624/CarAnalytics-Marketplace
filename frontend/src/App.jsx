@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import Header from "./components/Header";
 import HomePage from "./pages/HomePage";
@@ -7,11 +7,9 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ProfilePage from "./pages/ProfilePage";
 import RecommendationsPage from "./pages/RecommendationsPage";
-import CreateListingPage from "./pages/CreateListingPage";
 import AnomalyRiskPage from "./pages/AnomalyRiskPage";
 import PriceEstimatePage from "./pages/PriceEstimatePage";
 import SavedItemsPage from "./pages/SavedItemsPage";
-import MyListingsPage from "./pages/MyListingsPage";
 import ComparatorPage from "./pages/ComparatorPage";
 import AboutUsPage from "./pages/AboutUsPage";
 import FeaturesPage from "./pages/FeaturesPage";
@@ -49,9 +47,9 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/my-listings" element={<MyListingsPage />} />
+        <Route path="/my-listings" element={<Navigate to="/profile" replace />} />
         <Route path="/recommendations" element={<RecommendationsPage />} />
-        <Route path="/create-listing" element={<CreateListingPage />} />
+        <Route path="/create-listing" element={<Navigate to="/price-estimate" replace />} />
         <Route path="/anomaly-risk" element={<AnomalyRiskPage />} />
         <Route path="/price-estimate" element={<PriceEstimatePage />} />
         <Route path="/favourites/:id?" element={<SavedItemsPage kind="favourites" />} />

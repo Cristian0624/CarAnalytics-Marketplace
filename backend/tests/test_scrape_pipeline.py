@@ -70,8 +70,9 @@ class PayloadTests(unittest.TestCase):
         self.assertEqual(result["description_ro"], "Mașină bună\nDescriere")
         self.assertEqual(result["vin"], "TESTVIN123")
         self.assertEqual(result["engine"], "1.5")
-        self.assertEqual(result["seller_id"], "seller-1")
-        self.assertFalse(result["seller_verified"])
+        self.assertEqual(result["seller_username"], "dealer")
+        self.assertNotIn("seller_id", result)
+        self.assertNotIn("seller_verified", result)
         self.assertTrue(result["price_negotiable"])
         self.assertTrue(result["image_url"].endswith("/picture.jpg"))
         self.assertNotIn("109", str(result))
@@ -81,7 +82,7 @@ class PayloadTests(unittest.TestCase):
     def test_missing_optional_data_does_not_fail(self):
         result = listing_payload.public_metadata(flight_html({"id": "1", "groups": []}), 1)
         self.assertIsNone(result["vin"])
-        self.assertIsNone(result["seller_id"])
+        self.assertIsNone(result["seller_username"])
         self.assertEqual(listing_payload.public_metadata("<html>Blocked</html>", 1), {})
 
     def test_miles_nested_values_and_structured_only_advert(self):
@@ -94,8 +95,37 @@ class PayloadTests(unittest.TestCase):
         result = details.parse_listing_html(flight_html(ad), 1)
         self.assertEqual(result["mileage"], 160934)
         self.assertEqual(result["brand"], "Toyota")
-        self.assertEqual(result["company"], "Dealer")
+        self.assertNotIn("company", result)
         self.assertIsNone(result.get("battery_kwh"))
+
+    def test_seller_identity_collection_is_limited_to_username(self):
+        ad = {
+            "id": "1",
+            "owner": {
+                "id": "account-123", "login": "posting-account",
+                "createdDate": "2020-01-01", "avatar": "https://example.test/avatar.jpg",
+                "verification": {"isVerified": True},
+                "business": {"id": "business-123", "plan": "paid"},
+            },
+            "contactPerson": "Contact Name", "company": "Company Name",
+            "email": "contact@example.test",
+            "phoneNumbers": {"value": {"phone_numbers": ["+37360000000"]}},
+            "groups": [{"controls": [
+                {"feature": {"id": 20, "value": {"translated": "Toyota"}}},
+                {"feature": {"id": 795, "value": {"translated": "Dealer auto"}}},
+            ]}],
+        }
+        html = flight_html(ad)
+        for result in (listing_payload.public_metadata(html, 1), details.parse_listing_html(html, 1)):
+            with self.subTest(parser_result=result):
+                self.assertEqual(result["seller_username"], "posting-account")
+                self.assertEqual(result["seller_type"], "Dealer auto")
+                for field in (
+                    "seller_id", "seller_account_created", "seller_avatar", "seller_verified",
+                    "seller_business_id", "seller_business_plan", "contact_person",
+                    "company", "contact_email", "phone_numbers",
+                ):
+                    self.assertNotIn(field, result)
 
     def test_verified_pagination_and_wrong_page(self):
         html = '<div class="x__list__container"><a href="/ro/123">Car</a></div>'

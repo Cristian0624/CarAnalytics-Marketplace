@@ -1,4 +1,4 @@
-"""Read public advert data; deliberately ignore safety/comfort equipment flags."""
+"""Read advert data, retaining only the username from seller account/contact data."""
 import json
 import re
 from decimal import Decimal, InvalidOperation
@@ -141,20 +141,13 @@ def public_metadata(html, listing_id):
                   price_negotiable=price.get("bargain"), price_mode=price.get("mode"),
                   down_payment=number(price.get("down_payment")), old_price=ad.get("oldPrice"))
     owner = mapping(ad.get("owner"))
-    business = mapping(owner.get("business"))
     body = mapping(mapping(ad.get("body")).get("value"))
     vin = scalar(ad.get("vinCode"))
     result.update(
         title=ad.get("title"), vin=vin,
         description_ro=text_value(body.get("ro"), records),
         description_ru=text_value(body.get("ru"), records),
-        seller_id=owner.get("id"), seller_username=owner.get("login"),
-        seller_account_created=owner.get("createdDate"), seller_avatar=owner.get("avatar"),
-        seller_verified=mapping(owner.get("verification")).get("isVerified"),
-        seller_business_id=scalar(business.get("id")), seller_business_plan=scalar(business.get("plan")),
-        contact_person=scalar(ad.get("contactPerson")), company=scalar(ad.get("company")),
-        contact_email=scalar(ad.get("email")),
-        phone_numbers=mapping(mapping(ad.get("phoneNumbers")).get("value")).get("phone_numbers"),
+        seller_username=owner.get("login"),
         posted_at_source=ad.get("posted"), updated_at_source=ad.get("resetedRedesign") or ad.get("reseted"),
         expires_at_source=ad.get("expire"), source_state=ad.get("state"),
         source_is_expired=ad.get("isExpired"),

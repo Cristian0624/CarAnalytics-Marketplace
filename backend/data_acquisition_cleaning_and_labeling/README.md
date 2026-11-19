@@ -99,8 +99,9 @@ scores but does not calculate new listing scores itself.
   offer type, seller type, URL, and scrape timestamp.
 - Optional advert fields: VIN, title, Romanian/Russian description, availability, country
   of origin, steering-wheel position, color, region, EV range/battery/charging duration.
-- Public seller metadata: account ID, username, account creation date, verification status,
-  business ID/plan, avatar reference, contact person/company/email/phone numbers if published.
+- Seller identity: only the posting account's `seller_username`. Account ID, account creation
+  date, verification status, business ID/plan, avatar, contact person/company/email/phone numbers
+  are not extracted. The private-seller/dealer category (`seller_type`) remains a listing field.
 - Source posting/update/expiry values, status, negotiable-price information, down payment,
   old-price data, and **one image URL**. Image files are not downloaded.
 
@@ -108,6 +109,12 @@ Absent optional values stay `NULL`; a VIN is not invented or extracted from arbi
 Structured miles are converted to kilometres. Comfort/safety equipment such as ABS and
 air conditioning is not collected. Only explicitly listed fields are retained from the
 page payload. Useful metadata continues through raw, cleaned, and historical tables.
+
+Legacy account/contact columns remain for schema compatibility and are NULL on newly parsed
+rows. This change does not purge existing records or archives. Full descriptions and photos
+are still retained and may themselves contain personal information. A completed or resumed
+batch can contain previously scraped details; start a fresh batch after completing the old
+one to apply the new extraction policy to every discovered listing.
 
 ## Preservation and recovery
 

@@ -18,7 +18,9 @@ FOLDER = Path(__file__).resolve().parent
 STAGES = ("discover", "details", "clean", "classes", "publish", "trends")
 LOCK_KEY = 999602061
 
-# Only useful listing/vehicle/seller metadata. No equipment flags are collected.
+# Seller identity extraction is limited to seller_username. The legacy account/contact
+# columns remain for schema compatibility but are not populated by the parser.
+# No equipment flags are collected.
 RAW_COLUMNS = {
     "id": "BIGINT", "url": "TEXT", "brand": "TEXT", "model": "TEXT",
     "price": "NUMERIC", "currency": "TEXT", "generation": "TEXT", "year": "INTEGER",

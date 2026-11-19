@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import "./AuthButton.css";
+import SavedIcon from "./SavedIcon";
 
 function AuthButton() {
   const { t } = useTranslation();
@@ -77,7 +78,7 @@ function AuthButton() {
               <path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8" />
             </svg>
             {user.name}
-            <span className={isOpen ? "chevron chevron-open" : "chevron"}>▼</span>
+            <span className={isOpen ? "chevron chevron-open" : "chevron"}><SavedIcon name="chevron" /></span>
           </span>
           <Blobs />
         </button>
@@ -89,7 +90,7 @@ function AuthButton() {
               <path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8" />
             </svg>
             {t("authButton.account")}
-            <span className={isOpen ? "chevron chevron-open" : "chevron"}>▼</span>
+            <span className={isOpen ? "chevron chevron-open" : "chevron"}><SavedIcon name="chevron" /></span>
           </span>
           <Blobs />
         </button>
@@ -101,47 +102,31 @@ function AuthButton() {
             <>
               <div className="auth-dropdown-header">{user.email}</div>
 
-              <Link
+              <NavLink
                 to="/profile"
                 className="auth-dropdown-item"
                 onClick={() => setIsOpen(false)}
               >
-                {t("authButton.profile")}
-              </Link>
+                <SavedIcon name="profile" />{t("authButton.profile")}
+              </NavLink>
 
-              <Link
-                to="/my-listings"
-                className="auth-dropdown-item"
-                onClick={() => setIsOpen(false)}
-              >
-                {t("authButton.myListings")}
-              </Link>
-
-              <Link
-                to="/create-listing"
-                className="auth-dropdown-item"
-                onClick={() => setIsOpen(false)}
-              >
-                {t("authButton.createListing")}
-              </Link>
-
-              <Link
+              <NavLink
                 to="/favourites"
                 className="auth-dropdown-item"
                 onClick={() => setIsOpen(false)}
               >
-                {t("authButton.favourites")}
-              </Link>
+                <SavedIcon name="favourites" />{t("authButton.favourites")}
+              </NavLink>
 
-              <Link
+              <NavLink
                 to="/saved-risk-assessments"
                 className="auth-dropdown-item"
                 onClick={() => setIsOpen(false)}
               >
-                {t("authButton.savedRisks")}
-              </Link>
+                <SavedIcon name="risks" />{t("authButton.savedRisks")}
+              </NavLink>
 
-              <Link to="/saved-searches" className="auth-dropdown-item" onClick={() => setIsOpen(false)}>{t("authButton.savedSearches")}</Link><Link to="/saved-comparisons" className="auth-dropdown-item" onClick={() => setIsOpen(false)}>{t("authButton.comparisons", { defaultValue: "Comparari Salvate" })}</Link>
+              <NavLink to="/saved-searches" className="auth-dropdown-item" onClick={() => setIsOpen(false)}><SavedIcon name="searches" />{t("authButton.savedSearches")}</NavLink><NavLink to="/saved-comparisons" className="auth-dropdown-item" onClick={() => setIsOpen(false)}><SavedIcon name="comparisons" />{t("authButton.comparisons", { defaultValue: "Comparari Salvate" })}</NavLink>
 
               <button
                 className="auth-dropdown-item auth-logout"
@@ -152,21 +137,21 @@ function AuthButton() {
             </>
           ) : (
             <>
-              <Link
+              <NavLink
                 to="/login"
                 className="auth-dropdown-item"
                 onClick={() => setIsOpen(false)}
               >
                 {t("authButton.login")}
-              </Link>
+              </NavLink>
 
-              <Link
+              <NavLink
                 to="/register"
                 className="auth-dropdown-item"
                 onClick={() => setIsOpen(false)}
               >
                 {t("authButton.register")}
-              </Link>
+              </NavLink>
             </>
           )}
         </div>
