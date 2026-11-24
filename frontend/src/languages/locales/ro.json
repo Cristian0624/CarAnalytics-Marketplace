@@ -38,7 +38,12 @@
     "navigation": "Navigare",
     "account": "Cont",
     "closeMenu": "Închide meniul",
-    "openMenu": "Deschide meniul"
+    "openMenu": "Deschide meniul",
+    "theme": "Temă",
+    "lightTheme": "Luminoasă",
+    "darkTheme": "Întunecată",
+    "switchToDark": "Schimbă la tema întunecată",
+    "switchToLight": "Schimbă la tema luminoasă"
   },
   "priceEstimator": {
     "steps": [
@@ -1427,6 +1432,21 @@
         "Elveția": "Elveția",
         "Marea Britanie": "Regatul Unit",
         "Spania": "Spania"
+      },
+      "state": {
+        "Cu rulaj": "Cu rulaj",
+        "Uzat": "Uzat",
+        "Necesită reparații": "Necesită reparații",
+        "Nou": "Nou",
+        "Nouă": "Nouă",
+        "Avariat": "Avariat",
+        "Used": "Cu rulaj",
+        "New": "Nou"
+      },
+      "seller_type": {
+        "Persoană fizică": "Persoană fizică",
+        "Dealer auto": "Dealer auto",
+        "Persoană juridică": "Persoană juridică"
       }
     }
   },
@@ -1790,5 +1810,85 @@
       }
     },
     "backHome": "Înapoi la Pagina Principală"
+  },
+  "legal": {
+    "lastUpdated": "Ultima actualizare: Noiembrie 2026",
+    "terms": {
+      "badge": "Document legal",
+      "title": "Termeni și Condiții",
+      "subtitle": "Regulile de utilizare a platformei FaceAuto pentru analiza pieței auto, estimarea prețurilor și evaluarea riscurilor.",
+      "sections": [
+        {
+          "title": "Acceptarea termenilor",
+          "body": "Prin accesarea sau utilizarea platformei FaceAuto, ești de acord să respecți acești Termeni și Condiții. Dacă nu ești de acord cu oricare dintre prevederile de mai jos, te rugăm să încetezi utilizarea serviciului."
+        },
+        {
+          "title": "Scopul platformei și caracterul informativ",
+          "body": "FaceAuto oferă instrumente algoritmice de analiză a pieței auto second-hand din Republica Moldova, incluzând estimarea valorii de piață, nota ofertei (Deal Score), analiza riscurilor și compararea anunțurilor.",
+          "points": [
+            "Toate scorurile, estimările de preț și indicatorii de risc au caracter strict informativ și statistic.",
+            "FaceAuto nu este proprietarul vehiculelor listate, nu intermediază tranzacții și nu garantează starea tehnică sau juridică a niciunui automobil.",
+            "Decizia finală de achiziție aparține exclusiv utilizatorului; recomandăm întotdeauna verificarea fizică a vehiculului, a istoricului VIN și a actelor înainte de cumpărare."
+          ]
+        },
+        {
+          "title": "Conturi de utilizator",
+          "body": "Pentru funcții precum salvarea anunțurilor favorite, căutărilor, comparațiilor și rapoartelor de risc, poți crea un cont personal.",
+          "points": [
+            "Ești responsabil pentru confidențialitatea datelor tale de autentificare și pentru activitatea desfășurată din contul tău.",
+            "Te angajezi să furnizezi informații reale și să nu utilizezi platforma în scopuri abuzive, automatizate neautorizat sau ilegale."
+          ]
+        },
+        {
+          "title": "Anunțuri terțe și surse externe",
+          "body": "Platforma agregă și analizează date publice din anunțuri auto externe (de exemplu 999.md). Disponibilitatea, prețul sau conținutul anunțurilor originale pot fi modificate sau șterse de vânzători în orice moment fără notificare prealabilă."
+        },
+        {
+          "title": "Limitarea răspunderii și modificări",
+          "body": "FaceAuto este furnizat ca atare (as is). Nu ne asumăm răspunderea pentru pierderi financiare sau decizii comerciale luate pe baza estimărilor afișate. Ne rezervăm dreptul de a actualiza acești termeni periodic, modificările intrând în vigoare la publicarea pe această pagină."
+        }
+      ]
+    },
+    "privacy": {
+      "badge": "Protecția datelor",
+      "title": "Politica de Confidențialitate",
+      "subtitle": "Cum colectăm, utilizăm și protejăm datele tale personale atunci când folosești FaceAuto.",
+      "sections": [
+        {
+          "title": "Ce date colectăm",
+          "body": "Colectăm doar datele strict necesare pentru funcționarea contului și personalizarea experienței tale pe platformă:",
+          "points": [
+            "Date de cont: nume, adresă de email, număr de telefon (opțional) și tipul profilului (persoană fizică sau dealer).",
+            "Date salvate de tine: mașini favorite, căutări salvate, comparații și analize de risc păstrate în cont.",
+            "Preferințe tehnice locale: limba interfeței (RO/EN/RU) și selecția curentă din comparator."
+          ]
+        },
+        {
+          "title": "Cum folosim aceste date",
+          "body": "Informațiile colectate sunt utilizate exclusiv pentru a oferi și îmbunătăți funcționalitățile platformei:",
+          "points": [
+            "Autentificarea securizată și gestionarea profilului tău FaceAuto.",
+            "Păstrarea și sincronizarea listelor tale de mașini favorite, filtre și rapoarte de analiză.",
+            "Îmbunătățirea stabilității, securității și performanței serviciului."
+          ]
+        },
+        {
+          "title": "Stocare și securitate",
+          "body": "Parolele utilizatorilor sunt stocate exclusiv în format criptat (hash), iar accesul la datele contului este protejat prin mecanisme moderne de autentificare. Nu vindem și nu închiriem datele tale personale către terți."
+        },
+        {
+          "title": "Drepturile tale",
+          "body": "Ai dreptul să accesezi, să actualizezi sau să soliciți ștergerea datelor tale personale în orice moment:",
+          "points": [
+            "Îți poți actualiza datele de profil și parola direct din secțiunea Profil.",
+            "Poți șterge oricând anunțurile favorite, căutările sau rapoartele salvate din contul tău."
+          ]
+        },
+        {
+          "title": "Actualizări ale politicii",
+          "body": "Această Politică de Confidențialitate poate fi actualizată periodic pentru a reflecta evoluția platformei sau cerințele legale aplicabile. Versiunea curentă este întotdeauna disponibilă pe această pagină."
+        }
+      ]
+    }
   }
 }

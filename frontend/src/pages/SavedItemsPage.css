@@ -1,6 +1,6 @@
-.saved-page { background: transparent; color: var(--brand-ink); color-scheme: light; 
+.saved-page { position: relative; z-index: 1; background: transparent; color: var(--brand-ink); color-scheme: light; 
 min-height: 80vh; padding: 48px 24px 80px; text-align: left; font-family: 'Inter', system-ui, sans-serif; }
-.saved-container { max-width: 1126px; margin: auto; }
+.saved-container { position: relative; z-index: 1; max-width: 1126px; margin: auto; }
 .saved-heading { margin-bottom: 30px; }
 .saved-heading h1 { color: var(--brand-charcoal); font-size: clamp(30px, 4vw, 44px); font-weight: 800; letter-spacing: -1px; margin: 12px 0; }
 .saved-heading p { color: var(--brand-muted); line-height: 1.7; }
@@ -50,10 +50,17 @@ min-height: 80vh; padding: 48px 24px 80px; text-align: left; font-family: 'Inter
 .favourite-action { display: flex; align-items: center; gap: 12px; min-height: 40px; margin-bottom: 22px; padding-right: 160px; }
 .favourite-action small, .favourite-action a { font-size: 12px; }
 .favourite-action small { color: #991b1b; }
-.favourite-star { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; height: 40px; width: 42px; padding: 6px; border: 1px solid var(--brand-border); border-radius: 10px; background: white; color: #54666E; cursor: pointer; transition: color .15s, background .15s; }
-.favourite-star path { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linejoin: round; }
-.favourite-star:hover:not(:disabled), .favourite-star.is-saved { background: var(--brand-teal-tint); color: var(--brand-teal-dark); border-color: var(--brand-teal); }
-.favourite-star:hover:not(:disabled) path, .favourite-star.is-saved path { fill: var(--brand-teal); }
+.favourite-star { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; height: 40px; width: 42px; padding: 6px; border: 1px solid var(--brand-border); border-radius: 10px; background: white; color: #54666E; cursor: pointer; transition: color .1s ease, background .1s ease, border-color .1s ease, transform .1s ease; -webkit-tap-highlight-color: transparent; }
+.favourite-star:active { transform: scale(0.9); }
+.favourite-star path { fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linejoin: round; transition: fill .1s ease; }
+.favourite-star.is-saved { background: var(--brand-teal-tint); color: var(--brand-teal-dark); border-color: var(--brand-teal); }
+.favourite-star.is-saved path { fill: var(--brand-teal); }
+@media (hover: hover) and (pointer: fine) {
+  .favourite-star:hover:not(:disabled) { background: var(--brand-teal-tint); color: var(--brand-teal-dark); border-color: var(--brand-teal); }
+  .favourite-star:hover:not(:disabled) path { fill: var(--brand-teal); }
+}
+.favourite-star.is-saved svg { animation: starPop .18s cubic-bezier(0.22, 1, 0.36, 1); }
+@keyframes starPop { 0% { transform: scale(0.8); } 60% { transform: scale(1.18); } 100% { transform: scale(1); } }
 .favourite-star:disabled { opacity: .6; cursor: wait; }
 .saved-listing .car-card-expanded { width: 100%; box-sizing: border-box; cursor: default; }
 .saved-listing .car-expanded-content { padding-top: 80px; }

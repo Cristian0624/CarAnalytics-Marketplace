@@ -18,6 +18,7 @@ import {
   listingFilterError,
 } from "../utils/listingFilters";
 import { favouriteCar, savedDate, savedError } from "../utils/savedItems";
+import { translateCarValue } from "../utils/carTranslations";
 import AnomalyRiskResults from "../components/AnomalyRiskResults";
 import CarCard from "../components/CarCard";
 import ListingFilters from "../components/ListingFilters";
@@ -132,7 +133,10 @@ function ItemSummary({ kind, item }) {
   return (
     <>
       <p>
-        {(kind === "favourites" ? [car.generation, car.year] : [car.brand, car.model, car.generation, car.year])
+        {(kind === "favourites"
+          ? [translateCarValue(t, "generation", car.generation), car.year]
+          : [car.brand, car.model, translateCarValue(t, "generation", car.generation), car.year]
+        )
           .filter(Boolean)
           .join(" · ")}
       </p>

@@ -2,6 +2,7 @@
 import json
 import os
 from collections import Counter
+from collections.abc import Mapping
 from datetime import date
 from pathlib import Path
 
@@ -21,14 +22,14 @@ DEFAULT_ARTIFACT_DIR = Path(__file__).resolve().parents[1] / "ML_models/anomaly_
 DEFAULT_RUNTIME_CONFIG_PATH = Path(__file__).with_name("anomaly_risk_config.json")
 SCORING_POLICY_VERSION = "anomaly-risk-v2.19-mileage-first-expected-price"
 SCORING_POLICY = {
-    "weights": {"price": 0.70, "mileage": 0.50, "specification": 0.15},
+    "weights": {"price": 0.70, "mileage": 0.70, "specification": 0.15},
     "risk_medium": 30.0,
     "risk_medium_high": 50.0,
     "risk_high": 66.0,
     "extreme_min_samples": 15,
     "extreme_overall_floor": 80.0,
     "extreme_min_median_deviation": 0.45,
-    "mileage_extreme_min_deviation": 0.60,
+    "mileage_extreme_min_deviation": 0.50,
     "mileage_extreme_floor": 60.0,
     "price_extreme_transition": 0.10,
     "mileage_extreme_transition": 0.15,
@@ -44,8 +45,8 @@ SCORING_POLICY = {
     "joint_reduction_fraction": 0.25,
     "mileage_min_samples": 10,
     "spec_min_samples": 25,
-    "mileage_tolerance_pct": 25.0,
-    "mileage_max_risk_points": 50.0,
+    "mileage_tolerance_pct": 20.0,
+    "mileage_max_risk_points": 70.0,
     "price_cheap_tolerance_pct": 15.0,
     "price_expensive_tolerance_pct": 12.0,
     "price_max_risk_points": 70.0,
@@ -159,43 +160,54 @@ class AnomalyRiskService:
     def mileage_deviation_risk_points(self, actual, median):
         """Step 1: Add risk points when mileage deviates too much from peer median.
 
-        Within +-25% of the median mileage -> 0 risk points (normal driving spread).
-        Beyond +-25%:
-        - Low mileage (rollback risk): ramps faster, up to 50.0 risk points.
-        - High mileage (wear risk): ramps more gently, up to 45.0 risk points.
+        Within +-20% of the median mileage -> 0 risk points (normal driving spread).
+        Beyond +-20%:
+        - Low mileage (rollback risk): ramps faster, up to 70.0 risk points
+          (20%..45% below: +1.00 pts/1% -> 25 pts;
+           45%..65% below: +1.50 pts/1% -> 55 pts;
+           >65% below: +1.25 pts/1%, capped at 70 pts).
+        - High mileage (wear / taxi risk): ramps more moderately, up to 60.0 risk points
+          (20%..60% above: +0.60 pts/1% -> 24 pts;
+           60%..120% above: +0.55 pts/1% -> 57 pts;
+           >120% above: +0.35 pts/1%, capped at 60 pts).
         """
         if actual is None or median is None or median <= 0:
             return 0.0
         actual_f = float(actual)
         median_f = float(median)
         abs_dev_pct = abs(actual_f - median_f) / median_f * 100.0
-        tolerance = float(self.SCORING.get("mileage_tolerance_pct", 25.0))
+        tolerance = float(self.SCORING.get("mileage_tolerance_pct", 20.0))
         if abs_dev_pct <= tolerance:
             return 0.0
         excess = abs_dev_pct - tolerance
         if actual_f < median_f:
-            # 25%..50% below median: +0.80 pts/1% (up to 20 pts)
+            # 20%..45% below median: +1.00 pts/1% (up to 25 pts)
             t1 = min(excess, 25.0)
-            pts = t1 * 0.80
+            pts = t1 * 1.00
             rem = excess - t1
-            # 50%..85% below median: +0.7143 pts/1% (adds up to 25 pts -> 45 pts)
+            # 45%..65% below median: +1.50 pts/1% (adds up to 30 pts -> 55 pts)
             if rem > 0:
-                t2 = min(rem, 35.0)
-                pts += t2 * (25.0 / 35.0)
+                t2 = min(rem, 20.0)
+                pts += t2 * 1.50
                 rem -= t2
-            # >85% below median: +0.50 pts/1%, capped at 50 pts
+            # >65% below median: +1.25 pts/1%, capped at 70 pts
             if rem > 0:
-                pts += rem * 0.50
-            return float(min(self.SCORING.get("mileage_max_risk_points", 50.0), pts))
+                pts += rem * 1.25
+            return float(min(self.SCORING.get("mileage_max_risk_points", 70.0), pts))
         else:
-            # 25%..75% above median: +0.40 pts/1% (up to 20 pts)
-            t1 = min(excess, 50.0)
-            pts = t1 * 0.40
+            # 20%..60% above median: +0.60 pts/1% (up to 24 pts)
+            t1 = min(excess, 40.0)
+            pts = t1 * 0.60
             rem = excess - t1
-            # >75% above median: +0.30 pts/1%, capped at 45 pts
+            # 60%..120% above median: +0.55 pts/1% (adds up to 33 pts -> 57 pts)
             if rem > 0:
-                pts += rem * 0.30
-            return float(min(45.0, pts))
+                t2 = min(rem, 60.0)
+                pts += t2 * 0.55
+                rem -= t2
+            # >120% above median: +0.35 pts/1%, capped at 60 pts
+            if rem > 0:
+                pts += rem * 0.35
+            return float(min(60.0, pts))
 
     def price_deviation_risk_points(self, actual_price, expected_price):
         """Step 2: Add risk points based on how far real asking price is from expected price.
@@ -421,7 +433,7 @@ class AnomalyRiskService:
             actual = float(v["mileage"])
             median_m = stats["p50"]
             deviation_pct = float(((actual - median_m) / median_m) * 100.0) if median_m > 0 else 0.0
-            tolerance = float(self.SCORING.get("mileage_tolerance_pct", 25.0))
+            tolerance = float(self.SCORING.get("mileage_tolerance_pct", 20.0))
 
             if deviation_pct < -tolerance:
                 direction = "unusually_low"
@@ -435,15 +447,15 @@ class AnomalyRiskService:
                 age_factor = 1.0
 
             raw_risk_points = self.mileage_deviation_risk_points(actual, median_m)
-            max_pts = float(self.SCORING.get("mileage_max_risk_points", 50.0))
+            max_pts = float(self.SCORING.get("mileage_max_risk_points", 70.0))
             risk_points = round(min(max_pts, raw_risk_points * age_factor), 2)
             mileage_score = round(min(100.0, (risk_points / max_pts) * 100.0), 2) if max_pts > 0 else 0.0
 
             flag = None
             if len(values) >= self.SCORING["extreme_min_samples"]:
-                if deviation_pct <= -60.0 and age_factor == 1.0:
+                if deviation_pct <= -50.0 and age_factor == 1.0:
                     flag = "extreme_mileage_low"
-                elif deviation_pct >= 100.0:
+                elif deviation_pct >= 85.0:
                     flag = "extreme_mileage_high"
 
             reason = (
@@ -451,7 +463,7 @@ class AnomalyRiskService:
                 if direction == "unusually_low"
                 else "Mileage deviates significantly above the peer median."
                 if direction == "unusually_high"
-                else "Mileage is within normal tolerance (+-25%) of the peer median."
+                else "Mileage is within normal tolerance (+-20%) of the peer median."
             )
             if age_factor < 1:
                 reason += f" Low-mileage risk is reduced for this approximately {age}-year-old vehicle."
@@ -870,6 +882,51 @@ class AnomalyRiskService:
                 penalty += remaining * 2.0
             return -penalty
 
+    def _empirical_dep_per_10k(self, comparison_rows, med_price):
+        """Match eval.py empirical depreciation per 10,000 km with 5% fallback."""
+        fallback = float(med_price) * 0.05
+        if not comparison_rows or med_price is None or float(med_price) <= 0:
+            return fallback
+
+        pairs = []
+        for row in comparison_rows:
+            if not isinstance(row, Mapping):
+                continue
+            price_val = row.get("price_eur")
+            if price_val is None:
+                price_val = row.get("price")
+            mileage_val = row.get("mileage")
+            if price_val is None or mileage_val is None:
+                continue
+            try:
+                pf = float(price_val)
+                mf = float(mileage_val)
+            except (TypeError, ValueError):
+                continue
+            if np.isfinite(pf) and np.isfinite(mf) and pf > 0 and mf >= 0:
+                pairs.append((pf, mf))
+
+        if len(pairs) < 2:
+            return fallback
+
+        pair_df = pd.DataFrame(pairs, columns=["price_eur", "mileage"])
+        if len(pair_df) >= 5:
+            p10 = pair_df["price_eur"].quantile(0.10)
+            p90 = pair_df["price_eur"].quantile(0.90)
+            valid_df = pair_df[(pair_df["price_eur"] >= p10) & (pair_df["price_eur"] <= p90)]
+            if len(valid_df) > 0:
+                pair_df = valid_df
+
+        med_m = pair_df["mileage"].median()
+        low_m = pair_df[pair_df["mileage"] <= med_m]
+        high_m = pair_df[pair_df["mileage"] > med_m]
+        if len(low_m) > 0 and len(high_m) > 0:
+            delta_p = float(low_m["price_eur"].mean() - high_m["price_eur"].mean())
+            delta_m = float(high_m["mileage"].mean() - low_m["mileage"].mean())
+            if delta_m >= 10000.0 and delta_p > 0:
+                return float((delta_p / delta_m) * 10000.0)
+        return fallback
+
     def calculate_deal_score(self, vehicle, prices, comparison_rows, text_signals=None, stored_score=None):
         """Calculate the 0-80 Deal Score using the eval.py grading algorithm."""
         if stored_score is not None:
@@ -903,7 +960,7 @@ class AnomalyRiskService:
             ref_m = ref_df["mileage"].dropna().to_numpy(dtype=float)
 
         baseline_mileage = float(np.median(ref_m)) if len(ref_m) >= 5 else 150000.0
-        dep_per_10k = med_price * 0.05
+        dep_per_10k = self._empirical_dep_per_10k(comparison_rows, med_price)
 
         year = vehicle.get("year")
         age = max(1, date.today().year - int(year)) if year is not None and not pd.isna(year) else 5
@@ -939,9 +996,9 @@ class AnomalyRiskService:
             annual_km = m_val / age
             km_ratio = annual_km / med_annual_km
 
-            if age >= 4 and km_ratio < 0.40 and not is_spam:
+            if age >= 4 and km_ratio < 0.55 and not is_spam:
                 calc_score -= 15.0
-            if age >= 3 and km_ratio < 0.25 and not is_spam:
+            if age >= 3 and km_ratio < 0.35 and not is_spam:
                 calc_score -= 15.0
 
             is_low_mileage = (m_val < suspicious_threshold) or is_spam
@@ -989,7 +1046,7 @@ class AnomalyRiskService:
                     spam_mileages = {0, 1, 10, 100, 1000, 10000, 1111, 11111, 111111, 12345, 123456, 9999, 99999, 999999}
                     m_val = float(actual_m)
                     effective_m = float(med_m) if int(round(m_val)) in spam_mileages else m_val
-                    dep_per_10k = med_p * 0.05
+                    dep_per_10k = self._empirical_dep_per_10k(comparison_rows, med_p)
                     raw_adj = ((float(med_m) - effective_m) / 10000.0) * dep_per_10k
                     max_bonus = med_p * 0.12
                     max_discount = -med_p * 0.45
@@ -1048,7 +1105,7 @@ class AnomalyRiskService:
 
             effective_weights = {}
             if has_mileage:
-                effective_weights["mileage"] = float(self.SCORING.get("mileage_max_risk_points", 50.0)) / 100.0
+                effective_weights["mileage"] = float(self.SCORING.get("mileage_max_risk_points", 70.0)) / 100.0
             if has_price:
                 effective_weights["price"] = float(self.SCORING.get("price_max_risk_points", 70.0)) / 100.0
             if has_specs:

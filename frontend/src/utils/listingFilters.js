@@ -1,4 +1,5 @@
 import { translateAssessment } from "./assessmentI18n.js";
+import { translateCarValue } from "./carTranslations.js";
 
 const defaultTranslate = (key, values) => translateAssessment(undefined, key, values);
 
@@ -186,8 +187,11 @@ export function describeFilters(filters, t = defaultTranslate) {
 
   for (const key of [...identities, ...selections]) {
     if (filters[key]?.length) {
+      const translatedValues = filters[key].map((value) =>
+        translateCarValue(t, key, value)
+      );
       parts.push(
-        `${t(FILTER_LABEL_KEYS[key])}: ${filters[key].join(", ")}`
+        `${t(FILTER_LABEL_KEYS[key])}: ${translatedValues.join(", ")}`
       );
     }
   }

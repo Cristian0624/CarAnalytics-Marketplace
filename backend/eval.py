@@ -233,10 +233,12 @@ def evaluate_and_update_db(table_name="listings_cleaned", price_col="price_eur",
     km_ratio = df['annual_km'] / df['med_annual_km']
 
     # Suspicious low mileage rollback risk:
-    is_suspicious_low_km = (df['age'] >= 4) & (km_ratio < 0.40) & ~is_spam_mileage
+    # < 55% of peer median annual km on cars 4+ years old raises rollback risk (-15);
+    # < 35% of peer median annual km on cars 3+ years old is severe rollback territory (-15 more, -30 total).
+    is_suspicious_low_km = (df['age'] >= 4) & (km_ratio < 0.55) & ~is_spam_mileage
     df.loc[is_suspicious_low_km, 'calc_score'] -= 15.0
 
-    is_extreme_low_km = (df['age'] >= 3) & (km_ratio < 0.25) & ~is_spam_mileage
+    is_extreme_low_km = (df['age'] >= 3) & (km_ratio < 0.35) & ~is_spam_mileage
     df.loc[is_extreme_low_km, 'calc_score'] -= 15.0
 
     is_low_mileage = (df['mileage'] < suspiciously_low_threshold) | is_spam_mileage

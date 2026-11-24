@@ -7,6 +7,7 @@ import { estimatePrice } from "../api/price_estimate";
 import { priceEstimateComparisonMessage, priceEstimateErrorMessage, priceEstimateMileageBounds, priceEstimateYearBounds } from "../utils/priceEstimate";
 import { assessmentValidationMessage, clearInputValidity, localizeInputValidity } from "../utils/assessmentErrors";
 import { createAnalysis } from "../api/analysis";
+import { translateCarValue } from "../utils/carTranslations";
 
 import Autocomplete from "../components/Autocomplete";
 import BackgroundTriangles from "../components/BackgroundTriangles";
@@ -871,7 +872,7 @@ export default function CreateListingPage() {
                                             key={value}
                                             value={value}
                                         >
-                                            {value}
+                                            {translateCarValue(t, "fuel_type", value)}
                                         </option>
                                     ))}
                                 </select>
@@ -933,7 +934,7 @@ export default function CreateListingPage() {
                                             key={value}
                                             value={value}
                                         >
-                                            {value}
+                                            {translateCarValue(t, "gearbox", value)}
                                         </option>
                                     ))}
                                 </select>
@@ -964,7 +965,7 @@ export default function CreateListingPage() {
                                             key={value}
                                             value={value}
                                         >
-                                            {value}
+                                            {translateCarValue(t, "drivetrain", value)}
                                         </option>
                                     ))}
                                 </select>
@@ -995,7 +996,7 @@ export default function CreateListingPage() {
                                             key={value}
                                             value={value}
                                         >
-                                            {value}
+                                            {translateCarValue(t, "body_type", value)}
                                         </option>
                                     ))}
                                 </select>
@@ -1217,7 +1218,7 @@ export default function CreateListingPage() {
                                             key={value}
                                             value={value}
                                         >
-                                            {value}
+                                            {translateCarValue(t, "class", value)}
                                         </option>
                                     ))}
                                 </select>

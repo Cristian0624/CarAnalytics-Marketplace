@@ -125,3 +125,96 @@
 @media (prefers-reduced-motion: reduce) {
   .account-navigation a, .saved-back .saved-icon, .account-market-link .saved-icon { transition: none; }
 }
+
+/* Back-to-top button on Profile & Account workspace pages */
+.saved-page .scroll-top-button {
+  --scroll-size: 54px;
+  --scroll-offset: 24px;
+  --scroll-track: #E2E8F0;
+  --scroll-accent: var(--brand-teal, #14B8A6);
+  --scroll-bg: #FFFFFF;
+
+  position: fixed;
+  right: var(--scroll-offset);
+  bottom: var(--scroll-offset);
+  width: var(--scroll-size);
+  height: var(--scroll-size);
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid #CBD5E1;
+  border-radius: 50%;
+  background: var(--scroll-bg);
+  color: #17202A;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0);
+  transform-origin: center center;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow:
+    0 4px 18px rgba(15, 23, 42, 0.16),
+    0 2px 6px rgba(15, 23, 42, 0.08);
+  transition:
+    opacity 0.28s ease,
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s ease,
+    border-color 0.2s ease;
+}
+
+.saved-page .scroll-top-button.is-visible {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.saved-page .scroll-top-button.is-visible:hover {
+  transform: translateY(-2px) scale(1.04);
+  border-color: var(--brand-teal, #14B8A6);
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, 0.22),
+    0 3px 8px rgba(15, 23, 42, 0.10);
+}
+
+.saved-page .scroll-top-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+
+.saved-page .scroll-top-ring-track,
+.saved-page .scroll-top-ring-progress {
+  fill: none;
+}
+
+.saved-page .scroll-top-ring-track {
+  stroke: var(--scroll-track);
+  stroke-width: 2;
+}
+
+.saved-page .scroll-top-ring-progress {
+  stroke: var(--scroll-accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-dasharray: 150.8;
+  stroke-dashoffset: 150.8;
+}
+
+.saved-page .scroll-top-icon {
+  position: relative;
+  display: block;
+}
+
+@media (max-width: 600px) {
+  .saved-page .scroll-top-button {
+    --scroll-size: 46px;
+    --scroll-offset: 16px;
+  }
+  .saved-page .scroll-top-icon {
+    width: 20px;
+    height: 20px;
+  }
+}

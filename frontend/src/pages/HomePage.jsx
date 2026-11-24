@@ -700,17 +700,13 @@ function HomePage() {
               {t("home.footer.about")}
             </Link>
 
-            <Link to="/features">
-              {t("home.footer.features")}
+            <Link to="/terms">
+              {t("home.footer.terms")}
             </Link>
 
-            <a href="#">
-              {t("home.footer.terms")}
-            </a>
-
-            <a href="#">
+            <Link to="/privacy">
               {t("home.footer.privacy")}
-            </a>
+            </Link>
           </div>
 
         </div>

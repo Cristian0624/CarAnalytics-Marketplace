@@ -12,10 +12,6 @@ import {
 } from "../utils/anomalyRisk";
 import { assessmentNumber } from "../utils/assessmentI18n";
 
-function clampPercent(pct, min = 8, max = 92) {
-  return Math.max(min, Math.min(max, pct));
-}
-
 function getToneFromPoints(points) {
   if (points == null) return "neutral";
   if (points <= 0.05) return "positive";
@@ -23,7 +19,7 @@ function getToneFromPoints(points) {
   return "danger";
 }
 
-function getDistributionData(price, expectedPrice, distMin, distMax, width = 1000, baselineY = 125, peakY = 18) {
+function getDistributionData(price, expectedPrice, distMin, distMax, width = 1000, baselineY = 112, peakY = 14) {
   const points = price?.distribution?.points;
   const usableHeight = baselineY - peakY;
   const span = distMax - distMin;
@@ -89,8 +85,8 @@ function getDistributionData(price, expectedPrice, distMin, distMax, width = 100
     for (let i = 0; i < coords.length - 1; i++) {
       if (targetX >= coords[i].x && targetX <= coords[i + 1].x) {
         const segSpan = coords[i + 1].x - coords[i].x;
-        const t = segSpan === 0 ? 0 : (targetX - coords[i].x) / segSpan;
-        return coords[i].y + t * (coords[i + 1].y - coords[i].y);
+        const ratio = segSpan === 0 ? 0 : (targetX - coords[i].x) / segSpan;
+        return coords[i].y + ratio * (coords[i + 1].y - coords[i].y);
       }
     }
     return coords[coords.length - 1].y;
@@ -101,7 +97,6 @@ function getDistributionData(price, expectedPrice, distMin, distMax, width = 100
   const yAsking = price.actual_price != null ? getYAtPrice(price.actual_price) : baselineY;
 
   return {
-    coords,
     linePath,
     areaPath,
     centralAreaPath,
@@ -112,53 +107,14 @@ function getDistributionData(price, expectedPrice, distMin, distMax, width = 100
   };
 }
 
-function ComponentScore({ value, weight, riskPoints, flag, t, contextual = false }) {
-  const number = (val, digits = 0) => assessmentNumber(t, val, digits);
-  const message = extremeAnomalyMessage(flag, t);
-  const addedPoints =
-    riskPoints != null
-      ? Number(riskPoints)
-      : value != null && weight != null
-        ? value * weight
-        : null;
-  const tone = getToneFromPoints(addedPoints);
-
-  return (
-    <>
-      {message && (
-        <p className="risk-alert-note" role="note">
-          <strong>{message}</strong>
-          {contextual && t("assessment.contextual")}
-        </p>
-      )}
-
-      <div className="risk-component-score">
-        <div className="risk-component-score-main">
-          <span>{t("anomalyRiskResults.breakdown.pointsAdded")}</span>
-          <strong className={`risk-pts-pill risk-pts-pill-${tone}`}>
-            {addedPoints == null
-              ? t("anomalyRiskResults.componentScore.unavailable")
-              : `+${number(addedPoints, 1)} ${t("anomalyRiskResults.breakdown.pts")}`}
-          </strong>
-        </div>
-
-        {value != null && (
-          <small className="component-score-contribution">
-            {t("anomalyRiskResults.componentScore.score")}:{" "}
-            <strong>{number(value, 1)} / 100</strong>
-          </small>
-        )}
-      </div>
-    </>
-  );
-}
-
 function ContributionArrow({ direction, metric, t }) {
   const favorable = metric === "Încredere" ? direction === "up" : direction === "down";
   const tone = direction === "neutral" ? "neutral" : favorable ? "positive" : "negative";
   const visualDirection = tone === "positive" ? "up" : tone === "negative" ? "down" : "neutral";
   const label = t(`assessment.${tone}`);
-  const metricLabel = t(`assessment.${metric === "Încredere" ? "confidence" : metric === "Anomalie" ? "anomaly" : "context"}`);
+  const metricLabel = t(
+    `assessment.${metric === "Încredere" ? "confidence" : metric === "Anomalie" ? "anomaly" : "context"}`,
+  );
   return (
     <span className={`risk-effect risk-effect-${tone}`}>
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -193,7 +149,7 @@ export default function AnomalyRiskResults({ result, vehicle }) {
 
   if (!usesCurrentRiskPolicy(result)) {
     return (
-      <section className="risk-results">
+      <div className="risk-results">
         <div className="risk-results-heading">
           <h2>
             {vehicle.brand} {vehicle.model}
@@ -202,7 +158,6 @@ export default function AnomalyRiskResults({ result, vehicle }) {
 
         <article className="risk-detail-card">
           <h3>{t("anomalyRiskResults.historical.title")}</h3>
-
           <p>{t("anomalyRiskResults.historical.description")}</p>
 
           <dl className="risk-data-list">
@@ -210,22 +165,18 @@ export default function AnomalyRiskResults({ result, vehicle }) {
               <dt>{t("anomalyRiskResults.historical.overallScore")}</dt>
               <dd>{number(result.anomaly_score, 1)}</dd>
             </div>
-
             <div>
               <dt>{t("anomalyRiskResults.historical.priceScore")}</dt>
               <dd>{number(price.score, 1)}</dd>
             </div>
-
             <div>
               <dt>{t("anomalyRiskResults.historical.mileageScore")}</dt>
               <dd>{number(mileage.score, 1)}</dd>
             </div>
-
             <div>
               <dt>{t("anomalyRiskResults.historical.specificationScore")}</dt>
               <dd>{number(specs.score, 1)}</dd>
             </div>
-
             <div>
               <dt>{t("anomalyRiskResults.historical.savedRange")}</dt>
               <dd>
@@ -240,7 +191,7 @@ export default function AnomalyRiskResults({ result, vehicle }) {
             {t("anomalyRiskResults.historical.policy")}: {result.scoring_policy_version}
           </p>
         </article>
-      </section>
+      </div>
     );
   }
 
@@ -251,7 +202,6 @@ export default function AnomalyRiskResults({ result, vehicle }) {
   const priceAvailable = price.score != null;
   const weights = result.effective_weights || {};
 
-  // Exact additive risk points per step
   const mileageRiskPts =
     mileage.risk_points != null
       ? Number(mileage.risk_points)
@@ -283,9 +233,11 @@ export default function AnomalyRiskResults({ result, vehicle }) {
           : "bad"
       : null);
 
-  // Step 1: Mileage visual gauge calculations
+  // Step 1: Mileage vs Median
   const mileageHasGauge =
-    mileage.actual_mileage != null && mileage.expected_median_mileage != null && mileage.expected_median_mileage > 0;
+    mileage.actual_mileage != null &&
+    mileage.expected_median_mileage != null &&
+    mileage.expected_median_mileage > 0;
   const mileageDevPct =
     mileage.deviation_from_median_pct != null
       ? Number(mileage.deviation_from_median_pct)
@@ -308,8 +260,6 @@ export default function AnomalyRiskResults({ result, vehicle }) {
     const normLow = pos(med * 0.75);
     const normHigh = pos(med * 1.25);
     return {
-      minM,
-      maxM,
       medPos,
       actPos,
       normLow,
@@ -320,18 +270,12 @@ export default function AnomalyRiskResults({ result, vehicle }) {
   }, [mileageHasGauge, mileage]);
 
   const mileageTone = getToneFromPoints(mileageRiskPts);
+  const mileageFlagMsg = extremeAnomalyMessage(mileage.flag, t);
 
-  // Step 2: Price vs Expected Price calculations
+  // Step 2: Price vs Expected Price + Distribution Curve
   const expectedPrice = price.expected_price ?? price.p50;
-  const mileageAdjEur =
-    price.mileage_adjustment_eur != null
-      ? Number(price.mileage_adjustment_eur)
-      : expectedPrice != null && price.p50 != null
-        ? Number((expectedPrice - price.p50).toFixed(2))
-        : 0;
   const showSeparateMedian =
     price.p50 != null && expectedPrice != null && Math.abs(expectedPrice - price.p50) >= 50;
-
   const priceGapEur =
     price.actual_price != null && expectedPrice != null
       ? price.actual_price - expectedPrice
@@ -344,6 +288,7 @@ export default function AnomalyRiskResults({ result, vehicle }) {
         : price.deviation_from_p50_pct;
 
   const priceTone = getToneFromPoints(priceRiskPts);
+  const priceFlagMsg = extremeAnomalyMessage(price.flag, t);
 
   const distMin = useMemo(() => {
     const candidates = [price.distribution?.min_price, price.p10, price.actual_price, expectedPrice].filter(
@@ -369,10 +314,6 @@ export default function AnomalyRiskResults({ result, vehicle }) {
     [price, expectedPrice, distMin, distMax],
   );
 
-  const contextual =
-    result.scoring_context?.mode === "contextual_weighted" ||
-    (result.scoring_context?.mode === "blended" && result.scoring_context?.coherence_strength > 0);
-
   const priceDirectionWord =
     priceDevExpectedPct < 0
       ? t("anomalyRiskResults.price.below")
@@ -380,682 +321,488 @@ export default function AnomalyRiskResults({ result, vehicle }) {
         ? t("anomalyRiskResults.price.above")
         : t("anomalyRiskResults.price.equal");
 
-  const priceDescription = t("assessment.priceDescription", {
-    count: number(price.count),
-    group: t(vehicle.generation ? "assessment.sameGeneration" : "assessment.allGenerations"),
-  });
-
   const expectedPos = position(expectedPrice);
   const actualPos = position(price.actual_price);
   const deltaLeft = Math.min(expectedPos, actualPos);
   const deltaWidth = Math.abs(actualPos - expectedPos);
 
+  const unusualSpecs = (specs?.signals || []).filter((s) => s.score != null && s.score > 0);
+  const ptsUnit = t("anomalyRiskResults.breakdown.pts");
+
   return (
-    <div className="risk-results">
-      <div className="risk-results-heading">
+    <div className="risk-results risk-results-clean">
+      {/* Compact Header */}
+      <div className="risk-clean-header">
         <h2>
           {vehicle.brand} {vehicle.model}
         </h2>
-
         <p>
           {[
             vehicle.generation,
             vehicle.year,
             vehicle.mileage != null ? `${number(vehicle.mileage)} km` : null,
-            `${t("anomalyRiskResults.header.askingPrice")}: ${
-              price.actual_price == null
-                ? t("anomalyRiskResults.unavailable")
-                : `${number(price.actual_price)} €`
-            }`,
+            price.actual_price != null ? `${number(price.actual_price)} €` : null,
           ]
             .filter(Boolean)
             .join(" · ")}
         </p>
       </div>
 
-      {!vehicle.generation && (
-        <p className="risk-description risk-generation-note">
-          {t("anomalyRiskResults.generationNote")}
-        </p>
-      )}
+      {/* 1. AT-A-GLANCE VERDICT BANNER (using <div> so global section padding never leaks) */}
+      <div className="risk-verdict-banner">
+        <div
+          className={`risk-verdict-main ${
+            scored ? `risk-level-${result.risk_level}` : "risk-unavailable"
+          }`}
+        >
+          <span className="risk-verdict-eyebrow">
+            {scored
+              ? t("anomalyRiskResults.overview.overallScore")
+              : partial
+                ? t("assessment.partialTitle")
+                : t("anomalyRiskResults.overview.overallEvaluation")}
+          </span>
 
-      <div className="risk-report-layout">
-        {/* LEFT SIDEBAR: Overall Risk + Breakdown + Deal Score + Confidence + Support */}
-        <div className="risk-overview">
-          <div className="risk-summary">
-            <article
-              className={`risk-overall ${
-                scored ? `risk-level-${result.risk_level}` : "risk-unavailable"
-              }`}
-            >
-              <span>
-                {scored
-                  ? t("anomalyRiskResults.overview.overallScore")
-                  : partial
-                    ? t("assessment.partialTitle")
-                    : t("anomalyRiskResults.overview.overallEvaluation")}
-              </span>
+          {scored ? (
+            <>
+              <div className="risk-verdict-score-row">
+                <strong className="risk-verdict-number">
+                  {number(result.anomaly_score, 0)}
+                  <small>/ 100</small>
+                </strong>
+                <span className={`risk-level-pill risk-level-pill-${result.risk_level}`}>
+                  {t(`anomalyRiskResults.levels.${result.risk_level}`)}
+                </span>
+              </div>
 
-              {scored ? (
-                <>
-                  <div className="risk-score-number">
-                    {number(result.anomaly_score, 1)}
-                    <small>/ 100</small>
-                  </div>
-
-                  <strong>
-                    {t("anomalyRiskResults.overview.anomalyLevel")}:{" "}
-                    {t(`anomalyRiskResults.levels.${result.risk_level}`)}
-                  </strong>
-
-                  <div className="risk-breakdown-box" aria-label={t("anomalyRiskResults.breakdown.title")}>
-                    <span className="risk-breakdown-title">{t("anomalyRiskResults.breakdown.title")}</span>
-                    <div className="risk-breakdown-rows">
-                      <div className="risk-breakdown-row">
-                        <span>1 · {t("anomalyRiskResults.breakdown.mileage")}</span>
-                        <strong>
-                          {mileageRiskPts == null ? "—" : `+${number(mileageRiskPts, 1)}`}
-                        </strong>
-                      </div>
-                      <div className="risk-breakdown-row">
-                        <span>2 · {t("anomalyRiskResults.breakdown.price")}</span>
-                        <strong>
-                          {priceRiskPts == null ? "—" : `+${number(priceRiskPts, 1)}`}
-                        </strong>
-                      </div>
-                      {specRiskPts != null && (
-                        <div className="risk-breakdown-row">
-                          <span>3 · {t("anomalyRiskResults.breakdown.specs")}</span>
-                          <strong>+{number(specRiskPts, 1)}</strong>
-                        </div>
-                      )}
-                      {rarityPts > 0 && (
-                        <div className="risk-breakdown-row">
-                          <span>{t("anomalyRiskResults.breakdown.rarity")}</span>
-                          <strong>+{number(rarityPts, 1)}</strong>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <p>{t("anomalyRiskResults.overview.higherScore")}</p>
-                </>
-              ) : (
-                <>
-                  <h3>
-                    {partial
-                      ? t("assessment.partialScore")
-                      : t("anomalyRiskResults.overview.insufficientData")}
-                  </h3>
-
-                  <p>
-                    {partial
-                      ? t("assessment.partialDescription")
-                      : t("anomalyRiskResults.overview.insufficientScore")}
-                  </p>
-                </>
-              )}
-            </article>
-
-            <article className="risk-summary-card risk-deal-grade-card">
-              <span>{t("anomalyRiskResults.dealGrade.label")}</span>
-
-              {dealScore != null && dealLevel ? (
-                <div className="risk-deal-grade-row">
-                  <span className={`risk-deal-badge risk-deal-badge-${dealLevel}`}>
-                    {Math.round(dealScore)}
+              <div className="risk-verdict-chips">
+                <span>
+                  {t("anomalyRiskResults.breakdown.mileage")}:{" "}
+                  <strong>{mileageRiskPts == null ? "—" : `+${number(mileageRiskPts, 0)}`}</strong>
+                </span>
+                <span>
+                  {t("anomalyRiskResults.breakdown.price")}:{" "}
+                  <strong>{priceRiskPts == null ? "—" : `+${number(priceRiskPts, 0)}`}</strong>
+                </span>
+                {specRiskPts != null && specRiskPts > 0.4 && (
+                  <span>
+                    {t("anomalyRiskResults.breakdown.specs")}:{" "}
+                    <strong>+{number(specRiskPts, 0)}</strong>
                   </span>
-                  <div className="risk-deal-grade-meta">
-                    <strong>{t(`anomalyRiskResults.dealGrade.levels.${dealLevel}`)}</strong>
-                    <small>{number(dealScore, 1)} / 80</small>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <h3>{t("anomalyRiskResults.dealGrade.unavailable")}</h3>
-                  <small>{t("anomalyRiskResults.overview.insufficientScore")}</small>
-                </>
-              )}
-            </article>
-
-            <article className="risk-summary-card">
-              <span>{t("anomalyRiskResults.overview.analysisConfidence")}</span>
-
-              <h3>{t(`anomalyRiskResults.confidenceLevels.${result.market_confidence}`)}</h3>
-
-              <p>{number(result.confidence_score, 1)} / 100</p>
-
-              <small>{t("anomalyRiskResults.overview.confidenceDescription")}</small>
-            </article>
-
-            <article className="risk-summary-card">
-              <span>
-                {t(`anomalyRiskResults.supportLabels.${result.market_support.support_level}`)}
-              </span>
-
-              <h3>
-                {number(result.market_support.model_generation_observations)}{" "}
-                <small>{t("anomalyRiskResults.overview.examples")}</small>
-              </h3>
-
-              <p>
-                {vehicle.generation
-                  ? t("anomalyRiskResults.overview.sameModelGeneration")
-                  : t("anomalyRiskResults.overview.allGenerations")}{" "}
-                {t("anomalyRiskResults.overview.databaseAtAnalysis")}
-              </p>
-
-              <small>
-                {scored
-                  ? t("anomalyRiskResults.overview.rarityAdjustment", {
-                      points: number(result.market_support.rarity_penalty, 1),
-                    })
-                  : t("anomalyRiskResults.overview.overallScoreUnavailable")}
-              </small>
-            </article>
-          </div>
-
-          {(rare || partial || lowConfidence || result.assessment_status === "limited_support") && (
-            <div className="risk-caution" role="note">
-              <strong>
-                {rare
-                  ? t("anomalyRiskResults.caution.fewExamplesTitle")
-                  : partial
-                    ? t("assessment.partialCaution")
-                    : t("anomalyRiskResults.caution.cautionTitle")}
-              </strong>
-
-              <p>
-                {rare
-                  ? t("anomalyRiskResults.caution.fewExamplesDescription")
-                  : partial
-                    ? t("assessment.partialCautionDescription")
-                    : t("anomalyRiskResults.caution.cautionDescription")}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* RIGHT COLUMN: Sequential Algorithm Cards (Step 1 Mileage -> Step 2 Price vs Expected -> Step 3 Specs) */}
-        <div className="risk-steps-column">
-          {/* STEP 1: MILEAGE CHECK */}
-          <article className="risk-detail-card risk-mileage-card">
-            <div className="risk-card-heading">
-              <div>
-                <span className="risk-step-badge risk-step-badge-1">
-                  {t("anomalyRiskResults.steps.mileageStep")}
-                </span>
-
-                <h3>
-                  {mileage.actual_mileage == null
-                    ? t("anomalyRiskResults.mileage.unspecified")
-                    : t(`anomalyRiskResults.mileageLabels.${mileage.direction}`)}
-                </h3>
-              </div>
-
-              {mileage.age_adjustment_factor != null && mileage.age_adjustment_factor < 1 && (
-                <span className="risk-leniency-pill">
-                  {t("anomalyRiskResults.mileage.youngLeniency", {
-                    age: number(mileage.vehicle_age_years ?? 0),
-                  })}
-                </span>
-              )}
-            </div>
-
-            <div className="risk-kpi-strip">
-              <div className="risk-kpi-box risk-kpi-real">
-                <span>{t("anomalyRiskResults.mileage.realMileage")}</span>
-                <strong>
-                  {mileage.actual_mileage == null
-                    ? t("anomalyRiskResults.mileage.unspecified")
-                    : `${number(mileage.actual_mileage)} km`}
-                </strong>
-              </div>
-
-              <div className="risk-kpi-box risk-kpi-expected">
-                <span>{t("anomalyRiskResults.mileage.observedMedian")}</span>
-                <strong>
-                  {mileage.expected_median_mileage == null
-                    ? t("anomalyRiskResults.mileage.unavailable")
-                    : `${number(mileage.expected_median_mileage)} km`}
-                </strong>
-                {mileage.sample_size > 0 && (
-                  <small>
-                    {number(mileage.sample_size)} {t("anomalyRiskResults.overview.examples")}
-                  </small>
+                )}
+                {rarityPts > 0 && (
+                  <span>
+                    {t("anomalyRiskResults.breakdown.rarity")}:{" "}
+                    <strong>+{number(rarityPts, 0)}</strong>
+                  </span>
                 )}
               </div>
 
-              <div className={`risk-kpi-box risk-kpi-delta risk-kpi-tone-${mileageTone}`}>
-                <span>{t("anomalyRiskResults.mileage.deviation")}</span>
-                <strong>
-                  {mileageDevPct == null
-                    ? t("anomalyRiskResults.unavailable")
-                    : `${mileageDevPct > 0 ? "+" : ""}${number(mileageDevPct, 1)}%`}
-                </strong>
-                <small>{t("anomalyRiskResults.mileage.normalBand")}</small>
-              </div>
-            </div>
-
-            {mileageGauge && (
-              <div className="risk-mileage-gauge" role="group" aria-label={t("anomalyRiskResults.mileage.label")}>
-                <div className="risk-gauge-top-labels">
-                  <div
-                    className="risk-gauge-pill risk-gauge-pill-median"
-                    style={{ left: `${clampPercent(mileageGauge.medPos, 14, 86)}%` }}
-                  >
-                    <span>{t("anomalyRiskResults.mileage.medianShort")}</span>
-                    <strong>{number(mileage.expected_median_mileage)} km</strong>
-                  </div>
-                </div>
-
-                <div className="risk-mileage-track">
-                  <div
-                    className="risk-mileage-normal-zone"
-                    style={{
-                      left: `${mileageGauge.normLow}%`,
-                      width: `${mileageGauge.normWidth}%`,
-                    }}
-                    title={t("anomalyRiskResults.mileage.normalBand")}
-                  />
-
-                  <div
-                    className={`risk-delta-connector risk-delta-connector-${mileageTone}`}
-                    style={{
-                      left: `${mileageGauge.deltaLeft}%`,
-                      width: `${mileageGauge.deltaWidth}%`,
-                    }}
-                  />
-
-                  <div
-                    className="risk-median"
-                    style={{ left: `${mileageGauge.medPos}%` }}
-                    aria-hidden="true"
-                  />
-
-                  <div
-                    className={`risk-asking risk-pin-${mileageTone}`}
-                    style={{ left: `${mileageGauge.actPos}%` }}
-                    aria-hidden="true"
-                  />
-                </div>
-
-                <div className="risk-gauge-bottom-labels">
-                  <div
-                    className="risk-gauge-pill risk-gauge-pill-real"
-                    style={{ left: `${clampPercent(mileageGauge.actPos, 14, 86)}%` }}
-                  >
-                    <span>{t("anomalyRiskResults.mileage.realMileage")}</span>
-                    <strong>{number(mileage.actual_mileage)} km</strong>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <p className="risk-description">
-              {t("anomalyRiskResults.mileage.comparison")}:{" "}
-              {t(`anomalyRiskResults.comparisonLabels.${mileage.comparison_level}`)}.{" "}
-              {t("anomalyRiskResults.mileage.warning")}
+              <p className="risk-verdict-caption">{t("anomalyRiskResults.overview.higherScore")}</p>
+            </>
+          ) : (
+            <p className="risk-verdict-empty">
+              {partial
+                ? t("assessment.partialDescription")
+                : t("anomalyRiskResults.overview.insufficientScore")}
             </p>
+          )}
+        </div>
 
-            <ComponentScore
-              value={mileage.score}
-              weight={weights.mileage}
-              riskPoints={mileageRiskPts}
-              flag={mileage.flag}
-              contextual={contextual}
-              t={t}
-            />
-          </article>
-
-          {/* STEP 2: REAL PRICE VS EXPECTED PRICE */}
-          <article className="risk-detail-card risk-price-card">
-            <div className="risk-card-heading">
-              <div>
-                <span className="risk-step-badge risk-step-badge-2">
-                  {t("anomalyRiskResults.steps.priceStep")}
+        <div className="risk-verdict-side">
+          {dealScore != null && dealLevel && (
+            <div className="risk-verdict-deal">
+              <span className={`risk-deal-badge risk-deal-badge-${dealLevel}`}>
+                {Math.round(dealScore)}
+              </span>
+              <div className="risk-deal-grade-meta">
+                <span className="risk-verdict-side-label">
+                  {t("anomalyRiskResults.dealGrade.label")}
                 </span>
-
-                <h3>{t(`anomalyRiskResults.priceLabels.${price.direction}`)}</h3>
-              </div>
-
-              {priceAvailable && price.count >= 10 && (
-                <div className="risk-distribution-badge">
-                  <span className="risk-distribution-badge-dot" aria-hidden="true" />
-                  <span>
-                    {t("anomalyRiskResults.price.distributionBadge", {
-                      count: number(price.count),
-                    })}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <p className="risk-description">
-              {priceDescription}
-              {price.support_level === "limited" && t("anomalyRiskResults.price.limitedSupport")}
-            </p>
-
-            {priceAvailable ? (
-              <>
-                {/* 3-Box Price Comparison Strip: Real Price vs Expected Price vs Gap */}
-                <div className="risk-kpi-strip">
-                  <div className="risk-kpi-box risk-kpi-real">
-                    <span>{t("anomalyRiskResults.price.realPrice")}</span>
-                    <strong>{number(price.actual_price)} €</strong>
-                  </div>
-
-                  <div className="risk-kpi-box risk-kpi-expected">
-                    <span>{t("anomalyRiskResults.price.expectedPrice")}</span>
-                    <strong>{number(expectedPrice)} €</strong>
-                    <small>
-                      {showSeparateMedian
-                        ? `${t("anomalyRiskResults.price.marketMedian")}: ${number(price.p50)} € (${
-                            mileageAdjEur > 0 ? "+" : ""
-                          }${number(mileageAdjEur)} € ${t("anomalyRiskResults.price.mileageAdj")})`
-                        : t("anomalyRiskResults.price.expectedPriceSub")}
-                    </small>
-                  </div>
-
-                  <div className={`risk-kpi-box risk-kpi-delta risk-kpi-tone-${priceTone}`}>
-                    <span>{t("anomalyRiskResults.price.difference")}</span>
-                    <strong>
-                      {priceGapEur == null
-                        ? t("anomalyRiskResults.unavailable")
-                        : `${priceGapEur > 0 ? "+" : ""}${number(priceGapEur)} €`}
-                    </strong>
-                    {priceDevExpectedPct != null && (
-                      <small>
-                        {priceDevExpectedPct > 0 ? "+" : ""}
-                        {number(priceDevExpectedPct, 1)}% vs. {t("anomalyRiskResults.price.expectedPrice")}
-                      </small>
-                    )}
-                  </div>
-                </div>
-
-                {/* Price Market Curve + Expected Price vs Real Price Visual Plot */}
-                <div
-                  className="risk-price-chart-modern"
-                  role="group"
-                  aria-label={t("anomalyRiskResults.price.chartAriaLabel")}
-                >
-                  {/* Top floating label for Expected Price (always cleanly separated above curve) */}
-                  <div className="risk-chart-top-track">
-                    <div
-                      className="risk-chart-marker-pill risk-marker-pill-expected"
-                      style={{ left: `${clampPercent(expectedPos, 14, 86)}%` }}
-                    >
-                      <span>{t("anomalyRiskResults.price.expectedPrice")}</span>
-                      <strong>{number(expectedPrice)} €</strong>
-                    </div>
-                  </div>
-
-                  {distData && (
-                    <div className="risk-distribution-graph">
-                      <svg
-                        className="risk-distribution-svg"
-                        viewBox="0 0 1000 130"
-                        preserveAspectRatio="none"
-                        aria-hidden="true"
-                      >
-                        <defs>
-                          <linearGradient id="riskDistGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#14B8A6" stopOpacity="0.28" />
-                            <stop offset="100%" stopColor="#14B8A6" stopOpacity="0.02" />
-                          </linearGradient>
-                          <linearGradient id="riskDistCentralGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#0F766E" stopOpacity="0.40" />
-                            <stop offset="100%" stopColor="#0F766E" stopOpacity="0.08" />
-                          </linearGradient>
-                        </defs>
-
-                        <line
-                          x1="0"
-                          y1={distData.baselineY}
-                          x2="1000"
-                          y2={distData.baselineY}
-                          stroke="#CBD5E1"
-                          strokeWidth="1.5"
-                        />
-
-                        <path d={distData.areaPath} fill="url(#riskDistGrad)" />
-
-                        {distData.centralAreaPath && (
-                          <path d={distData.centralAreaPath} fill="url(#riskDistCentralGrad)" />
-                        )}
-
-                        <path
-                          d={distData.linePath}
-                          fill="none"
-                          stroke="#0F766E"
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                        />
-
-                        {/* Subtle raw P50 market median guide when distinct from expected price */}
-                        {showSeparateMedian && (
-                          <line
-                            x1={`${(position(price.p50) * 10).toFixed(1)}`}
-                            y1={distData.yMedian}
-                            x2={`${(position(price.p50) * 10).toFixed(1)}`}
-                            y2={distData.baselineY}
-                            stroke="#94A3B8"
-                            strokeWidth="1.5"
-                            strokeDasharray="2 3"
-                          />
-                        )}
-
-                        {/* Expected Price vertical dashed line + glowing emerald circle */}
-                        {expectedPrice != null && (
-                          <>
-                            <line
-                              x1={`${(expectedPos * 10).toFixed(1)}`}
-                              y1="2"
-                              x2={`${(expectedPos * 10).toFixed(1)}`}
-                              y2={distData.baselineY}
-                              stroke="#0D9488"
-                              strokeWidth="2.2"
-                              strokeDasharray="5 3"
-                            />
-                            <circle
-                              cx={`${(expectedPos * 10).toFixed(1)}`}
-                              cy={distData.yExpected}
-                              r="5.5"
-                              fill="#0D9488"
-                              stroke="#FFFFFF"
-                              strokeWidth="2.2"
-                            />
-                          </>
-                        )}
-
-                        {/* Real Asking Price vertical dashed line + dark/toned dot */}
-                        {price.actual_price != null && (
-                          <>
-                            <line
-                              x1={`${(actualPos * 10).toFixed(1)}`}
-                              y1={distData.yAsking}
-                              x2={`${(actualPos * 10).toFixed(1)}`}
-                              y2={distData.baselineY}
-                              stroke={priceTone === "danger" ? "#DC2626" : priceTone === "warning" ? "#D97706" : "#17202A"}
-                              strokeWidth="2.4"
-                              strokeDasharray="3 3"
-                            />
-                            <circle
-                              cx={`${(actualPos * 10).toFixed(1)}`}
-                              cy={distData.yAsking}
-                              r="6"
-                              fill={priceTone === "danger" ? "#DC2626" : priceTone === "warning" ? "#D97706" : "#17202A"}
-                              stroke="#FFFFFF"
-                              strokeWidth="2.2"
-                            />
-                          </>
-                        )}
-                      </svg>
-                    </div>
-                  )}
-
-                  {/* Horizontal Range Bar with P10-P90, Expected-to-Real Delta Connector & Pins */}
-                  <div className="risk-price-plot">
-                    <div
-                      className="risk-range"
-                      style={{
-                        left: `${position(price.p10)}%`,
-                        width: `${Math.max(1, position(price.p90) - position(price.p10))}%`,
-                      }}
-                    />
-
-                    {/* Highlighted delta segment connecting Expected Price <-> Real Price */}
-                    <div
-                      className={`risk-delta-connector risk-delta-connector-${priceTone}`}
-                      style={{
-                        left: `${deltaLeft}%`,
-                        width: `${deltaWidth}%`,
-                      }}
-                    />
-
-                    {showSeparateMedian && (
-                      <div
-                        className="risk-raw-median-tick"
-                        style={{ left: `${position(price.p50)}%` }}
-                        title={`${t("anomalyRiskResults.price.marketMedian")}: ${number(price.p50)} €`}
-                        aria-hidden="true"
-                      />
-                    )}
-
-                    <div
-                      className="risk-median risk-expected-marker"
-                      style={{ left: `${expectedPos}%` }}
-                      aria-hidden="true"
-                    />
-
-                    <div
-                      className={`risk-asking risk-pin-${priceTone}`}
-                      style={{ left: `${actualPos}%` }}
-                      aria-hidden="true"
-                    />
-                  </div>
-
-                  {/* Bottom floating label for Real Asking Price */}
-                  <div className="risk-chart-bottom-track">
-                    <div
-                      className={`risk-chart-marker-pill risk-marker-pill-real risk-marker-pill-${priceTone}`}
-                      style={{ left: `${clampPercent(actualPos, 14, 86)}%` }}
-                    >
-                      <span>{t("anomalyRiskResults.price.realPrice")}</span>
-                      <strong>{number(price.actual_price)} €</strong>
-                    </div>
-                  </div>
-
-                  {/* Clean Legend & P10 / P50 / P90 Reference Row (zero overlapping labels) */}
-                  <div className="risk-chart-footer-legend">
-                    <div className="risk-legend-item">
-                      <span>{t("anomalyRiskResults.price.percentile10")}</span>
-                      <strong>{number(price.p10)} €</strong>
-                    </div>
-                    <div className="risk-legend-item">
-                      <span>{t("anomalyRiskResults.price.marketMedian")}</span>
-                      <strong>{number(price.p50)} €</strong>
-                    </div>
-                    <div className="risk-legend-item">
-                      <span>{t("anomalyRiskResults.price.percentile90")}</span>
-                      <strong>{number(price.p90)} €</strong>
-                    </div>
-                  </div>
-                </div>
-
-                <p className="risk-description">
-                  {t("anomalyRiskResults.price.deviationExpected", {
-                    actual: number(price.actual_price),
-                    percent: number(Math.abs(priceDevExpectedPct ?? 0), 1),
-                    direction: priceDirectionWord,
-                    expected: number(expectedPrice),
-                    median: number(price.p50),
-                  })}
-                </p>
-              </>
-            ) : (
-              <p className="risk-description">
-                {t("anomalyRiskResults.price.insufficient", {
-                  group: vehicle.generation
-                    ? t("anomalyRiskResults.price.sameGeneration")
-                    : t("anomalyRiskResults.price.sameModel"),
-                })}
-              </p>
-            )}
-
-            <ComponentScore
-              value={price.score}
-              weight={weights.price}
-              riskPoints={priceRiskPts}
-              flag={price.flag}
-              contextual={contextual}
-              t={t}
-            />
-          </article>
-
-          {/* STEP 3: SPECIFICATIONS SUPPORTING CHECK */}
-          <article className="risk-detail-card risk-spec-card">
-            <div className="risk-card-heading">
-              <div>
-                <span className="risk-step-badge risk-step-badge-3">
-                  {t("anomalyRiskResults.steps.specStep")}
-                </span>
-
-                <h3>{t("anomalyRiskResults.specification.title")}</h3>
+                <strong>{t(`anomalyRiskResults.dealGrade.levels.${dealLevel}`)}</strong>
+                <small>{number(dealScore, 0)} / 80</small>
               </div>
             </div>
+          )}
 
-            <p className="risk-description">
-              {specs.supported_fields}{" "}
-              {specs.supported_fields === 1
-                ? t("anomalyRiskResults.specification.fieldEvaluated")
-                : t("anomalyRiskResults.specification.fieldsEvaluated")}{" "}
-              {t("assessment.configBasis")}
-            </p>
-
-            <ul className="risk-spec-list risk-spec-grid">
-              {specs.signals.map((signal) => (
-                <li key={signal.field}>
-                  <div>
-                    <strong>{getFieldLabel(t, signal.field)}</strong>
-
-                    <span>
-                      {signal.value == null
-                        ? t("anomalyRiskResults.specification.unspecified")
-                        : translateVehicleValue(t, signal.field, signal.value)}
-                    </span>
-                  </div>
-
-                  <span
-                    className={`risk-spec-label ${
-                      signal.score != null && signal.score > 0 ? "risk-spec-unusual" : ""
-                    }`}
-                  >
-                    {signal.value == null
-                      ? t("anomalyRiskResults.specification.unspecified")
-                      : signal.score == null
-                        ? t("anomalyRiskResults.specification.insufficientData")
-                        : t(`anomalyRiskResults.severityLabels.${signal.severity}`) ||
-                          t("anomalyRiskResults.specification.toCheck")}
-                  </span>
-                </li>
-              ))}
-            </ul>
-
-            <ComponentScore
-              value={specs.score}
-              weight={weights.specification}
-              riskPoints={specRiskPts}
-              t={t}
-            />
-          </article>
+          <div className="risk-verdict-meta-pills">
+            <span>
+              {t("anomalyRiskResults.overview.analysisConfidence")}:{" "}
+              <strong>{t(`anomalyRiskResults.confidenceLevels.${result.market_confidence}`)}</strong>
+            </span>
+            <span>
+              <strong>{number(result.market_support.model_generation_observations)}</strong>{" "}
+              {t("anomalyRiskResults.overview.examples")}
+            </span>
+          </div>
         </div>
       </div>
 
-      <details className="risk-explanation">
+      {(rare || partial || lowConfidence || result.assessment_status === "limited_support") && (
+        <div className="risk-clean-caution" role="note">
+          <strong>
+            {rare
+              ? t("anomalyRiskResults.caution.fewExamplesTitle")
+              : partial
+                ? t("assessment.partialCaution")
+                : t("anomalyRiskResults.caution.cautionTitle")}
+          </strong>
+          <span>
+            {rare
+              ? t("anomalyRiskResults.caution.fewExamplesDescription")
+              : partial
+                ? t("assessment.partialCautionDescription")
+                : t("anomalyRiskResults.caution.cautionDescription")}
+          </span>
+        </div>
+      )}
+
+      {/* 2. TWO VISUAL CHECK CARDS: MILEAGE + PRICE (WITH DISTRIBUTION CURVE & EXPLANATIONS) */}
+      <div className="risk-checks-grid">
+        {/* STEP 1: MILEAGE */}
+        <article className="risk-check-card">
+          <div className="risk-check-top">
+            <div>
+              <span className="risk-step-badge risk-step-badge-1">
+                {t("anomalyRiskResults.steps.mileageStep")}
+              </span>
+              <h3>
+                {mileage.actual_mileage == null
+                  ? t("anomalyRiskResults.mileage.unspecified")
+                  : t(`anomalyRiskResults.mileageLabels.${mileage.direction}`)}
+              </h3>
+            </div>
+            <strong className={`risk-pts-pill risk-pts-pill-${mileageTone}`}>
+              {mileageRiskPts == null ? "—" : `+${number(mileageRiskPts, 0)} ${ptsUnit}`}
+            </strong>
+          </div>
+
+          <div className="risk-compare-pair">
+            <div>
+              <span>{t("anomalyRiskResults.mileage.realMileage")}</span>
+              <strong>
+                {mileage.actual_mileage == null
+                  ? t("anomalyRiskResults.mileage.unspecified")
+                  : `${number(mileage.actual_mileage)} km`}
+              </strong>
+            </div>
+            <div>
+              <span>{t("anomalyRiskResults.mileage.observedMedian")}</span>
+              <strong className="is-expected">
+                {mileage.expected_median_mileage == null
+                  ? t("anomalyRiskResults.mileage.unavailable")
+                  : `${number(mileage.expected_median_mileage)} km`}
+              </strong>
+            </div>
+            {mileageDevPct != null && (
+              <div className={`risk-diff-tag risk-diff-tag-${mileageTone}`}>
+                {mileageDevPct > 0 ? "+" : ""}
+                {number(mileageDevPct, 0)}%
+              </div>
+            )}
+          </div>
+
+          {mileageGauge && (
+            <div className="risk-simple-gauge" role="group" aria-label={t("anomalyRiskResults.mileage.label")}>
+              <div className="risk-simple-gauge-bar">
+                <div
+                  className="risk-mileage-normal-zone"
+                  style={{
+                    left: `${mileageGauge.normLow}%`,
+                    width: `${mileageGauge.normWidth}%`,
+                  }}
+                />
+                <div
+                  className={`risk-delta-connector risk-delta-connector-${mileageTone}`}
+                  style={{
+                    left: `${mileageGauge.deltaLeft}%`,
+                    width: `${mileageGauge.deltaWidth}%`,
+                  }}
+                />
+                <div
+                  className="risk-median risk-expected-marker"
+                  style={{ left: `${mileageGauge.medPos}%` }}
+                  aria-hidden="true"
+                />
+                <div
+                  className={`risk-asking risk-pin-${mileageTone}`}
+                  style={{ left: `${mileageGauge.actPos}%` }}
+                  aria-hidden="true"
+                />
+              </div>
+              <div className="risk-simple-gauge-legend">
+                <span>
+                  <i className="legend-dot legend-dot-expected" />
+                  {t("anomalyRiskResults.mileage.medianShort")}: {number(mileage.expected_median_mileage)} km
+                </span>
+                <span>
+                  <i className={`legend-dot legend-dot-${mileageTone}`} />
+                  {t("anomalyRiskResults.mileage.realMileage")}: {number(mileage.actual_mileage)} km
+                </span>
+              </div>
+            </div>
+          )}
+
+          <p className="risk-check-explanation">
+            {t("anomalyRiskResults.mileage.comparison")}:{" "}
+            <strong>{t(`anomalyRiskResults.comparisonLabels.${mileage.comparison_level}`)}</strong>.{" "}
+            {t("anomalyRiskResults.mileage.warning")}
+          </p>
+
+          {mileageFlagMsg && (
+            <p className="risk-alert-note" role="note">
+              <strong>{mileageFlagMsg}</strong>
+            </p>
+          )}
+        </article>
+
+        {/* STEP 2: PRICE VS EXPECTED PRICE + DISTRIBUTION GRAPH */}
+        <article className="risk-check-card">
+          <div className="risk-check-top">
+            <div>
+              <span className="risk-step-badge risk-step-badge-2">
+                {t("anomalyRiskResults.steps.priceStep")}
+              </span>
+              <h3>{t(`anomalyRiskResults.priceLabels.${price.direction}`)}</h3>
+            </div>
+            <strong className={`risk-pts-pill risk-pts-pill-${priceTone}`}>
+              {priceRiskPts == null ? "—" : `+${number(priceRiskPts, 0)} ${ptsUnit}`}
+            </strong>
+          </div>
+
+          {priceAvailable ? (
+            <>
+              <div className="risk-compare-pair">
+                <div>
+                  <span>{t("anomalyRiskResults.price.realPrice")}</span>
+                  <strong>{number(price.actual_price)} €</strong>
+                </div>
+                <div>
+                  <span>{t("anomalyRiskResults.price.expectedPrice")}</span>
+                  <strong className="is-expected">{number(expectedPrice)} €</strong>
+                </div>
+                {priceGapEur != null && (
+                  <div className={`risk-diff-tag risk-diff-tag-${priceTone}`}>
+                    {priceGapEur > 0 ? "+" : ""}
+                    {number(priceGapEur)} €
+                    {priceDevExpectedPct != null && (
+                      <small>
+                        {" "}
+                        ({priceDevExpectedPct > 0 ? "+" : ""}
+                        {number(priceDevExpectedPct, 0)}%)
+                      </small>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="risk-simple-gauge" role="group" aria-label={t("anomalyRiskResults.price.chartAriaLabel")}>
+                {distData && (
+                  <div className="risk-clean-dist-graph">
+                    <svg
+                      className="risk-distribution-svg"
+                      viewBox="0 0 1000 116"
+                      preserveAspectRatio="none"
+                      aria-hidden="true"
+                    >
+                      <defs>
+                        <linearGradient id="riskDistGradClean" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#14B8A6" stopOpacity="0.28" />
+                          <stop offset="100%" stopColor="#14B8A6" stopOpacity="0.03" />
+                        </linearGradient>
+                        <linearGradient id="riskDistCentralGradClean" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#0F766E" stopOpacity="0.42" />
+                          <stop offset="100%" stopColor="#0F766E" stopOpacity="0.08" />
+                        </linearGradient>
+                      </defs>
+
+                      <line
+                        x1="0"
+                        y1={distData.baselineY}
+                        x2="1000"
+                        y2={distData.baselineY}
+                        stroke="var(--risk-svg-baseline, #CBD5E1)"
+                        strokeWidth="1.5"
+                      />
+                      <path d={distData.areaPath} fill="url(#riskDistGradClean)" />
+                      {distData.centralAreaPath && (
+                        <path d={distData.centralAreaPath} fill="url(#riskDistCentralGradClean)" />
+                      )}
+                      <path
+                        d={distData.linePath}
+                        fill="none"
+                        stroke="var(--risk-svg-curve, #0F766E)"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                      />
+
+                      {showSeparateMedian && (
+                        <line
+                          x1={`${(position(price.p50) * 10).toFixed(1)}`}
+                          y1={distData.yMedian}
+                          x2={`${(position(price.p50) * 10).toFixed(1)}`}
+                          y2={distData.baselineY}
+                          stroke="#94A3B8"
+                          strokeWidth="1.5"
+                          strokeDasharray="2 3"
+                        />
+                      )}
+
+                      {expectedPrice != null && (
+                        <>
+                          <line
+                            x1={`${(expectedPos * 10).toFixed(1)}`}
+                            y1="4"
+                            x2={`${(expectedPos * 10).toFixed(1)}`}
+                            y2={distData.baselineY}
+                            stroke="var(--risk-svg-expected, #0D9488)"
+                            strokeWidth="2.2"
+                            strokeDasharray="5 3"
+                          />
+                          <circle
+                            cx={`${(expectedPos * 10).toFixed(1)}`}
+                            cy={distData.yExpected}
+                            r="5.5"
+                            fill="var(--risk-svg-expected, #0D9488)"
+                            stroke="var(--risk-svg-dot-stroke, #FFFFFF)"
+                            strokeWidth="2.2"
+                          />
+                        </>
+                      )}
+
+                      {price.actual_price != null && (
+                        <>
+                          <line
+                            x1={`${(actualPos * 10).toFixed(1)}`}
+                            y1={distData.yAsking}
+                            x2={`${(actualPos * 10).toFixed(1)}`}
+                            y2={distData.baselineY}
+                            stroke={
+                              priceTone === "danger"
+                                ? "#EF4444"
+                                : priceTone === "warning"
+                                  ? "#F59E0B"
+                                  : "var(--risk-svg-asking, #17202A)"
+                            }
+                            strokeWidth="2.4"
+                            strokeDasharray="3 3"
+                          />
+                          <circle
+                            cx={`${(actualPos * 10).toFixed(1)}`}
+                            cy={distData.yAsking}
+                            r="6"
+                            fill={
+                              priceTone === "danger"
+                                ? "#EF4444"
+                                : priceTone === "warning"
+                                  ? "#F59E0B"
+                                  : "var(--risk-svg-asking, #17202A)"
+                            }
+                            stroke="var(--risk-svg-dot-stroke, #FFFFFF)"
+                            strokeWidth="2.2"
+                          />
+                        </>
+                      )}
+                    </svg>
+                  </div>
+                )}
+
+                <div className="risk-simple-gauge-bar">
+                  <div
+                    className="risk-range"
+                    style={{
+                      left: `${position(price.p10)}%`,
+                      width: `${Math.max(1, position(price.p90) - position(price.p10))}%`,
+                    }}
+                  />
+                  <div
+                    className={`risk-delta-connector risk-delta-connector-${priceTone}`}
+                    style={{
+                      left: `${deltaLeft}%`,
+                      width: `${deltaWidth}%`,
+                    }}
+                  />
+                  <div
+                    className="risk-median risk-expected-marker"
+                    style={{ left: `${expectedPos}%` }}
+                    aria-hidden="true"
+                  />
+                  <div
+                    className={`risk-asking risk-pin-${priceTone}`}
+                    style={{ left: `${actualPos}%` }}
+                    aria-hidden="true"
+                  />
+                </div>
+
+                <div className="risk-simple-gauge-legend">
+                  <span>
+                    <i className="legend-dot legend-dot-expected" />
+                    {t("anomalyRiskResults.price.expectedPrice")}: {number(expectedPrice)} €
+                  </span>
+                  <span>
+                    <i className={`legend-dot legend-dot-${priceTone}`} />
+                    {t("anomalyRiskResults.price.realPrice")}: {number(price.actual_price)} €
+                  </span>
+                </div>
+
+                <div className="risk-simple-range-note">
+                  <span>{number(price.p10)} €</span>
+                  <small>
+                    {t("anomalyRiskResults.price.marketMedian")}: {number(price.p50)} €
+                  </small>
+                  <span>{number(price.p90)} €</span>
+                </div>
+              </div>
+
+              <p className="risk-check-explanation">
+                {t("anomalyRiskResults.price.deviationExpected", {
+                  actual: number(price.actual_price),
+                  percent: number(Math.abs(priceDevExpectedPct ?? 0), 1),
+                  direction: priceDirectionWord,
+                  expected: number(expectedPrice),
+                  median: number(price.p50),
+                })}
+              </p>
+            </>
+          ) : (
+            <p className="risk-check-explanation">
+              {t("anomalyRiskResults.price.insufficient", {
+                group: vehicle.generation
+                  ? t("anomalyRiskResults.price.sameGeneration")
+                  : t("anomalyRiskResults.price.sameModel"),
+              })}
+            </p>
+          )}
+
+          {priceFlagMsg && (
+            <p className="risk-alert-note" role="note">
+              <strong>{priceFlagMsg}</strong>
+            </p>
+          )}
+        </article>
+      </div>
+
+      {/* Show unusual specs chip bar inline ONLY if something is actually unusual */}
+      {unusualSpecs.length > 0 && (
+        <div className="risk-unusual-inline">
+          <span className="risk-step-badge risk-step-badge-3">
+            {t("anomalyRiskResults.specification.title")}
+          </span>
+          <div className="risk-unusual-chips">
+            {unusualSpecs.map((signal) => (
+              <span key={signal.field} className="risk-spec-label risk-spec-unusual">
+                {getFieldLabel(t, signal.field)}:{" "}
+                <strong>{translateVehicleValue(t, signal.field, signal.value)}</strong>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 3. COLLAPSIBLE TECHNICAL DETAILS */}
+      <details className="risk-explanation risk-explanation-compact">
         <summary>
           <span>{t("anomalyRiskResults.explanation.title")}</span>
-
           <svg
             className="risk-explanation-chevron"
             viewBox="0 0 24 24"
@@ -1081,13 +828,29 @@ export default function AnomalyRiskResults({ result, vehicle }) {
             ))}
           </ul>
 
+          {specs?.signals?.length > 0 && (
+            <div className="risk-details-specs-strip">
+              {specs.signals
+                .filter((s) => s.value != null)
+                .map((signal) => (
+                  <span
+                    key={signal.field}
+                    className={`risk-spec-label ${
+                      signal.score != null && signal.score > 0 ? "risk-spec-unusual" : ""
+                    }`}
+                  >
+                    {getFieldLabel(t, signal.field)}: {translateVehicleValue(t, signal.field, signal.value)}
+                  </span>
+                ))}
+            </div>
+          )}
+
           {priceAvailable && (
             <p className="risk-explanation-interval">
               {t("anomalyRiskResults.explanation.centralRange")}:{" "}
               <strong>
                 {number(price.p25)} € – {number(price.p75)} €
               </strong>
-              .
             </p>
           )}
         </div>

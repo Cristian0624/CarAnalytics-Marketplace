@@ -62,18 +62,19 @@ class MileageFirstExpectedPriceRiskTests(unittest.TestCase):
         self.assertAlmostEqual(r["components"]["price_anomaly"]["mileage_adjustment_eur"], 300.0)
 
     def test_step1_mileage_deviation_adds_risk_points_beyond_tolerance(self):
-        # Within +-25% of 160,000 km (120k..200k) -> 0 pts
-        self.assertEqual(self.assess(mileage=120000, price=12500)["components"]["mileage_anomaly"]["risk_points"], 0.0)
-        self.assertEqual(self.assess(mileage=200000, price=9600)["components"]["mileage_anomaly"]["risk_points"], 0.0)
+        # Within +-20% of 160,000 km (128k..192k) -> 0 pts
+        self.assertEqual(self.assess(mileage=128000, price=12500)["components"]["mileage_anomaly"]["risk_points"], 0.0)
+        self.assertEqual(self.assess(mileage=192000, price=9600)["components"]["mileage_anomaly"]["risk_points"], 0.0)
 
-        # -50% below median (80,000 km) -> +20.0 pts
+        # -50% below median (80,000 km) -> +32.5 pts (25*1.0 + 5*1.5) and triggers extreme_mileage_low flag
         low = self.assess(mileage=80000, price=13400)
-        self.assertAlmostEqual(low["components"]["mileage_anomaly"]["risk_points"], 20.0)
+        self.assertAlmostEqual(low["components"]["mileage_anomaly"]["risk_points"], 32.5)
         self.assertEqual(low["components"]["mileage_anomaly"]["direction"], "unusually_low")
+        self.assertEqual(low["components"]["mileage_anomaly"]["flag"], "extreme_mileage_low")
 
-        # +75% above median (280,000 km) -> +20.0 pts
+        # +75% above median (280,000 km) -> +32.25 pts (40*0.6 + 15*0.55)
         high = self.assess(mileage=280000, price=6800)
-        self.assertAlmostEqual(high["components"]["mileage_anomaly"]["risk_points"], 20.0)
+        self.assertAlmostEqual(high["components"]["mileage_anomaly"]["risk_points"], 32.25)
         self.assertEqual(high["components"]["mileage_anomaly"]["direction"], "unusually_high")
 
     def test_step2_expected_price_prevents_false_price_risk_on_honest_high_mileage_car(self):
@@ -82,7 +83,7 @@ class MileageFirstExpectedPriceRiskTests(unittest.TestCase):
         r = self.assess(mileage=280000, price=6800)
         self.assertAlmostEqual(r["components"]["price_anomaly"]["expected_price"], 6600.0)
         self.assertEqual(r["components"]["price_anomaly"]["risk_points"], 0.0)
-        self.assertAlmostEqual(r["anomaly_score"], 20.0)
+        self.assertAlmostEqual(r["anomaly_score"], 32.25)
 
     def test_additive_combination_for_rollback_plus_suspicious_discount(self):
         r = self.assess(mileage=45000, price=8000)
@@ -120,6 +121,23 @@ class MileageFirstExpectedPriceRiskTests(unittest.TestCase):
         r = self.assess(mileage=10, price=12000)
         self.assertAlmostEqual(r["components"]["price_anomaly"]["expected_price"], 12000.0)
         self.assertGreater(r["components"]["mileage_anomaly"]["risk_points"], 40.0)
+
+    def test_empirical_depreciation_matches_eval_when_peer_prices_present(self):
+        # Low-mileage peers avg 17,200 EUR @ 120k km; high-mileage peers avg 16,800 EUR @ 280k km
+        # Empirical slope = (400 / 160,000) * 10,000 = 25 EUR / 10k km (far gentler than 5% = 850 EUR/10k)
+        paired_rows = [
+            dict(self.rows[0], price_eur=17200.0, mileage=120000) for _ in range(10)
+        ] + [
+            dict(self.rows[0], price_eur=16800.0, mileage=280000) for _ in range(10)
+        ]
+        prices = [r["price_eur"] for r in paired_rows]  # median = 17,000 EUR
+        r = self.service.assess_listing_risk(
+            self.base | dict(mileage=160000, price=17000),
+            prices, len(prices), paired_rows,
+        )
+        # Median mileage = 200,000 km; car is 40,000 km below median -> +4 * 25 = +100 EUR
+        self.assertAlmostEqual(r["components"]["price_anomaly"]["expected_price"], 17100.0)
+        self.assertAlmostEqual(r["components"]["price_anomaly"]["mileage_adjustment_eur"], 100.0)
 
 
 if __name__ == "__main__":

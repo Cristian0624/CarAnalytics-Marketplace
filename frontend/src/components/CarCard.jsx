@@ -11,11 +11,34 @@ import AnomalyRiskResults from "./AnomalyRiskResults";
 import { buildRiskPayload } from "../utils/anomalyRisk";
 import { createPortal } from "react-dom";
 import { useComparator } from "../context/ComparatorContext";
+import { useFavourites } from "../context/FavouritesContext";
+import { findFavourite } from "../utils/savedItems";
+import { translateCarValue } from "../utils/carTranslations";
 
 
 function formatValue(value) {
   if (value === null || value === undefined || value === "") return "—";
   return value;
+}
+
+function formatSpec(t, field, value) {
+  const translated = translateCarValue(t, field, value);
+  return translated || "—";
+}
+
+function StarBadge({ title }) {
+  return (
+    <span className="car-card-fav-badge" title={title} aria-label={title}>
+      <svg
+        viewBox="0 0 24 24"
+        width="16"
+        height="16"
+        aria-hidden="true"
+      >
+        <path d="m12 3 2.8 5.7 6.3.9-4.55 4.43 1.08 6.27L12 17.34l-5.63 2.96 1.08-6.27L2.9 9.6l6.3-.9Z" />
+      </svg>
+    </span>
+  );
 }
 
 function formatNumber(value) {
@@ -25,20 +48,23 @@ function formatNumber(value) {
   return number.toLocaleString();
 }
 
-function RecommendationCard({ car, onClick, isCompared, t }) {
+function RecommendationCard({ car, onClick, isCompared, isFavourited, t }) {
   const [imgFailed, setImgFailed] = useState(false);
   const score = Number(car.score);
 
   return (
     <article
-      className="car-card recommendation-card"
+      className={`car-card recommendation-card${isFavourited ? " is-favourited" : ""}`}
       onClick={onClick}
       style={{ cursor: "pointer", margin: 0 }}
     >
       <div className="car-card-image-wrap">
+        {isFavourited && (
+          <StarBadge title={t("savedItems.favourites.saved", { defaultValue: "Salvat la favorite" })} />
+        )}
         {isCompared && (
           <div
-            className="car-card-compare-badge"
+            className="car-card-compare-badge car-card-compare-badge-bottom"
             title={t("comparatorPage.compared")}
           >
             <svg
@@ -92,9 +118,7 @@ function RecommendationCard({ car, onClick, isCompared, t }) {
 
             {car.generation && (
               <p className="car-generation">
-                {typeof car.generation === "string"
-                  ? car.generation.trim()
-                  : car.generation}
+                {formatSpec(t, "generation", car.generation)}
               </p>
             )}
           </div>
@@ -147,7 +171,11 @@ function CarCard({
   const [currentCar, setCurrentCar] = useState(car);
   const [carHistory, setCarHistory] = useState([]);
   const { comparedCars, addCar, removeCar } = useComparator();
+  const favourites = useFavourites();
   const isCompared = comparedCars.some(c => String(c.id) === String(currentCar.id));
+  const isFavourited = Boolean(
+    showFavourite && favourites?.items && findFavourite(favourites.items, currentCar)
+  );
 
   const [cardImageFailed, setCardImageFailed] = useState(false);
   const [modalImageFailed, setModalImageFailed] = useState(false);
@@ -180,7 +208,7 @@ function CarCard({
     function handleClickOutside(event) {
       if (
         event.target?.closest?.(
-          ".language-selector, .language-dropdown, .mobile-menu-toggle, .mobile-menu-drawer, .mobile-menu-backdrop, .mobile-lang-pills"
+          ".theme-toggle-button, .mobile-theme-toggle, .mobile-header-actions, .language-selector, .language-dropdown, .mobile-menu-toggle, .mobile-menu-drawer, .mobile-menu-backdrop, .mobile-lang-pills"
         )
       ) {
         return;
@@ -377,7 +405,7 @@ function CarCard({
     <>
       <article
         ref={cardRef}
-        className="car-card car-card-fade-in"
+        className={`car-card car-card-fade-in${isFavourited ? " is-favourited" : ""}`}
         style={{ "--card-delay": `${fadeDelay}ms` }}
         onClick={handleCardClick}
         tabIndex={0}
@@ -395,6 +423,11 @@ function CarCard({
         }}
       >
         <div className="car-card-image-wrap">
+          {isFavourited && (
+            <StarBadge
+              title={t("savedItems.favourites.saved", { defaultValue: "Salvat la favorite" })}
+            />
+          )}
           <button
             type="button"
             className={`car-card-quick-compare${isCompared ? " is-selected" : ""}`}
@@ -410,27 +443,6 @@ function CarCard({
             <CompareIcon />
             <span>{t(isCompared ? "comparatorPage.compared" : "comparatorPage.compare")}</span>
           </button>
-          {isCompared && (
-            <div
-              className="car-card-compare-badge"
-              title={t("comparatorPage.compared")}
-            >
-              <svg
-                viewBox="0 0 24 24"
-                width="12"
-                height="12"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.4"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M7 16V4M7 4L3 8M7 4l4 4M17 8v12M17 20l4-4M17 20l-4-4" />
-              </svg>
-              <span>{t("comparatorPage.compared")}</span>
-            </div>
-          )}
 
           {currentCar.image_url && !cardImageFailed ? (
             <img
@@ -467,9 +479,7 @@ function CarCard({
 
               {currentCar.generation && (
                 <p className="car-generation">
-                  {typeof currentCar.generation === "string"
-                    ? currentCar.generation.trim()
-                    : currentCar.generation}
+                  {formatSpec(t, "generation", currentCar.generation)}
                 </p>
               )}
             </div>
@@ -784,9 +794,7 @@ function CarCard({
 
                         {currentCar.generation && (
                           <p className="expanded-hero-gen">
-                            {typeof currentCar.generation === "string"
-                              ? currentCar.generation.trim()
-                              : currentCar.generation}
+                            {formatSpec(t, "generation", currentCar.generation)}
                           </p>
                         )}
                       </div>
@@ -867,7 +875,7 @@ function CarCard({
                           >
                             <path d="M3 22h12M4 9h10M4 22V4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v18M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L19 6" />
                           </svg>
-                          <span>{formatValue(currentCar.fuel_type)}</span>
+                          <span>{formatSpec(t, "fuel_type", currentCar.fuel_type)}</span>
                         </span>
                       )}
 
@@ -887,7 +895,7 @@ function CarCard({
                             <circle cx="12" cy="12" r="3" />
                             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
                           </svg>
-                          <span>{formatValue(currentCar.gearbox)}</span>
+                          <span>{formatSpec(t, "gearbox", currentCar.gearbox)}</span>
                         </span>
                       )}
 
@@ -931,7 +939,7 @@ function CarCard({
                             <path d="M9 17h6" />
                             <circle cx="17" cy="17" r="2" />
                           </svg>
-                          <span>{formatValue(currentCar.body_type)}</span>
+                          <span>{formatSpec(t, "body_type", currentCar.body_type)}</span>
                         </span>
                       )}
                     </div>
@@ -984,7 +992,7 @@ function CarCard({
 
                 <div className="expanded-main">
                   <div className="specs-container">
-                    <div className="spec-card">
+                    <div className="spec-card spec-card--general">
                       <div className="spec-card-header">
                         <div className="spec-card-icon" aria-hidden="true">
                           <svg
@@ -993,7 +1001,7 @@ function CarCard({
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
-                            strokeWidth="2"
+                            strokeWidth="2.1"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           >
@@ -1019,19 +1027,19 @@ function CarCard({
 
                         <div className="spec-item">
                           <span>{t("carCard.body")}</span>
-                          <strong>{formatValue(currentCar.body_type)}</strong>
+                          <strong>{formatSpec(t, "body_type", currentCar.body_type)}</strong>
                         </div>
 
                         <div className="spec-item">
                           <span>{t("carCard.registration")}</span>
                           <strong>
-                            {formatValue(currentCar.registration_country)}
+                            {formatSpec(t, "registration_country", currentCar.registration_country)}
                           </strong>
                         </div>
                       </div>
                     </div>
 
-                    <div className="spec-card">
+                    <div className="spec-card spec-card--performance">
                       <div className="spec-card-header">
                         <div className="spec-card-icon" aria-hidden="true">
                           <svg
@@ -1040,7 +1048,7 @@ function CarCard({
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
-                            strokeWidth="2"
+                            strokeWidth="2.1"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           >
@@ -1063,22 +1071,22 @@ function CarCard({
 
                         <div className="spec-item">
                           <span>{t("carCard.gearbox")}</span>
-                          <strong>{formatValue(currentCar.gearbox)}</strong>
+                          <strong>{formatSpec(t, "gearbox", currentCar.gearbox)}</strong>
                         </div>
 
                         <div className="spec-item">
                           <span>{t("carCard.drivetrain")}</span>
-                          <strong>{formatValue(currentCar.drivetrain)}</strong>
+                          <strong>{formatSpec(t, "drivetrain", currentCar.drivetrain)}</strong>
                         </div>
 
                         <div className="spec-item">
                           <span>{t("carCard.fuel")}</span>
-                          <strong>{formatValue(currentCar.fuel_type)}</strong>
+                          <strong>{formatSpec(t, "fuel_type", currentCar.fuel_type)}</strong>
                         </div>
                       </div>
                     </div>
 
-                    <div className="spec-card">
+                    <div className="spec-card spec-card--condition">
                       <div className="spec-card-header">
                         <div className="spec-card-icon" aria-hidden="true">
                           <svg
@@ -1087,7 +1095,7 @@ function CarCard({
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
-                            strokeWidth="2"
+                            strokeWidth="2.1"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           >
@@ -1115,7 +1123,7 @@ function CarCard({
 
                         <div className="spec-item">
                           <span>{t("carCard.condition")}</span>
-                          <strong>{formatValue(currentCar.state)}</strong>
+                          <strong>{formatSpec(t, "state", currentCar.state)}</strong>
                         </div>
 
                         <div className="spec-item">
@@ -1127,7 +1135,7 @@ function CarCard({
                       </div>
                     </div>
 
-                    <div className="spec-card">
+                    <div className="spec-card spec-card--config">
                       <div className="spec-card-header">
                         <div className="spec-card-icon" aria-hidden="true">
                           <svg
@@ -1136,7 +1144,7 @@ function CarCard({
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
-                            strokeWidth="2"
+                            strokeWidth="2.1"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           >
@@ -1171,7 +1179,7 @@ function CarCard({
                             viewBox="0 0 24 24"
                             fill="none"
                             stroke="currentColor"
-                            strokeWidth="2"
+                            strokeWidth="2.1"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                           >
@@ -1283,6 +1291,11 @@ function CarCard({
                                       }
                                       isCompared={comparedCars.some(
                                         (comp) => comp.id === c.id
+                                      )}
+                                      isFavourited={Boolean(
+                                        showFavourite &&
+                                          favourites?.items &&
+                                          findFavourite(favourites.items, c)
                                       )}
                                       t={t}
                                     />

@@ -25,10 +25,8 @@ export default function FavouriteButton({ car }) {
       return;
     }
 
-    if (busy) return;
-
-    setBusy(true);
     setError("");
+    setBusy(true);
 
     try {
       if (favourites.error) {
@@ -62,7 +60,8 @@ export default function FavouriteButton({ car }) {
             ? t("favouriteButton.remove")
             : t("favouriteButton.add")
         }
-        disabled={busy || favourites.loading}
+        disabled={favourites.loading}
+        aria-busy={busy}
         onClick={toggle}
       >
         <svg

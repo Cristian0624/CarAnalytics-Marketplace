@@ -10,6 +10,7 @@ import {
   updateListingFilter,
   FILTER_PRESETS
 } from "../utils/listingFilters";
+import { translateCarValue } from "../utils/carTranslations";
 
 const FUEL_TYPES = [
   "Benzină",
@@ -426,9 +427,37 @@ export default function ListingFilters({
   const [drop, setDrop] = useState(null);
   const [isPoppedOut, setIsPoppedOut] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
+  const [isReturning, setIsReturning] = useState(false);
+  const [lockedInlineHeight, setLockedInlineHeight] = useState(null);
+  const [floatingExpanded, setFloatingExpanded] = useState(false);
   const inlineRef = useRef(null);
+  const floatingHubRef = useRef(null);
   const exitTimerRef = useRef(null);
+  const returnTimerRef = useRef(null);
+  const floatingCollapseTimerRef = useRef(null);
+  const suppressHoverOpenRef = useRef(false);
   const yearRange = useListingYearRange(filters);
+
+  useEffect(() => {
+    if (!isPoppedOut) {
+      setFloatingExpanded(false);
+      suppressHoverOpenRef.current = false;
+      clearTimeout(floatingCollapseTimerRef.current);
+    }
+    return () => clearTimeout(floatingCollapseTimerRef.current);
+  }, [isPoppedOut]);
+
+  useEffect(() => {
+    if (!isPoppedOut || !floatingExpanded) return;
+    const handleOutside = (event) => {
+      if (floatingHubRef.current && !floatingHubRef.current.contains(event.target)) {
+        clearTimeout(floatingCollapseTimerRef.current);
+        setFloatingExpanded(false);
+      }
+    };
+    document.addEventListener("pointerdown", handleOutside);
+    return () => document.removeEventListener("pointerdown", handleOutside);
+  }, [isPoppedOut, floatingExpanded]);
 
   useEffect(() => {
     prefetchListingOptions();
@@ -446,6 +475,24 @@ export default function ListingFilters({
   }, [drop]);
 
   useEffect(() => {
+    if (!floating || isPoppedOut) return;
+    const el = inlineRef.current;
+    if (!el) return;
+
+    const measure = () => {
+      const h = Math.ceil(el.getBoundingClientRect().height);
+      if (h > 0) setLockedInlineHeight(h);
+    };
+
+    measure();
+
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [floating, isPoppedOut]);
+
+  useEffect(() => {
     if (!floating) return;
 
     const el = inlineRef.current;
@@ -456,31 +503,43 @@ export default function ListingFilters({
         if (entry.isIntersecting) {
           setIsPoppedOut((currentPopped) => {
             if (currentPopped) {
+              setFloatingExpanded(false);
               setIsExiting(true);
               clearTimeout(exitTimerRef.current);
+              clearTimeout(returnTimerRef.current);
               exitTimerRef.current = setTimeout(() => {
                 setIsPoppedOut(false);
                 setIsExiting(false);
-              }, 220);
+                setIsReturning(true);
+                returnTimerRef.current = setTimeout(() => {
+                  setIsReturning(false);
+                }, 400);
+              }, 150);
               return true;
             }
             return false;
           });
         } else {
           if (entry.boundingClientRect.top < 0) {
+            const h = Math.ceil(el.getBoundingClientRect().height);
+            if (h > 0) setLockedInlineHeight(h);
             clearTimeout(exitTimerRef.current);
+            clearTimeout(returnTimerRef.current);
             setIsExiting(false);
+            setIsReturning(false);
             setIsPoppedOut(true);
           } else {
             clearTimeout(exitTimerRef.current);
+            clearTimeout(returnTimerRef.current);
             setIsExiting(false);
+            setIsReturning(false);
             setIsPoppedOut(false);
           }
         }
       },
       {
         threshold: 0,
-        rootMargin: "0px"
+        rootMargin: "72px 0px 0px 0px"
       }
     );
 
@@ -489,6 +548,7 @@ export default function ListingFilters({
     return () => {
       observer.disconnect();
       clearTimeout(exitTimerRef.current);
+      clearTimeout(returnTimerRef.current);
     };
   }, [floating]);
 
@@ -545,6 +605,8 @@ export default function ListingFilters({
     draft.brandText,
     draft.modelText,
     draft.generationText
+      ? translateCarValue(t, "generation", draft.generationText)
+      : ""
   ].filter(Boolean);
 
   if (vehicle.length) {
@@ -562,7 +624,7 @@ export default function ListingFilters({
   ARRAY_FIELDS.forEach((f) =>
     (draft[f] ?? []).forEach((val) =>
       pills.push({
-        label: val,
+        label: translateCarValue(t, f, val),
         onRemove: () =>
           clearFields({
             [f]: draft[f].filter((x) => x !== val)
@@ -679,36 +741,114 @@ export default function ListingFilters({
     <section className={`listing-filters ${floating ? "is-floating" : ""}`}>
       {floating ? (
         <>
-          <div className="lf-actions-wrapper" ref={inlineRef}>
+          <div
+            className="lf-actions-wrapper"
+            ref={inlineRef}
+            style={
+              isPoppedOut && lockedInlineHeight
+                ? { minHeight: `${lockedInlineHeight}px` }
+                : undefined
+            }
+          >
             <div
+              ref={floatingHubRef}
               className={`lf-actions-container ${
                 isPoppedOut ? "is-floating" : "is-inline"
-              } ${isPoppedOut ? (isExiting ? "is-exiting" : "is-entering") : ""}`}
+              } ${
+                isPoppedOut
+                  ? isExiting
+                    ? "is-exiting"
+                    : "is-entering"
+                  : isReturning
+                  ? "is-returning"
+                  : ""
+              } ${
+                isPoppedOut && floatingExpanded ? "is-expanded" : ""
+              }`}
+              onPointerEnter={(e) => {
+                if (!isPoppedOut || e.pointerType !== "mouse" || suppressHoverOpenRef.current) return;
+                clearTimeout(floatingCollapseTimerRef.current);
+                setFloatingExpanded(true);
+              }}
+              onPointerLeave={(e) => {
+                if (!isPoppedOut || e.pointerType !== "mouse") return;
+                suppressHoverOpenRef.current = false;
+                clearTimeout(floatingCollapseTimerRef.current);
+                floatingCollapseTimerRef.current = setTimeout(
+                  () => setFloatingExpanded(false),
+                  220
+                );
+              }}
             >
-              <button
-                type="button"
-                className={`lf-toggle lf-filter-toggle lf-floating-btn ${open ? "open" : ""}`}
-                aria-expanded={open}
-                onClick={() => setOpen((v) => !v)}
-                title={t("listing-Filters.advanced")}
-              >
-                <img
-                  src="/filter_button.png"
-                  alt=""
-                  className="lf-button-icon"
-                />
-                <span className="lf-btn-text">{t("listing-Filters.advanced")}</span>
+              <div className={isPoppedOut ? "lf-floating-dock-items" : "lf-inline-items"}>
+                <button
+                  type="button"
+                  className={`lf-toggle lf-filter-toggle lf-floating-btn ${open ? "open" : ""}`}
+                  aria-expanded={open}
+                  onClick={() => setOpen((v) => !v)}
+                  title={t("listing-Filters.advanced")}
+                >
+                  <img
+                    src="/filter_button.png"
+                    alt=""
+                    className="lf-button-icon"
+                  />
+                  <span className="lf-btn-text">{t("listing-Filters.advanced")}</span>
 
-                {pills.length > 0 && (
-                  <span className="lf-badge">
-                    {pills.length}
-                  </span>
-                )}
-              </button>
+                  {pills.length > 0 && (
+                    <span className="lf-badge">
+                      {pills.length}
+                    </span>
+                  )}
+                </button>
 
-              {barExtras}
+                {barExtras}
 
-              {floatingCompare}
+                {floatingCompare}
+              </div>
+
+              {isPoppedOut && (
+                <button
+                  type="button"
+                  className={`lf-floating-hub-trigger ${floatingExpanded ? "is-open" : ""}`}
+                  aria-expanded={floatingExpanded}
+                  aria-label={t("listing-Filters.advanced")}
+                  title={t("listing-Filters.advanced")}
+                  onClick={(e) => {
+                    clearTimeout(floatingCollapseTimerRef.current);
+                    if (floatingExpanded) {
+                      suppressHoverOpenRef.current = true;
+                      setFloatingExpanded(false);
+                      e.currentTarget.blur();
+                    } else {
+                      suppressHoverOpenRef.current = false;
+                      setFloatingExpanded(true);
+                    }
+                  }}
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="22"
+                    height="22"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.1"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <line x1="4" y1="6" x2="20" y2="6" />
+                    <circle cx="9" cy="6" r="2.2" fill="currentColor" />
+                    <line x1="4" y1="12" x2="20" y2="12" />
+                    <circle cx="15" cy="12" r="2.2" fill="currentColor" />
+                    <line x1="4" y1="18" x2="20" y2="18" />
+                    <circle cx="11" cy="18" r="2.2" fill="currentColor" />
+                  </svg>
+                  {pills.length > 0 && (
+                    <span className="lf-hub-badge">{pills.length}</span>
+                  )}
+                </button>
+              )}
             </div>
           </div>
 
@@ -962,7 +1102,7 @@ export default function ListingFilters({
                         selected.length === 0
                           ? t(`listing-Filters.${d.titleKey}`)
                           : selected.length === 1
-                          ? selected[0]
+                          ? translateCarValue(t, d.key, selected[0])
                           : t("listing-Filters.variantsSelected", {
                               count: selected.length,
                               defaultValue: `${selected.length} variante alese`
@@ -1030,7 +1170,7 @@ export default function ListingFilters({
                                         update(d.key, next);
                                       }}
                                     >
-                                      <span>{option}</span>
+                                      <span>{translateCarValue(t, d.key, option)}</span>
                                       {isSelected && (
                                         <svg className="lf-option-check" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                           <polyline points="20 6 9 17 4 12"/>
@@ -1095,7 +1235,7 @@ export default function ListingFilters({
                             selected.length === 0
                               ? t(`listing-Filters.${d.titleKey}`)
                               : selected.length === 1
-                              ? selected[0]
+                              ? translateCarValue(t, d.key, selected[0])
                               : t("listing-Filters.variantsSelected", {
                                   count: selected.length,
                                   defaultValue: `${selected.length} variante alese`
@@ -1164,7 +1304,7 @@ export default function ListingFilters({
                                           update(d.key, next);
                                         }}
                                       >
-                                        <span>{option}</span>
+                                        <span>{translateCarValue(t, d.key, option)}</span>
                                         {isSelected && (
                                           <svg
                                             className="lf-option-check"

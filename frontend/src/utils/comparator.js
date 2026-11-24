@@ -1,3 +1,5 @@
+import { translateCarValue } from "./carTranslations.js";
+
 export function comparisonKey(car) {
   return car?.id == null ? null : String(car.id);
 }
@@ -30,11 +32,5 @@ export function comparisonColumnWidths(availableWidth, carCount) {
 
 export function translateComparisonValue(t, field, value) {
   if (value === null || value === undefined || value === "") return "—";
-  const text = String(value).trim();
-  if (field === "generation") {
-    return text.replace(/\bprezent\b/gi, t("comparatorPage.present"));
-  }
-  const sharedFields = ["fuel_type", "gearbox", "drivetrain", "body_type"];
-  const prefix = sharedFields.includes(field) ? "risk.options" : "comparatorPage.values";
-  return t(`${prefix}.${field}.${text}`, { defaultValue: text });
+  return translateCarValue(t, field, value) || "—";
 }

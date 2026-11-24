@@ -717,7 +717,7 @@ export default function PriceEstimatePage() {
                       <option value="">{t("home.estimator.select")}</option>
                       {options.fuel_type.map((value) => (
                         <option key={value} value={value}>
-                          {value}
+                          {translateVehicleValue(t, "fuel_type", value)}
                         </option>
                       ))}
                     </select>
@@ -753,7 +753,7 @@ export default function PriceEstimatePage() {
                       <option value="">{t("home.estimator.select")}</option>
                       {options.gearbox.map((value) => (
                         <option key={value} value={value}>
-                          {value}
+                          {translateVehicleValue(t, "gearbox", value)}
                         </option>
                       ))}
                     </select>
@@ -771,7 +771,7 @@ export default function PriceEstimatePage() {
                       <option value="">{t("home.estimator.select")}</option>
                       {options.drivetrain.map((value) => (
                         <option key={value} value={value}>
-                          {value}
+                          {translateVehicleValue(t, "drivetrain", value)}
                         </option>
                       ))}
                     </select>
@@ -789,7 +789,7 @@ export default function PriceEstimatePage() {
                       <option value="">{t("home.estimator.select")}</option>
                       {options.body_type.map((value) => (
                         <option key={value} value={value}>
-                          {value}
+                          {translateVehicleValue(t, "body_type", value)}
                         </option>
                       ))}
                     </select>
@@ -889,20 +889,48 @@ export default function PriceEstimatePage() {
             !estimateLoading && (
               <div className="risk-preview" aria-label={t("risk.whatYouLearn")}>
                 {[
-                  ["/risk-price-context.png", "priceContext"],
-                  ["/risk-odometer.png", "detailsToCheck"],
-                  ["/risk-market-evidence.png", "confidence"],
-                ].map(([icon, key]) => (
+                  {
+                    key: "priceContext",
+                    num: "01",
+                    icon: (
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <line x1="12" y1="1" x2="12" y2="23" />
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                      </svg>
+                    ),
+                  },
+                  {
+                    key: "detailsToCheck",
+                    num: "02",
+                    icon: (
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M12 2a10 10 0 1 0 10 10" />
+                        <path d="M12 12l5-5" />
+                        <circle cx="12" cy="12" r="2" />
+                        <path d="M22 2l-5 5" />
+                      </svg>
+                    ),
+                  },
+                  {
+                    key: "confidence",
+                    num: "03",
+                    icon: (
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        <polyline points="9 12 11 14 15 10" />
+                      </svg>
+                    ),
+                  },
+                ].map(({ key, num, icon }) => (
                   <article key={key}>
-                    <img
-                      className="risk-preview-icon"
-                      src={icon}
-                      alt=""
-                      width="112"
-                      height="112"
-                    />
-                    <h3>{t(`risk.preview.${key}.title`)}</h3>
-                    <p>{t(`risk.preview.${key}.description`)}</p>
+                    <div className="risk-preview-head">
+                      <div className="risk-preview-icon-badge">{icon}</div>
+                      <span className="risk-preview-num">{num}</span>
+                    </div>
+                    <div className="risk-preview-body">
+                      <h3>{t(`risk.preview.${key}.title`)}</h3>
+                      <p>{t(`risk.preview.${key}.description`)}</p>
+                    </div>
                   </article>
                 ))}
               </div>

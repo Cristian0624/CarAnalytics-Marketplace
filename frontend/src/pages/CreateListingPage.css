@@ -574,39 +574,45 @@
 /* Mobile */
 @media (max-width: 480px) {
   .create-listing-page {
-    padding: 18px 12px 36px;
+    padding: 14px 12px 32px;
+  }
+  .create-listing-header {
+    margin-bottom: 16px;
   }
   .create-listing-header h1 {
-    font-size: 22px;
+    font-size: 20px;
     letter-spacing: -0.3px;
   }
   .create-listing-header p {
-    font-size: 14px;
+    font-size: 13px;
   }
   .create-listing-section {
-    padding: 16px;
+    padding: 14px;
     border-radius: 12px;
+  }
+  .create-listing-section-header {
+    margin-bottom: 14px;
   }
   .create-listing-grid {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 10px;
   }
   .create-listing-field-full {
     grid-column: auto;
   }
   .create-listing-field input,
   .create-listing-field select {
-    height: 48px;
-    font-size: 15px;
+    height: 44px;
+    font-size: 14px;
   }
   .create-listing-price-input-wrapper {
-    height: 56px;
+    height: 48px;
   }
   .create-listing-price-input-wrapper input {
-    font-size: 20px;
+    font-size: 18px;
   }
   .create-listing-market-price {
-    font-size: 26px;
+    font-size: 23px;
   }
   .create-listing-submit-area {
     flex-direction: column-reverse;
@@ -615,14 +621,14 @@
   .create-listing-cancel-button,
   .create-listing-submit-button {
     width: 100%;
-    min-height: 48px;
-    font-size: 15px;
+    min-height: 44px;
+    font-size: 14px;
   }
   .create-listing-section-header h2 {
-    font-size: 17px;
+    font-size: 16px;
   }
   .create-listing-estimate-card {
-    padding: 16px;
+    padding: 14px;
   }
   .create-listing-normal-range {
     flex-direction: column;

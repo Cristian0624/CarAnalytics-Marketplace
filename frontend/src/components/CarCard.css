@@ -2,8 +2,8 @@
     position: relative;
   
     background: #FFFFFF;
-    border: 1px solid var(--brand-border);
-    border-radius: 12px;
+    border: 1px solid rgba(23, 32, 42, 0.09);
+    border-radius: 16px;
   
     overflow: hidden;
   
@@ -12,15 +12,21 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
+    box-shadow:
+      0 3px 14px rgba(15, 23, 42, 0.05),
+      0 1px 2px rgba(15, 23, 42, 0.04);
   
     transition:
-      transform 0.25s ease,
-      box-shadow 0.25s ease;
+      transform 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.24s ease,
+      border-color 0.24s ease;
   }
   
   .car-card:hover:not(.car-card-expanded):not(.car-card-skeleton) {
-    transform: translateY(-5px);
-    box-shadow: 0 14px 30px rgba(23, 32, 42, 0.12);
+    transform: translateY(-4px);
+    box-shadow:
+      0 16px 32px rgba(15, 23, 42, 0.11),
+      0 4px 10px rgba(20, 184, 166, 0.08);
     border-color: rgba(20, 184, 166, 0.55);
   }
 
@@ -136,9 +142,17 @@
     aspect-ratio: 16 / 10;
     background: #f1f5f9;
     overflow: hidden;
-    border-top-left-radius: 11px;
-    border-top-right-radius: 11px;
     flex-shrink: 0;
+  }
+
+  .car-card-image-wrap::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 36%;
+    background: linear-gradient(to top, rgba(15, 23, 42, 0.18), transparent);
+    pointer-events: none;
+    z-index: 1;
   }
 
   .car-card-compare-badge {
@@ -208,7 +222,7 @@
   }
 
   .car-card-content {
-    padding: 16px 20px 20px 20px;
+    padding: 15px 17px 16px;
     display: flex;
     flex-direction: column;
     flex: 1;
@@ -216,92 +230,109 @@
   }
   
   .car-card-title-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 4px;
-}
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+
+  .car-card-title-row > div {
+    min-width: 0;
+    flex: 1;
+  }
   
   .car-card-content h3 {
-  margin: 0 0 6px 0;
-  font-size: 21px;
-  font-weight: 800;
-  color: var(--brand-charcoal);
-  letter-spacing: -0.4px;
-  line-height: 1.25;
-}
+    margin: 0 0 3px 0;
+    font-size: 18.5px;
+    font-weight: 800;
+    color: var(--brand-charcoal);
+    letter-spacing: -0.35px;
+    line-height: 1.22;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   
   .car-generation {
-  margin: 0;
-  padding: 0;
-  text-align: left;
-  color: var(--brand-muted);
-  font-size: 13px;
-  font-weight: 500;
-}
+    margin: 0;
+    padding: 0;
+    text-align: left;
+    color: var(--brand-muted);
+    font-size: 12.5px;
+    font-weight: 500;
+    line-height: 1.35;
+  }
   
   .car-details {
-  display: flex;
-  gap: 8px;
-  margin-top: 16px;
-  margin-bottom: auto;
-}
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 12px;
+    margin-bottom: auto;
+  }
 
-.car-details span {
-  background: var(--brand-teal-tint);
-  color: var(--brand-charcoal);
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
-}
+  .car-details span {
+    background: #f0fdfa;
+    border: 1px solid #ccfbf1;
+    color: #0f766e;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    font-weight: 650;
+    letter-spacing: 0.1px;
+    font-variant-numeric: tabular-nums;
+  }
   
   .car-card-bottom {
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid var(--brand-border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
+    margin-top: 16px;
+    padding-top: 13px;
+    border-top: 1px solid #edf2f7;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
   
   .car-card-bottom strong {
-    font-size: 25px;
+    font-size: 22px;
     font-weight: 800;
     color: var(--brand-charcoal);
     letter-spacing: -0.5px;
+    font-variant-numeric: tabular-nums;
   }
 
   .score-badge {
-  min-width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  font-size: 18px;
-  font-weight: 800;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-}
+    min-width: 44px;
+    height: 44px;
+    padding: 0 6px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 16.5px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.06);
+  }
   
   .score-badge.score-red {
-    background: #ffe0e0;
-    border: 1px solid #ffe0e0;
-    color: #d32f2f;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
   }
   
   .score-badge.score-orange {
-    background: #fff0d4;
-    border: 1px solid #fff0d4;
-    color: #e67e00;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #d97706;
   }
   
   .score-badge.score-green {
-    background: #dcf5df;
-    border: 1px solid #dcf5df;
-    color: #238636;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #16a34a;
   }
 
   
@@ -368,7 +399,7 @@
 
   .car-expanded-content {
     position: relative;
-    padding: 24px 28px 28px;
+    padding: 0 26px 26px;
   }
 
   /* --- MODAL TOP BAR --- */
@@ -376,8 +407,87 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 14px;
-    margin-bottom: 20px;
+    gap: 12px;
+    margin: 0 -26px 20px;
+    padding: 14px 26px;
+    background: linear-gradient(90deg, #17202A 0%, #1f2d3b 100%);
+    border-bottom: 2px solid var(--brand-teal, #14b8a6);
+  }
+
+  .car-modal-top-bar .favourite-star {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.18);
+    color: #cbd5e1;
+  }
+
+  .car-modal-top-bar .favourite-star.is-saved {
+    background: rgba(20, 184, 166, 0.2);
+    border-color: var(--brand-teal, #14b8a6);
+    color: #5eead4;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .car-modal-top-bar .favourite-star:hover:not(:disabled) {
+      background: rgba(20, 184, 166, 0.2);
+      border-color: var(--brand-teal, #14b8a6);
+      color: #5eead4;
+    }
+  }
+
+  .car-modal-top-bar .comparator-button,
+  .car-modal-top-bar .original-listing-button {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.18);
+    color: #f8fafc;
+  }
+
+  .car-modal-top-bar .comparator-button-icon {
+    color: #5eead4;
+  }
+
+  .car-modal-top-bar .comparator-button:hover {
+    background: rgba(20, 184, 166, 0.2);
+    border-color: var(--brand-teal, #14b8a6);
+    color: #ffffff;
+  }
+
+  .car-modal-top-bar .comparator-button.active {
+    background: var(--brand-teal, #14b8a6);
+    border-color: var(--brand-teal, #14b8a6);
+    color: #17202A;
+  }
+
+  .car-modal-top-bar .comparator-button.active .comparator-button-icon {
+    color: #17202A;
+  }
+
+  .car-modal-top-bar .original-listing-button:hover {
+    background: rgba(251, 146, 60, 0.18);
+    border-color: #fb923c;
+    color: #ffedd5;
+  }
+
+  .car-modal-top-bar .close-card-button {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.18);
+    color: #cbd5e1;
+  }
+
+  .car-modal-top-bar .close-card-button:hover {
+    background: rgba(239, 68, 68, 0.22);
+    border-color: #f87171;
+    color: #fecaca;
+  }
+
+  .car-modal-top-bar .car-modal-back-button {
+    background: rgba(20, 184, 166, 0.16);
+    border-color: rgba(20, 184, 166, 0.45);
+    color: #5eead4;
+  }
+
+  .car-modal-top-bar .car-modal-back-button:hover {
+    background: var(--brand-teal, #14b8a6);
+    color: #17202A;
   }
 
   .car-modal-top-left {
@@ -547,21 +657,21 @@
   
   .expanded-hero {
     display: flex;
-    gap: 26px;
+    gap: 24px;
     align-items: stretch;
     margin-top: 0;
-    margin-bottom: 24px;
+    margin-bottom: 22px;
   }
 
   .expanded-hero-photo-wrap {
     flex: 0 0 430px;
     max-width: 46%;
-    height: 270px;
+    height: 274px;
     border-radius: 16px;
     overflow: hidden;
     background: #f8fafc;
-    border: 1px solid var(--brand-border);
-    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.06);
+    border: 1px solid rgba(23, 32, 42, 0.08);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, 0.09);
     position: relative;
   }
 
@@ -592,18 +702,19 @@
 
   .expanded-photo-zoom-btn {
     position: absolute;
-    bottom: 12px;
-    right: 12px;
+    bottom: 10px;
+    right: 10px;
     display: inline-flex;
     align-items: center;
     gap: 6px;
     padding: 6px 12px;
-    background: rgba(15, 23, 42, 0.82);
+    background: rgba(15, 23, 42, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     color: #ffffff;
-    border-radius: 8px;
-    font-size: 12px;
+    border-radius: 999px;
+    font-size: 11.5px;
     font-weight: 600;
     text-decoration: none;
     transition: background 0.18s ease, transform 0.15s ease;
@@ -612,6 +723,7 @@
 
   .expanded-photo-zoom-btn:hover {
     background: var(--brand-teal, #14b8a6);
+    border-color: var(--brand-teal, #14b8a6);
     transform: translateY(-1px);
   }
 
@@ -642,9 +754,9 @@
 
   .expanded-hero-headline {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 14px;
   }
 
   .expanded-hero-title-group {
@@ -653,12 +765,12 @@
   }
 
   .expanded-hero-title {
-    margin: 0 0 4px 0;
-    font-size: 26px;
+    margin: 0 0 3px 0;
+    font-size: 25px;
     font-weight: 800;
     color: var(--brand-charcoal);
-    letter-spacing: -0.4px;
-    line-height: 1.2;
+    letter-spacing: -0.45px;
+    line-height: 1.18;
     text-align: left;
   }
 
@@ -671,14 +783,20 @@
   .expanded-hero-gen {
     margin: 0;
     color: var(--brand-muted);
-    font-size: 14px;
+    font-size: 13.5px;
     font-weight: 500;
     text-align: left;
   }
 
   .expanded-hero-brand-logo {
-    max-height: 48px;
-    max-width: 80px;
+    width: 54px;
+    height: 54px;
+    padding: 6px;
+    box-sizing: border-box;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #ccece7;
+    box-shadow: 0 3px 10px rgba(23, 32, 42, 0.06);
     object-fit: contain;
     flex-shrink: 0;
   }
@@ -687,91 +805,99 @@
   .expanded-hero-chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin: 8px 0 12px 0;
+    gap: 7px;
+    margin: 4px 0 6px 0;
   }
 
   .hero-chip {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 11px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    gap: 5px;
+    padding: 5px 11px;
+    background: #f0fdfa;
+    border: 1px solid #ccece7;
+    border-radius: 999px;
     font-size: 12.5px;
-    font-weight: 600;
-    color: #334155;
+    font-weight: 650;
+    color: #134e4a;
     transition: all 0.15s ease;
   }
 
   .hero-chip:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
+    background: #ccfbf1;
+    border-color: #5eead4;
+    color: #0f766e;
   }
 
   .hero-chip svg {
-    color: var(--brand-teal, #14b8a6);
+    color: var(--brand-teal-dark, #0d9488);
     flex-shrink: 0;
   }
 
-  /* Metrics: Price & Score */
+  /* Unified Clean Metrics Showcase Strip: Price & Deal Score */
   .expanded-hero-metrics {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-    padding-top: 14px;
-    border-top: 1px solid #f1f5f9;
+    gap: 14px;
+    flex-wrap: nowrap;
+    padding: 13px 16px;
+    border-radius: 14px;
+    background: #ffffff;
+    border: 1px solid #dbe7e5;
+    box-shadow: 0 3px 12px rgba(23, 32, 42, 0.05);
   }
 
   .expanded-price-card {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    min-width: 0;
   }
 
   .expanded-price-label {
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--brand-muted, #64748b);
+    letter-spacing: 0.7px;
+    color: #64748b;
   }
 
   .expanded-price-value {
-    font-size: 30px;
+    font-size: 29px;
     font-weight: 800;
     color: var(--brand-charcoal, #17202a);
-    letter-spacing: -0.5px;
-    line-height: 1.1;
+    letter-spacing: -0.6px;
+    line-height: 1.08;
+    font-variant-numeric: tabular-nums;
   }
 
   .expanded-score-card {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 6px 14px 6px 16px;
-    background: #f8fafc;
+    gap: 10px;
+    padding: 6px 10px 6px 14px;
+    background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 12px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
     transition: transform 0.18s ease;
   }
 
   .expanded-score-card.score-green {
-    background: rgba(34, 197, 94, 0.05);
-    border-color: rgba(34, 197, 94, 0.25);
+    background: #ffffff;
+    border-color: rgba(22, 163, 74, 0.32);
   }
 
   .expanded-score-card.score-orange {
-    background: rgba(245, 158, 11, 0.05);
-    border-color: rgba(245, 158, 11, 0.25);
+    background: #ffffff;
+    border-color: rgba(217, 119, 6, 0.32);
   }
 
   .expanded-score-card.score-red {
-    background: rgba(239, 68, 68, 0.05);
-    border-color: rgba(239, 68, 68, 0.25);
+    background: #ffffff;
+    border-color: rgba(220, 38, 38, 0.32);
   }
 
   .score-details-col {
@@ -1006,22 +1132,34 @@
     }
 
     .expanded-hero-photo-wrap {
-      height: 210px;
+      height: 205px;
     }
 
     .expanded-hero-headline {
-      flex-direction: column;
-      gap: 8px;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
     }
 
     .expanded-hero-title {
-      font-size: 22px;
+      font-size: 20px;
+    }
+
+    .expanded-hero-brand-logo {
+      width: 44px;
+      height: 44px;
+      padding: 5px;
+      border-radius: 10px;
     }
 
     .expanded-hero-metrics {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 14px;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: nowrap;
+      gap: 10px;
+      padding: 11px 13px;
     }
   
     .expanded-main {
@@ -1033,33 +1171,38 @@
     }
   
     .car-expanded-content {
-      padding: 16px;
+      padding: 0 14px 20px;
+    }
+
+    .car-modal-top-bar {
+      margin: 0 -14px 14px;
+      padding: 11px 14px;
     }
   
     .expanded-header h2 {
-      font-size: 23px;
+      font-size: 21px;
     }
   }
 
 .specs-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-  margin-top: 20px;
+  gap: 14px;
+  margin-top: 16px;
 }
 
 .spec-card {
   background: #ffffff;
-  border: 1px solid var(--brand-border, #e2e8f0);
-  border-radius: 14px;
-  padding: 16px 18px;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
-  transition: all 0.2s ease;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 15px 17px;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.035);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .spec-card:hover {
-  border-color: rgba(20, 184, 166, 0.4);
-  box-shadow: 0 6px 18px rgba(20, 184, 166, 0.08);
+  border-color: rgba(20, 184, 166, 0.45);
+  box-shadow: 0 8px 22px rgba(20, 184, 166, 0.08);
 }
 
 .spec-card-header {
@@ -1068,13 +1211,13 @@
   gap: 10px;
   margin-bottom: 12px;
   padding-bottom: 10px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #eef2f6;
 }
 
 .spec-card-icon {
   width: 28px;
   height: 28px;
-  border-radius: 7px;
+  border-radius: 8px;
   background: var(--brand-teal-tint, rgba(20, 184, 166, 0.12));
   color: var(--brand-teal-dark, #0d9488);
   display: flex;
@@ -1085,41 +1228,42 @@
 
 .spec-card-header h4 {
   margin: 0;
-  font-size: 12.5px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.65px;
   color: var(--brand-charcoal, #17202a);
 }
 
 .spec-card-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px 12px;
+  gap: 8px 10px;
 }
 
 .spec-item {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   padding: 8px 10px;
   background: #f8fafc;
-  border: 1px solid #f1f5f9;
-  border-radius: 8px;
+  border: 1px solid #edf2f7;
+  border-radius: 10px;
   text-align: left;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .spec-item:hover {
-  background: #f1f5f9;
+  background: #f0fdfa;
+  border-color: #ccfbf1;
 }
 
 .spec-item span {
-  font-size: 10.5px;
+  font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.45px;
   color: var(--brand-muted, #64748b);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .spec-item strong {
@@ -1130,12 +1274,12 @@
 }
 
 .spec-card-description {
-  margin-top: 16px;
+  margin-top: 14px;
 }
 
 .spec-card-description .car-description {
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.62;
   color: #334155;
   margin: 0;
 }
@@ -1145,8 +1289,8 @@
   --progress-color: #10b981;
   --progress-bg: rgba(16, 185, 129, 0.16);
 
-  width: 54px;
-  height: 54px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   display: flex;
   flex-direction: column;
@@ -1165,8 +1309,8 @@
 .score-circle::before {
   content: "";
   position: absolute;
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   background: #ffffff;
 }
@@ -1175,9 +1319,10 @@
   position: relative;
   z-index: 1;
   color: var(--progress-color);
-  font-size: 19px;
+  font-size: 17px;
   font-weight: 800;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .score-green .score-circle {
@@ -1196,16 +1341,23 @@
 }
 
 .collapsed-car-logo {
-  width: 50px;
-  height: 50px;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  padding: 5px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #edf2f7;
   object-fit: contain;
 }
 
 .car-card-bottom strong {
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 800;
   color: var(--brand-charcoal);
   letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
 }
 
 .car-card-collapsing {
@@ -1234,24 +1386,35 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 80px 24px 24px;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 76px 24px 24px;
   box-sizing: border-box;
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.62);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
   animation: carOverlayIn 0.2s ease forwards;
 }
 
 .car-modal-content {
   position: relative;
   width: min(1040px, 100%);
-  max-height: calc(100vh - 100px);
+  max-height: calc(100vh - 96px);
+  max-height: calc(100dvh - 96px);
   overflow-y: auto;
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
   background: #fff;
-  border-radius: 18px;
+  border-radius: 22px;
+  border-top: 3px solid var(--brand-teal, #14b8a6);
   box-shadow:
-    0 25px 60px -15px rgba(15, 23, 42, 0.3),
+    0 28px 64px -15px rgba(15, 23, 42, 0.32),
     0 0 0 1px rgba(15, 23, 42, 0.06);
   cursor: default;
   animation: modalPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -1474,13 +1637,15 @@
   }
   .car-modal-content {
     max-height: calc(100vh - 86px);
-    border-radius: 14px;
+    max-height: calc(100dvh - 86px);
+    border-radius: 16px;
   }
   .car-expanded-content {
-    padding: 18px 16px;
+    padding: 0 16px 22px;
   }
   .car-modal-top-bar {
-    margin-bottom: 16px;
+    margin: 0 -16px 16px;
+    padding: 12px 16px;
   }
   .expanded-hero {
     flex-direction: column;
@@ -1543,9 +1708,9 @@
 @media (max-width: 480px) {
   .cars-marketplace {
     grid-template-columns: 1fr;
-    gap: 12px;
-    padding-left: 12px;
-    padding-right: 12px;
+    gap: 11px;
+    padding-left: 8px;
+    padding-right: 8px;
     min-width: 0;
     box-sizing: border-box;
     overflow-x: clip;
@@ -1554,14 +1719,17 @@
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
-    border-radius: 16px;
-    border-color: rgba(23, 32, 42, 0.1);
-    box-shadow: 0 4px 14px rgba(23, 32, 42, 0.07);
+    border-radius: 14px;
+    border-color: rgba(23, 32, 42, 0.09);
+    box-shadow: 0 3px 12px rgba(15, 23, 42, 0.06);
     -webkit-tap-highlight-color: transparent;
   }
+  .car-card-image-wrap {
+    aspect-ratio: 16 / 9;
+  }
   .car-card-content {
-    min-height: 150px;
-    padding: 15px 16px 13px;
+    min-height: 0;
+    padding: 12px 14px 12px;
   }
   .car-card-title-row {
     align-items: center;
@@ -1572,68 +1740,97 @@
     min-width: 0;
   }
   .car-card-content h3 {
-    margin-bottom: 3px;
-    font-size: clamp(17px, 5vw, 20px);
+    margin-bottom: 2px;
+    font-size: 16.5px;
     line-height: 1.2;
     overflow-wrap: anywhere;
   }
   .car-generation {
-    font-size: 12px;
+    font-size: 11.5px;
   }
   .collapsed-car-logo {
-    width: 42px;
-    height: 42px;
-    flex: 0 0 42px;
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
     padding: 4px;
-    box-sizing: border-box;
-    border-radius: 10px;
-    background: #f5f8f8;
+    border-radius: 9px;
   }
   .car-details {
     flex-wrap: wrap;
     gap: 6px;
-    margin-top: 11px;
+    margin-top: 9px;
     margin-bottom: auto;
   }
   .car-details span {
-    padding: 5px 9px;
+    padding: 4px 8px;
     border-radius: 7px;
-    font-size: 12px;
+    font-size: 11.5px;
   }
   .car-card-bottom {
-    margin-top: 13px;
-    padding-top: 11px;
+    margin-top: 11px;
+    padding-top: 10px;
   }
   .car-card-bottom strong {
-    font-size: clamp(19px, 5.5vw, 23px);
+    font-size: 19px;
     letter-spacing: -0.4px;
   }
+  .score-badge {
+    min-width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    font-size: 14.5px;
+  }
   .car-card-modal-overlay {
-    padding: 55px 8px 8px;
+    padding: 54px 8px 10px;
   }
   .car-modal-content {
-    max-height: calc(100vh - 65px);
-    border-radius: 12px;
+    max-height: calc(100vh - 68px);
+    max-height: calc(100dvh - 68px);
+    border-radius: 16px;
     width: 100%;
   }
   .car-expanded-content {
-    padding: 14px 12px 20px;
+    padding: 0 12px calc(38px + env(safe-area-inset-bottom, 0px));
   }
   .car-modal-top-bar {
-    gap: 8px;
-    flex-wrap: wrap;
+    gap: 6px;
+    flex-wrap: nowrap;
+    margin: 0 -12px 12px;
+    padding: 10px 12px;
+  }
+  .car-modal-top-left {
+    gap: 6px;
+    min-height: 34px;
+    min-width: 0;
+  }
+  .car-modal-top-left .favourite-star {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    padding: 5px;
   }
   .car-modal-back-button {
-    height: 36px;
-    padding: 0 10px;
-    font-size: 12px;
-    max-width: 140px;
+    height: 34px;
+    padding: 0 9px;
+    font-size: 11.5px;
+    gap: 5px;
+    max-width: 115px;
+    border-radius: 9px;
   }
   .modal-history-banner {
     padding: 8px 10px;
-    gap: 8px;
+    gap: 7px;
+    border-radius: 10px;
+    margin-bottom: 12px;
     flex-direction: column;
     align-items: flex-start;
+  }
+  .modal-history-badge {
+    font-size: 10px;
+    padding: 2px 7px;
+  }
+  .modal-history-text {
+    font-size: 12px;
   }
   .modal-history-actions {
     width: 100%;
@@ -1641,93 +1838,189 @@
   .modal-history-btn-primary {
     flex: 1;
     justify-content: center;
+    height: 30px;
+    font-size: 11.5px;
   }
   .car-modal-top-actions {
-    gap: 6px;
+    gap: 5px;
+    flex-shrink: 0;
   }
   .comparator-button {
-    height: 36px;
-    padding: 0 10px;
-    font-size: 12px;
-    gap: 5px;
+    height: 34px;
+    padding: 0 8px;
+    font-size: 11.5px;
+    gap: 4px;
+    border-radius: 9px;
   }
   .original-listing-button {
-    height: 36px;
-    padding: 0 10px;
-    font-size: 12px;
-    gap: 5px;
+    height: 34px;
+    padding: 0 8px;
+    font-size: 11.5px;
+    gap: 4px;
+    border-radius: 9px;
+  }
+  .original-listing-button span {
+    max-width: 82px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .button-logo-999 {
-    height: 16px;
+    height: 15px;
   }
   .close-card-button {
-    width: 36px;
-    height: 36px;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+  }
+  .expanded-hero {
+    gap: 12px;
+    margin-bottom: 14px;
   }
   .expanded-hero-photo-wrap {
-    height: 200px;
+    height: 185px;
+    border-radius: 13px;
+  }
+  .expanded-photo-zoom-btn {
+    padding: 5px 10px;
+    font-size: 11px;
+    bottom: 8px;
+    right: 8px;
+  }
+  .expanded-hero-details {
+    gap: 9px;
   }
   .expanded-header h2,
   .expanded-hero-title {
-    font-size: 19px;
+    font-size: 18.5px;
   }
-  .expanded-price-value {
-    font-size: 24px;
+  .expanded-hero-gen {
+    font-size: 12px;
+  }
+  .expanded-hero-brand-logo {
+    width: 40px;
+    height: 40px;
+    padding: 4px;
+    border-radius: 9px;
   }
   .expanded-hero-chips {
-    gap: 6px;
+    gap: 5px;
+    margin: 2px 0;
   }
   .hero-chip {
-    font-size: 11.5px;
-    padding: 5px 8px;
+    font-size: 11px;
+    padding: 4px 8px;
     gap: 4px;
+  }
+  .expanded-hero-metrics {
+    padding: 10px 12px;
+    border-radius: 12px;
+    gap: 8px;
+  }
+  .expanded-price-label {
+    font-size: 9.5px;
+  }
+  .expanded-price-value {
+    font-size: 22px;
+  }
+  .expanded-score-card {
+    padding: 5px 8px 5px 10px;
+    gap: 8px;
+    border-radius: 10px;
+  }
+  .score-details-col .score-label,
+  .score-details-col .score-sub-label {
+    font-size: 10px;
+  }
+  .score-circle {
+    width: 42px;
+    height: 42px;
+  }
+  .score-circle::before {
+    width: 32px;
+    height: 32px;
+  }
+  .score-circle .score-main {
+    font-size: 14.5px;
   }
   .information-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 8px;
   }
   .information-grid div {
-    padding: 8px 16px;
-  }
-  .car-card-bottom strong {
-    font-size: 20px;
-  }
-  .score-badge {
-    min-width: 42px;
-    height: 42px;
-    font-size: 15px;
+    padding: 8px 12px;
   }
   .recommendations-mini-grid {
     grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .specs-container {
+    gap: 10px;
+    margin-top: 12px;
   }
   .spec-card {
-    padding: 12px 14px;
+    padding: 11px 12px;
+    border-radius: 12px;
+  }
+  .spec-card-header {
+    gap: 8px;
+    margin-bottom: 9px;
+    padding-bottom: 7px;
+  }
+  .spec-card-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+  }
+  .spec-card-header h4 {
+    font-size: 11px;
   }
   .spec-card-grid {
     grid-template-columns: 1fr 1fr;
-    gap: 6px 8px;
+    gap: 6px;
   }
   .spec-item {
-    padding: 7px 9px;
+    padding: 6px 8px;
+    border-radius: 8px;
   }
   .spec-item span {
-    font-size: 10px;
+    font-size: 9.5px;
   }
   .spec-item strong {
+    font-size: 12px;
+  }
+  .car-card-actions {
+    flex-direction: row;
+    gap: 8px;
+    margin-top: 14px;
+    padding-top: 12px;
+  }
+  .car-card-actions .action-btn {
+    padding: 10px 10px;
     font-size: 12.5px;
+    border-radius: 10px;
+    gap: 5px;
   }
 }
 
 /* Very small screens */
 @media (max-width: 360px) {
   .car-card-modal-overlay {
-    padding: 50px 6px 6px;
+    padding: 48px 6px 6px;
+  }
+  .car-modal-top-bar {
+    flex-wrap: wrap;
+    margin: 0 -9px 10px;
+    padding: 9px;
+  }
+  .car-card-actions {
+    flex-direction: column;
   }
   .information-grid {
     grid-template-columns: 1fr;
   }
   .car-expanded-content {
-    padding: 12px 8px 16px;
+    padding: 0 9px calc(32px + env(safe-area-inset-bottom, 0px));
   }
   .spec-card-grid {
     grid-template-columns: 1fr;
@@ -1764,5 +2057,212 @@
   }
   .recommendations-mini-grid {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+
+/* ============================================================
+   FAVOURITE CARD MARKER BADGE (TOP-LEFT STAR)
+   ============================================================ */
+
+.car-card-fav-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 3;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--brand-teal-dark, #0E7C70);
+  border: 1.5px solid var(--brand-teal, #14B8A6);
+  box-shadow: 0 4px 12px rgba(14, 124, 112, 0.22), 0 1px 3px rgba(15, 23, 42, 0.12);
+  pointer-events: none;
+  animation: compareBadgePop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.car-card-fav-badge path {
+  fill: var(--brand-teal, #14B8A6);
+  stroke: var(--brand-teal-dark, #0E7C70);
+  stroke-width: 1.7;
+  stroke-linejoin: round;
+}
+
+.car-card-compare-badge-bottom {
+  top: auto;
+  left: auto;
+  right: 10px;
+  bottom: 10px;
+}
+
+.car-card.is-favourited {
+  border-color: rgba(20, 184, 166, 0.45);
+  box-shadow: 0 4px 16px rgba(20, 184, 166, 0.1);
+}
+
+.car-card.is-favourited:hover {
+  border-color: var(--brand-teal, #14B8A6);
+  box-shadow: 0 12px 28px rgba(20, 184, 166, 0.16);
+}
+
+/* ============================================================
+   ELEVATED 4-CARD SPEC BOXES (REFINED COLOR & DESIGN)
+   ============================================================ */
+
+.specs-container {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.spec-card {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbfb 100%);
+  border: 1px solid #dbe7e5;
+  border-radius: 16px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(23, 32, 42, 0.045);
+  transition: transform 0.18s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.spec-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(20, 184, 166, 0.55);
+  box-shadow: 0 10px 26px rgba(14, 124, 112, 0.09);
+}
+
+.spec-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 12px 16px;
+  background: linear-gradient(90deg, #17202A 0%, #21303f 100%);
+  border-bottom: 2px solid var(--brand-teal, #14b8a6);
+}
+
+.spec-card-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(20, 184, 166, 0.18);
+  border: 1px solid rgba(20, 184, 166, 0.35);
+  color: #5eead4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.spec-card-header h4 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #f8fafc;
+}
+
+.spec-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 14px 16px 16px;
+}
+
+.spec-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: #ffffff;
+  border: 1px solid #e2ecea;
+  border-left: 3px solid rgba(20, 184, 166, 0.45);
+  border-radius: 10px;
+  text-align: left;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.spec-item:hover {
+  background: #f0fdfa;
+  border-color: #99f6e4;
+  border-left-color: var(--brand-teal-dark, #0d9488);
+}
+
+.spec-item span {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.spec-item strong {
+  font-size: 13.5px;
+  color: #17202A;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.spec-card-description {
+  margin-top: 14px;
+}
+
+.spec-card-description .car-description {
+  padding: 14px 16px 16px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: #334155;
+  margin: 0;
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .specs-container {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .spec-card {
+    border-radius: 13px;
+    padding: 0;
+  }
+  .spec-card-header {
+    padding: 9px 12px;
+    gap: 8px;
+  }
+  .spec-card-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+  }
+  .spec-card-header h4 {
+    font-size: 11px;
+  }
+  .spec-card-grid {
+    gap: 7px;
+    padding: 10px 12px 12px;
+  }
+  .spec-item {
+    padding: 7px 9px;
+    border-radius: 8px;
+  }
+  .spec-item span {
+    font-size: 9.5px;
+  }
+  .spec-item strong {
+    font-size: 12px;
+  }
+  .spec-card-description .car-description {
+    padding: 11px 12px 13px;
+    font-size: 13px;
   }
 }

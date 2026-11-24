@@ -3,11 +3,13 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import "./AuthenticationPages.css";
 import PasswordInput from "../components/PasswordInput";
 
 function AutentificarePage() {
   const { login } = useAuth();
+  const { isDark } = useTheme();
   const { t } = useTranslation();
 
   const [form, setForm] = useState({
@@ -48,7 +50,7 @@ function AutentificarePage() {
       <form className="auth-form" onSubmit={handleSubmit}>
         <Link to="/" className="auth-brand-header" aria-label="FaceAuto Home">
           <img
-            src="/brand/logo3_1-dark.svg"
+            src={isDark ? "/brand/logo3_1.svg" : "/brand/logo3_1-dark.svg"}
             alt="FaceAuto"
             className="auth-brand-logo"
           />

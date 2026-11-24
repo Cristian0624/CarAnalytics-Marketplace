@@ -1,12 +1,57 @@
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import AuthButton from "./AuthButton";
 import "./Header.css";
 import { useTranslation } from "react-i18next";
 
+function ThemeIcon({ isDark }) {
+  if (isDark) {
+    return (
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="4.5" />
+        <line x1="12" y1="2.5" x2="12" y2="5" />
+        <line x1="12" y1="19" x2="12" y2="21.5" />
+        <line x1="4.93" y1="4.93" x2="6.7" y2="6.7" />
+        <line x1="17.3" y1="17.3" x2="19.07" y2="19.07" />
+        <line x1="2.5" y1="12" x2="5" y2="12" />
+        <line x1="19" y1="12" x2="21.5" y2="12" />
+        <line x1="4.93" y1="19.07" x2="6.7" y2="17.3" />
+        <line x1="17.3" y1="6.7" x2="19.07" y2="4.93" />
+      </svg>
+    );
+  }
+  return (
+    <svg
+      width="17"
+      height="17"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  );
+}
+
 function Header() {
   const { user, logout } = useAuth();
+  const { isDark, toggleTheme, setTheme } = useTheme();
   const { t, i18n } = useTranslation();
   const [languageOpen, setLanguageOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -88,6 +133,17 @@ function Header() {
 
         {/* Desktop Navigation (visible on screens > 768px) */}
         <div className="header-right header-desktop-nav">
+          <button
+            type="button"
+            className={`theme-toggle-button ${isDark ? "is-dark" : ""}`}
+            onClick={toggleTheme}
+            aria-label={isDark ? t("header.switchToLight") : t("header.switchToDark")}
+            title={isDark ? t("header.switchToLight") : t("header.switchToDark")}
+            aria-pressed={isDark}
+          >
+            <ThemeIcon isDark={isDark} />
+          </button>
+
           <div className="language-selector">
             <button
               type="button"
@@ -183,18 +239,31 @@ function Header() {
           <AuthButton />
         </div>
 
-        {/* Mobile Hamburger Button (3 lines button, visible on phone screens <= 768px) */}
-        <button
-          type="button"
-          className={`mobile-menu-toggle ${menuOpen ? "open" : ""}`}
-          onClick={() => setMenuOpen((prev) => !prev)}
-          aria-label={menuOpen ? t("header.closeMenu") : t("header.openMenu")}
-          aria-expanded={menuOpen}
-        >
-          <span className="hamburger-bar"></span>
-          <span className="hamburger-bar"></span>
-          <span className="hamburger-bar"></span>
-        </button>
+        {/* Mobile Right Controls: Theme Toggle + Hamburger Button (visible on screens <= 768px) */}
+        <div className="mobile-header-actions">
+          <button
+            type="button"
+            className={`mobile-theme-toggle ${isDark ? "is-dark" : ""}`}
+            onClick={toggleTheme}
+            aria-label={isDark ? t("header.switchToLight") : t("header.switchToDark")}
+            title={isDark ? t("header.switchToLight") : t("header.switchToDark")}
+            aria-pressed={isDark}
+          >
+            <ThemeIcon isDark={isDark} />
+          </button>
+
+          <button
+            type="button"
+            className={`mobile-menu-toggle ${menuOpen ? "open" : ""}`}
+            onClick={() => setMenuOpen((prev) => !prev)}
+            aria-label={menuOpen ? t("header.closeMenu") : t("header.openMenu")}
+            aria-expanded={menuOpen}
+          >
+            <span className="hamburger-bar"></span>
+            <span className="hamburger-bar"></span>
+            <span className="hamburger-bar"></span>
+          </button>
+        </div>
       </header>
 
       {/* Mobile Drawer Backdrop */}
@@ -265,6 +334,29 @@ function Header() {
           </div>
         </div>
 
+        {/* Theme Selector Pills inside Mobile Drawer */}
+        <div className="mobile-drawer-section">
+          <span className="mobile-drawer-label">
+            {t("header.theme", "Theme")}
+          </span>
+          <div className="mobile-lang-pills">
+            <button
+              type="button"
+              className={`mobile-lang-pill mobile-theme-pill ${!isDark ? "active" : ""}`}
+              onClick={() => setTheme("light")}
+            >
+              {t("header.lightTheme", "Light")}
+            </button>
+            <button
+              type="button"
+              className={`mobile-lang-pill mobile-theme-pill ${isDark ? "active" : ""}`}
+              onClick={() => setTheme("dark")}
+            >
+              {t("header.darkTheme", "Dark")}
+            </button>
+          </div>
+        </div>
+
         {/* Main Navigation inside Mobile Drawer */}
         <nav className="mobile-drawer-nav">
           <span className="mobile-drawer-label">
@@ -272,32 +364,26 @@ function Header() {
           </span>
 
           <NavLink to="/" end className={mobileNavClass}>
-            <span className="mobile-nav-icon">🏠</span>
             <span>{t("header.home")}</span>
           </NavLink>
 
           <NavLink to="/listings" className={mobileNavClass}>
-            <span className="mobile-nav-icon">🚗</span>
             <span>{t("header.listings")}</span>
           </NavLink>
 
+          <NavLink to="/price-estimate" className={mobileNavClass}>
+            <span>{t("header.priceEstimate")}</span>
+          </NavLink>
+
           <NavLink to="/anomaly-risk" className={mobileNavClass}>
-            <span className="mobile-nav-icon">⚡</span>
             <span>{t("header.riskAnalysis")}</span>
           </NavLink>
 
           <NavLink to="/comparator" className={mobileNavClass}>
-            <span className="mobile-nav-icon">📊</span>
             <span>{t("header.comparator")}</span>
           </NavLink>
 
-          <NavLink to="/features" className={mobileNavClass}>
-            <span className="mobile-nav-icon">💡</span>
-            <span>{t("header.features")}</span>
-          </NavLink>
-
           <NavLink to="/about" className={mobileNavClass}>
-            <span className="mobile-nav-icon">ℹ️</span>
             <span>{t("header.about")}</span>
           </NavLink>
         </nav>
@@ -326,21 +412,21 @@ function Header() {
                   className="mobile-user-link"
                   onClick={() => setMenuOpen(false)}
                 >
-                  <span>👤</span> {t("authButton.profile", "My Profile")}
+                  {t("authButton.profile", "My Profile")}
                 </Link>
                 <Link
                   to="/favourites"
                   className="mobile-user-link"
                   onClick={() => setMenuOpen(false)}
                 >
-                  <span>❤️</span> {t("authButton.favourites", "Saved Cars")}
+                  {t("authButton.favourites", "Saved Cars")}
                 </Link>
                 <Link
                   to="/saved-searches"
                   className="mobile-user-link"
                   onClick={() => setMenuOpen(false)}
                 >
-                  <span>🔍</span> {t("authButton.savedSearches", "Saved Searches")}
+                  {t("authButton.savedSearches", "Saved Searches")}
                 </Link>
               </div>
 
@@ -349,7 +435,7 @@ function Header() {
                 className="mobile-logout-btn"
                 onClick={handleMobileLogout}
               >
-                <span>🚪</span> {t("authButton.logout", "Log Out")}
+                {t("authButton.logout", "Log Out")}
               </button>
             </div>
           ) : (

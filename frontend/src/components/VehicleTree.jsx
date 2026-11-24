@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { getListingOptions, getCachedListingOptions } from "../api/listings";
+import { translateCarValue } from "../utils/carTranslations";
 
 function useOptions(brand, model, enabled) {
   const [data, setData] = useState(() => (enabled ? getCachedListingOptions({ brand, model }) : null));
@@ -350,7 +351,7 @@ export default function VehicleTree({
                                     const gOn = isVisuallyOn || gExplicitlyChecked;
                                     
                                     return (
-                                    <Row key={g} level={2} label={g}
+                                    <Row key={g} level={2} label={translateCarValue(t, "generation", g)}
                                       className="vt-fade-in"
                                       style={{ "--item-delay": `${Math.min(gIdx * 18, 200)}ms` }}
                                       checked={gOn}

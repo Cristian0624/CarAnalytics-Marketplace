@@ -4,39 +4,6 @@ import { useTranslation } from "react-i18next";
 import BackgroundTriangles from "../components/BackgroundTriangles";
 import "./AboutUsPage.css";
 
-const TEAM_MEMBERS = [
-  {
-    id: "maxim",
-    name: "Siloci Maxim",
-    image: "/team/siloci-maxim.jpg",
-    imagePosition: "center 20%",
-  },
-  {
-    id: "dan",
-    name: "Rotari Dan",
-    image: "/team/rotari-dan.jpg",
-    imagePosition: "62% 22%",
-  },
-  {
-    id: "cristian",
-    name: "Gluhu Cristian",
-    image: "/team/gluhu-cristian.jpg",
-    imagePosition: "center 22%",
-  },
-  {
-    id: "mihai",
-    name: "Stamati Mihai",
-    image: "/team/stamati-mihai.jpg",
-    imagePosition: "center 22%",
-  },
-  {
-    id: "marius",
-    name: "Gheorghița Marius",
-    image: "/team/gheorghita-marius.png",
-    imagePosition: "center 22%",
-  },
-];
-
 export default function AboutUsPage() {
   const { t } = useTranslation();
 
@@ -83,53 +50,6 @@ export default function AboutUsPage() {
             <h2>{t("aboutUs.vision.title")}</h2>
             <p>{t("aboutUs.vision.description")}</p>
           </article>
-        </section>
-
-        <section className="about-team-section">
-          <div className="about-section-heading">
-            <span className="about-badge">{t("aboutUs.teamBadge")}</span>
-            <h2>{t("aboutUs.teamTitle")}</h2>
-            <p>{t("aboutUs.teamSubtitle")}</p>
-          </div>
-
-          <div className="about-team-grid">
-            {TEAM_MEMBERS.map((member) => {
-              const tags = t(`aboutUs.members.${member.id}.tags`, {
-                returnObjects: true,
-              });
-
-              return (
-                <article key={member.id} className="team-card">
-                  <div className="team-photo-wrapper">
-                    <img
-                      src={member.image}
-                      alt={member.name}
-                      style={{ objectPosition: member.imagePosition }}
-                    />
-                    <span className="team-role-pill">
-                      {t(`aboutUs.members.${member.id}.role`)}
-                    </span>
-                  </div>
-
-                  <div className="team-card-body">
-                    <h3>{member.name}</h3>
-
-                    {Array.isArray(tags) && (
-                      <div className="team-tags">
-                        {tags.map((tag) => (
-                          <span key={tag} className="team-tag">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    <p>{t(`aboutUs.members.${member.id}.description`)}</p>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
         </section>
 
         <div className="about-footer-action">

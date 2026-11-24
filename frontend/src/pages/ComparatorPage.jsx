@@ -220,8 +220,49 @@ export default function ComparatorPage() {
               <th>{t("comparatorPage.specs")}</th>
               {comparedCars.map(car => (
                 <th key={car.id} className="car-header-cell">
-                  <button className="remove-car-btn" onClick={() => removeCar(car.id)} aria-label={`${t("comparatorPage.removeFromComparison")}: ${car.brand} ${car.model}`} title={t("comparatorPage.removeFromComparison")}>✕</button>
-                  <img src={`/logos/${getLogoFileName(car.brand)}`} alt={car.brand} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }} />
+                  <button
+                    type="button"
+                    className="remove-car-btn"
+                    onClick={() => removeCar(car.id)}
+                    aria-label={`${t("comparatorPage.removeFromComparison")}: ${car.brand} ${car.model}`}
+                    title={t("comparatorPage.removeFromComparison")}
+                  >
+                    ✕
+                  </button>
+                  <div className="comp-car-photo-wrap">
+                    {car.image_url ? (
+                      <img
+                        src={car.image_url}
+                        alt={`${car.brand || ""} ${car.model || ""}`}
+                        className="comp-car-photo"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                        }}
+                      />
+                    ) : (
+                      <div className="comp-car-photo-fallback">
+                        <img
+                          src={`/logos/${getLogoFileName(car.brand)}`}
+                          alt={car.brand}
+                          className="comp-car-logo-fallback"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                      </div>
+                    )}
+                    <img
+                      src={`/logos/${getLogoFileName(car.brand)}`}
+                      alt={car.brand}
+                      className="comp-car-brand-badge"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
+                  </div>
                   <h3>{formatValue(car.brand)} {formatValue(car.model)}</h3>
                   <p>{translateComparisonValue(t, "generation", car.generation)}</p>
                 </th>

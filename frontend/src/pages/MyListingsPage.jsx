@@ -10,6 +10,7 @@ import {
 
 import { useAuth } from "../context/AuthContext";
 import AccountLayout from "../components/AccountLayout";
+import { translateCarValue } from "../utils/carTranslations";
 
 import "./SavedItemsPage.css";
 import "./MyListingsPage.css";
@@ -309,7 +310,7 @@ export default function MyListingsPage() {
                     <h2>
                       {item.brand} {item.model}{" "}
                       {item.generation
-                        ? `· ${item.generation}`
+                        ? `· ${translateCarValue(t, "generation", item.generation)}`
                         : ""}
                     </h2>
                   </div>
@@ -356,7 +357,7 @@ export default function MyListingsPage() {
                         </span>
 
                         <span className="my-listing-spec-val">
-                          {item.fuel_type}
+                          {translateCarValue(t, "fuel_type", item.fuel_type)}
                         </span>
                       </div>
                     )}
@@ -368,7 +369,7 @@ export default function MyListingsPage() {
                         </span>
 
                         <span className="my-listing-spec-val">
-                          {item.gearbox}
+                          {translateCarValue(t, "gearbox", item.gearbox)}
                         </span>
                       </div>
                     )}
@@ -392,7 +393,7 @@ export default function MyListingsPage() {
                         </span>
 
                         <span className="my-listing-spec-val">
-                          {item.horsepower} CP
+                          {item.horsepower} {t("carCard.horsepowerUnit")}
                         </span>
                       </div>
                     )}
@@ -404,7 +405,7 @@ export default function MyListingsPage() {
                         </span>
 
                         <span className="my-listing-spec-val">
-                          {item.body_type}
+                          {translateCarValue(t, "body_type", item.body_type)}
                         </span>
                       </div>
                     )}
@@ -416,7 +417,7 @@ export default function MyListingsPage() {
                         </span>
 
                         <span className="my-listing-spec-val">
-                          {item.drivetrain}
+                          {translateCarValue(t, "drivetrain", item.drivetrain)}
                         </span>
                       </div>
                     )}
@@ -426,7 +427,7 @@ export default function MyListingsPage() {
                     {item.state && (
                       <span className="my-listing-chip">
                         {t("myListings.chips.condition", {
-                          value: item.state,
+                          value: translateCarValue(t, "state", item.state),
                         })}
                       </span>
                     )}
@@ -450,7 +451,7 @@ export default function MyListingsPage() {
                     {item.seller_type && (
                       <span className="my-listing-chip">
                         {t("myListings.chips.seller", {
-                          value: item.seller_type,
+                          value: translateCarValue(t, "seller_type", item.seller_type),
                         })}
                       </span>
                     )}
@@ -460,8 +461,11 @@ export default function MyListingsPage() {
                         {t(
                           "myListings.chips.registration",
                           {
-                            value:
-                              item.registration_country,
+                            value: translateCarValue(
+                              t,
+                              "registration_country",
+                              item.registration_country
+                            ),
                           }
                         )}
                       </span>
@@ -470,8 +474,11 @@ export default function MyListingsPage() {
                     {(item.class_ || item.class) && (
                       <span className="my-listing-chip">
                         {t("myListings.chips.class", {
-                          value:
-                            item.class_ || item.class,
+                          value: translateCarValue(
+                            t,
+                            "class",
+                            item.class_ || item.class
+                          ),
                         })}
                       </span>
                     )}

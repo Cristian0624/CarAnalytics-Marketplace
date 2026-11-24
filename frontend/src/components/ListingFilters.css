@@ -1652,6 +1652,22 @@
   width: 100%;
 }
 
+.lf-actions-container.is-inline.is-returning {
+  animation: inlineReturnSmooth 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: opacity, transform;
+}
+
+@keyframes inlineReturnSmooth {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -10px, 0) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
 .lf-actions-container.is-inline .lf-toggle,
 .lf-actions-container.is-inline .floating-compare-btn {
   height: 44px;
@@ -1718,33 +1734,41 @@
 }
 
 .lf-actions-container.is-floating.is-entering {
-  animation: popInLeft 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: popInLeft 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .lf-actions-container.is-floating.is-exiting {
-  animation: popOutLeftExit 0.22s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: popOutLeftExit 0.16s cubic-bezier(0.4, 0, 1, 1) forwards;
   pointer-events: none;
 }
 
 @keyframes popInLeft {
   0% {
     opacity: 0;
-    transform: translateX(-24px) scale(0.96);
+    transform: translate3d(-20px, 6px, 0) scale(0.94);
   }
   100% {
     opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
 @keyframes popOutLeftExit {
   0% {
     opacity: 1;
-    transform: translateX(0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translateX(-24px) scale(0.96);
+    transform: translate3d(-16px, 6px, 0) scale(0.92);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lf-actions-container.is-inline.is-returning,
+  .lf-actions-container.is-floating.is-entering,
+  .lf-actions-container.is-floating.is-exiting {
+    animation: none;
   }
 }
 
@@ -2403,5 +2427,120 @@
     min-width: 220px;
     height: 50px;
     font-size: 16px;
+  }
+}
+
+
+/* ============================================================
+   COMPRESSED FLOATING HUB (1 BUTTON -> EXPANDS 3 ON HOVER)
+   ============================================================ */
+
+.lf-inline-items {
+  display: contents;
+}
+
+.lf-actions-container.is-floating {
+  gap: 0;
+}
+
+.lf-floating-dock-items {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding-bottom: 12px;
+  opacity: 0;
+  visibility: hidden;
+  max-height: 0;
+  overflow: hidden;
+  transform: translateY(14px) scale(0.94);
+  transform-origin: bottom left;
+  pointer-events: none;
+  transition:
+    opacity 0.22s ease,
+    transform 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.22s ease,
+    max-height 0.24s ease;
+}
+
+.lf-actions-container.is-floating.is-expanded .lf-floating-dock-items {
+  opacity: 1;
+  visibility: visible;
+  max-height: 360px;
+  overflow: visible;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.lf-floating-hub-trigger {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1.5px solid #CBD5E1;
+  background: #FFFFFF;
+  color: #17202A;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow:
+    0 4px 18px rgba(15, 23, 42, 0.16),
+    0 2px 6px rgba(15, 23, 42, 0.08);
+  transition:
+    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.lf-floating-hub-trigger.is-open {
+  border-color: #14B8A6;
+  background: #F0FDFA;
+  color: #0F766E;
+  transform: scale(1.05);
+  box-shadow:
+    0 8px 24px rgba(15, 118, 110, 0.22),
+    0 3px 8px rgba(15, 23, 42, 0.1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .lf-floating-hub-trigger:hover {
+    border-color: #14B8A6;
+    background: #F0FDFA;
+    color: #0F766E;
+    transform: scale(1.05);
+    box-shadow:
+      0 8px 24px rgba(15, 118, 110, 0.22),
+      0 3px 8px rgba(15, 23, 42, 0.1);
+  }
+}
+
+.lf-hub-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #0F766E;
+  color: #FFFFFF;
+  font-size: 11.5px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
+}
+
+@media (max-width: 640px) {
+  .lf-floating-hub-trigger {
+    width: 48px;
+    height: 48px;
   }
 }

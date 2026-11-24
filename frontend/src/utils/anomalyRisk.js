@@ -1,5 +1,6 @@
 import { assessmentValidationMessage } from "./assessmentErrors.js";
 import { assessmentNumber, translateAssessment } from "./assessmentI18n.js";
+import { translateCarValue } from "./carTranslations.js";
 
 export const FIELD_LABELS = {
   brand: "Marcă", model: "Model", generation: "Generație", price: "Preț cerut",
@@ -227,8 +228,8 @@ export function riskExplanationItems(result, vehicle, t) {
 }
 
 export function translateVehicleValue(t, field, value) {
-  if (!t || !["fuel_type", "gearbox", "drivetrain", "body_type"].includes(field)) return String(value);
-  return t(`risk.options.${field}.${value}`, { defaultValue: String(value) });
+  if (value == null) return "";
+  return translateCarValue(t, field, value) || String(value);
 }
 
 export function riskExplanationLines(result, vehicle, t) {

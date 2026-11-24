@@ -12,6 +12,10 @@ import {
   isPresetActive
 } from "../src/utils/listingFilters.js";
 import { filterVehicleOptions } from "../src/utils/anomalyRisk.js";
+import { translateCarValue } from "../src/utils/carTranslations.js";
+import ro from "../src/languages/locales/ro.json" with { type: "json" };
+import en from "../src/languages/locales/en.json" with { type: "json" };
+import ru from "../src/languages/locales/ru.json" with { type: "json" };
 
 test("generation punctuation is literal text, including incomplete parentheses", () => {
   const text = "I (2007 - 2013)";
@@ -176,4 +180,35 @@ test("[REQ-FLT-02] applyFilterPreset updates target range without mutating unrel
   assert.equal(form.price_max, "15000");
   assert.equal(form.mileage_min, "");
   assert.equal(form.mileage_max, "200000");
+});
+
+test("car and filter characteristics translate cleanly in RO, EN, and RU without altering raw DB values", () => {
+  const makeT = (locale) => (key, opts) => {
+    const val = key.split(".").reduce((acc, part) => acc?.[part], locale);
+    return typeof val === "string" ? val : (opts?.defaultValue ?? key);
+  };
+  const [tRo, tEn, tRu] = [makeT(ro), makeT(en), makeT(ru)];
+
+  assert.equal(translateCarValue(tRo, "gearbox", "Mecanică"), "Mecanică");
+  assert.equal(translateCarValue(tEn, "gearbox", "Mecanică"), "Manual");
+  assert.equal(translateCarValue(tRu, "gearbox", "Mecanică"), "Механическая");
+
+  assert.equal(translateCarValue(tEn, "drivetrains", "Din față"), "Front-wheel drive");
+  assert.equal(translateCarValue(tRu, "drivetrains", "Din față"), "Передний");
+
+  assert.equal(translateCarValue(tEn, "state", "Cu rulaj"), "Used");
+  assert.equal(translateCarValue(tRu, "state", "Cu rulaj"), "С пробегом");
+  assert.equal(translateCarValue(tEn, "state", "Necesită reparații"), "Needs repairs");
+
+  assert.equal(translateCarValue(tEn, "seller_type", "Persoană fizică"), "Private seller");
+  assert.equal(translateCarValue(tRu, "seller_type", "Dealer auto"), "Автодилер");
+
+  assert.equal(translateCarValue(tEn, "body_types", "Universal"), "Station Wagon");
+  assert.equal(translateCarValue(tRu, "body_types", "Universal"), "Универсал");
+
+  assert.equal(translateCarValue(tEn, "registration_country", "Republica Moldova"), "Republic of Moldova");
+  assert.equal(translateCarValue(tRu, "registration_country", "Republica Moldova"), "Республика Молдова");
+
+  assert.equal(translateCarValue(tEn, "generation", "IV (2021 - prezent)"), "IV (2021 - present)");
+  assert.equal(translateCarValue(tRu, "generation", "IV (2021 - prezent)"), "IV (2021 - настоящее время)");
 });

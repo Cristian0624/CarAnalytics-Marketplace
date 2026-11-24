@@ -38,7 +38,12 @@
     "navigation": "Navigation",
     "account": "Account",
     "closeMenu": "Close menu",
-    "openMenu": "Open menu"
+    "openMenu": "Open menu",
+    "theme": "Theme",
+    "lightTheme": "Light",
+    "darkTheme": "Dark",
+    "switchToDark": "Switch to dark theme",
+    "switchToLight": "Switch to light theme"
   },
   "priceEstimator": {
     "steps": [
@@ -1427,6 +1432,21 @@
         "Elveția": "Switzerland",
         "Marea Britanie": "United Kingdom",
         "Spania": "Spain"
+      },
+      "state": {
+        "Cu rulaj": "Used",
+        "Uzat": "Worn",
+        "Necesită reparații": "Needs repairs",
+        "Nou": "New",
+        "Nouă": "New",
+        "Avariat": "Damaged",
+        "Used": "Used",
+        "New": "New"
+      },
+      "seller_type": {
+        "Persoană fizică": "Private seller",
+        "Dealer auto": "Auto dealer",
+        "Persoană juridică": "Legal entity"
       }
     }
   },
@@ -1790,5 +1810,85 @@
       }
     },
     "backHome": "Back to Homepage"
+  },
+  "legal": {
+    "lastUpdated": "Last updated: November 2026",
+    "terms": {
+      "badge": "Legal Document",
+      "title": "Terms and Conditions",
+      "subtitle": "Rules governing the use of the FaceAuto platform for used-car market analytics, price estimation, and risk assessment.",
+      "sections": [
+        {
+          "title": "Acceptance of Terms",
+          "body": "By accessing or using the FaceAuto platform, you agree to be bound by these Terms and Conditions. If you do not agree with any part of these terms, please discontinue using the service."
+        },
+        {
+          "title": "Platform Purpose and Informational Nature",
+          "body": "FaceAuto provides algorithmic analytics for the used-car market in Moldova, including market price estimation, Deal Score grading, anomaly risk analysis, and side-by-side vehicle comparison.",
+          "points": [
+            "All scores, price estimates, and risk indicators are strictly informational and statistical.",
+            "FaceAuto does not own any listed vehicles, does not broker transactions, and does not guarantee the mechanical or legal condition of any car.",
+            "Purchasing decisions remain solely the user's responsibility; we always recommend an in-person inspection, VIN history check, and document verification before buying."
+          ]
+        },
+        {
+          "title": "User Accounts",
+          "body": "To save favourite listings, search filters, comparisons, and risk assessments, you may register a personal account.",
+          "points": [
+            "You are responsible for safeguarding your login credentials and all activity performed under your account.",
+            "You agree to provide accurate details and not to misuse, scrape excessively, or disrupt the platform."
+          ]
+        },
+        {
+          "title": "Third-Party Listings and External Sources",
+          "body": "FaceAuto aggregates and analyzes publicly available listing data from external automotive marketplaces (such as 999.md). Original listing availability, prices, and descriptions may change or be removed by sellers at any time without notice."
+        },
+        {
+          "title": "Limitation of Liability and Updates",
+          "body": "FaceAuto is provided on an 'as is' basis. We are not liable for financial losses or purchasing decisions made based on displayed estimates. We may update these terms periodically, with changes taking effect upon publication on this page."
+        }
+      ]
+    },
+    "privacy": {
+      "badge": "Data Protection",
+      "title": "Privacy Policy",
+      "subtitle": "How we collect, use, and protect your personal information when you use FaceAuto.",
+      "sections": [
+        {
+          "title": "Information We Collect",
+          "body": "We collect only the information necessary to operate your account and personalize your experience:",
+          "points": [
+            "Account details: name, email address, optional phone number, and profile type (private seller or dealer).",
+            "User-saved content: favourite cars, saved search filters, comparisons, and saved risk reports.",
+            "Local technical preferences: interface language (RO/EN/RU) and active vehicle comparator selection."
+          ]
+        },
+        {
+          "title": "How We Use Your Data",
+          "body": "Your information is used solely to deliver and improve FaceAuto features:",
+          "points": [
+            "Secure authentication and management of your FaceAuto account.",
+            "Storing and syncing your favourite vehicles, search criteria, and risk evaluations.",
+            "Maintaining platform security, reliability, and performance."
+          ]
+        },
+        {
+          "title": "Storage and Security",
+          "body": "User passwords are stored exclusively in hashed form, and account access is protected using modern authentication mechanisms. We never sell or rent your personal data to third parties."
+        },
+        {
+          "title": "Your Rights",
+          "body": "You have the right to access, update, or remove your personal data at any time:",
+          "points": [
+            "You can edit your profile details and change your password directly from the Profile page.",
+            "You can delete any saved cars, searches, comparisons, or risk reports from your account at any time."
+          ]
+        },
+        {
+          "title": "Policy Updates",
+          "body": "We may revise this Privacy Policy from time to time to reflect platform improvements or legal requirements. The latest version is always published on this page."
+        }
+      ]
+    }
   }
 }

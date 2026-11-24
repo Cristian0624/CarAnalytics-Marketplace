@@ -577,6 +577,7 @@ h2 {
   padding: 32px;
   border-radius: 16px;
   border: 1px solid var(--sage);
+  box-sizing: border-box;
   transition: transform 0.2s;
 }
 
@@ -737,6 +738,7 @@ h2 {
   border: 1px solid #E2E8F0;
   border-radius: 20px;
   padding: 36px 32px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1473,171 +1475,321 @@ h2 {
 /* Tablet */
 @media (max-width: 900px) {
   .hero-section {
-    padding: 90px 16px 16px;
+    padding: 72px 20px 28px;
     gap: 24px;
   }
+  .hero-image-placeholder {
+    justify-content: center;
+  }
+  .hero-buttons {
+    margin: 0 auto;
+  }
+  .features-section {
+    padding: 138px 20px 64px;
+  }
   .estimator-car-image {
-    width: clamp(280px, 34vw, 360px);
-    top: -30px;
-    right: -80px;
-    opacity: 0.85;
+    width: clamp(300px, 40vw, 390px);
+    top: -34px;
+    right: -114px;
+    opacity: 1;
+  }
+  .why-us-section {
+    padding: 132px 20px 64px;
   }
   .why-car-image {
-    width: clamp(260px, 32vw, 340px);
-    top: -75px;
-    left: -60px;
-    opacity: 0.85;
+    width: clamp(275px, 36vw, 355px);
+    top: -78px;
+    left: -78px;
+    opacity: 1;
   }
   .features-grid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
   .feature-card {
-    padding: 24px;
+    padding: 22px 20px;
   }
   .why-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
   }
   .home-estimator-section {
-    padding-top: 60px;
-    padding-bottom: 60px;
+    padding-top: 52px;
+    padding-bottom: 52px;
   }
   .home-estimator-card {
-    padding: 28px;
+    padding: 24px;
   }
   .footer-content {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: 16px;
+    gap: 14px;
   }
   .cta-box {
-    padding: 50px 20px;
-    border-radius: 16px;
-    margin: 0 auto 60px;
+    padding: 44px 22px;
+    border-radius: 18px;
+    margin: 0 auto 48px;
+    box-sizing: border-box;
   }
 }
 
-/* Small mobile */
-@media (max-width: 480px) {
+/* Mobile (phones up to 600px) */
+@media (max-width: 600px) {
+  section {
+    padding: 40px 14px;
+  }
+  h2 {
+    font-size: clamp(1.3rem, 5.2vw, 1.65rem);
+    margin-bottom: 18px;
+    line-height: 1.24;
+  }
   .hero-section {
-    padding: 72px 12px 12px;
-    gap: 20px;
-  }
-  .hero-title {
-    font-size: clamp(1.8rem, 7vw, 2.4rem);
-  }
-  .hero-subtitle {
-    font-size: 0.95rem;
-  }
-  .hero-buttons {
-    padding: 18px;
-    border-radius: 16px;
-    gap: 12px;
-  }
-  .hero-buttons a {
-    padding: 13px 16px;
-    font-size: 0.9rem;
+    padding: 32px 14px 26px;
+    gap: 18px;
   }
   .hero-badge {
-    font-size: 0.8rem;
-    padding: 6px 14px;
+    font-size: 0.76rem;
+    padding: 5px 12px;
+    margin-bottom: 10px;
+  }
+  .hero-title {
+    font-size: clamp(1.65rem, 6.8vw, 2.15rem);
+    line-height: 1.14;
+    margin-bottom: 10px;
+  }
+  .hero-subtitle {
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+  .hero-buttons {
+    padding: 14px;
+    border-radius: 16px;
+    gap: 9px;
+    max-width: 100%;
+  }
+  .hero-buttons a {
+    padding: 11px 12px;
+    font-size: 0.88rem;
+    border-radius: 10px;
+  }
+
+  /* Flush-to-margin corner car showcases matching PC alignment */
+  .features-section {
+    padding: 116px 14px 48px;
   }
   .estimator-car-image {
-    width: clamp(180px, 42vw, 240px);
-    top: -20px;
-    right: -50px;
-    opacity: 0.65;
+    width: clamp(235px, 60vw, 285px);
+    top: -22px;
+    right: -94px;
+    opacity: 1;
+  }
+  .features-grid {
+    gap: 11px;
+  }
+  .feature-card {
+    padding: 16px 15px;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(23, 32, 42, 0.05);
+  }
+  .feature-card h3 {
+    font-size: 1.02rem;
+    margin-bottom: 7px;
+  }
+  .feature-card p {
+    font-size: 0.86rem;
+    line-height: 1.52;
+    margin: 0;
+  }
+
+  .why-us-section {
+    padding: 108px 14px 44px;
   }
   .why-car-image {
-    width: clamp(170px, 40vw, 230px);
-    top: -45px;
-    left: -35px;
-    opacity: 0.65;
-  }
-  .partners-logos {
-    gap: 24px;
-    font-size: 1.2rem;
+    width: clamp(220px, 56vw, 270px);
+    top: -54px;
+    left: -68px;
+    opacity: 1;
   }
   .why-grid {
     grid-template-columns: 1fr;
+    gap: 10px;
   }
   .why-item {
-    padding: 16px;
-  }
-  .faq-item {
-    padding: 18px;
-  }
-  .faq-item h4 {
-    font-size: 1.05rem;
-  }
-  .cta-box {
-    padding: 36px 16px;
+    padding: 16px 14px;
     border-radius: 14px;
+    background: rgba(255, 255, 255, 0.045);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    box-sizing: border-box;
   }
-  .cta-box h2 {
-    font-size: 1.5rem;
+  .why-icon {
+    height: 54px;
+    margin-bottom: 9px;
   }
-  .cta-box p {
+  .why-item h4 {
     font-size: 1rem;
+    margin-bottom: 6px;
   }
+  .why-item p {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 0;
+  }
+
   .feedback-section {
-    padding: 60px 12px 50px;
+    padding: 42px 14px 36px;
+  }
+  .feedback-section-header {
+    margin-bottom: 22px;
+  }
+  .feedback-main-title {
+    font-size: clamp(1.3rem, 5.2vw, 1.65rem);
+  }
+  .feedback-main-subtitle {
+    font-size: 0.88rem;
+  }
+  .feedback-dual-container {
+    gap: 10px;
+  }
+  .feedback-card {
+    width: 100%;
+    max-width: 100%;
+    padding: 18px 15px;
+    border-radius: 15px;
+  }
+  .feedback-card-icon-wrap {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+  }
+  .feedback-card-title {
+    font-size: 1.06rem;
+  }
+  .feedback-card-description {
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+    max-width: 100%;
+  }
+  .feedback-divider {
+    max-width: 100%;
+    height: 28px;
+    margin: 0;
+  }
+  .btn-feedback {
+    max-width: 100%;
+    padding: 11px 16px;
+    font-size: 0.88rem;
   }
   .feedback-modal-card {
-    padding: 20px 16px;
-    border-radius: 16px;
+    padding: 18px 14px;
+    border-radius: 14px;
+    box-sizing: border-box;
   }
   .feedback-modal-actions {
     flex-direction: column-reverse;
     gap: 8px;
   }
-  .feedback-modal-actions .btn-feedback {
-    width: 100%;
-  }
+  .feedback-modal-actions .btn-feedback,
   .btn-feedback-cancel {
     width: 100%;
     text-align: center;
   }
-  .btn-feedback {
-    max-width: 100%;
+
+  .faq-section {
+    padding: 36px 14px;
   }
-  section {
-    padding: 48px 12px;
+  .faq-list {
+    gap: 10px;
   }
-  h2 {
-    font-size: clamp(1.4rem, 5vw, 1.9rem);
-    margin-bottom: 24px;
+  .faq-item {
+    padding: 14px 14px;
+    border-radius: 12px;
+    box-sizing: border-box;
+  }
+  .faq-item h4 {
+    font-size: 0.96rem;
+    margin-bottom: 6px;
+  }
+  .faq-item p {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .cta-section {
+    padding: 16px 14px 36px;
+  }
+  .cta-box {
+    padding: 28px 16px;
+    border-radius: 16px;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+  .cta-box h2 {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+  }
+  .cta-box p {
+    font-size: 0.88rem;
+    margin-bottom: 18px;
+  }
+  .cta-box .btn-primary.large {
+    width: 100%;
+    max-width: 300px;
+    padding: 12px 18px;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+  }
+
+  .partners-logos {
+    gap: 16px;
+    font-size: 1.05rem;
+  }
+  .footer-section {
+    padding: 26px 14px;
+  }
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 14px;
   }
   .footer-links a {
-    display: block;
-    margin: 6px 0;
-    font-size: 0.95rem;
+    margin: 0;
+    font-size: 0.84rem;
   }
 }
 
-/* Very small screens (320px) */
-@media (max-width: 360px) {
+/* Very small screens (<= 380px) */
+@media (max-width: 380px) {
   .hero-buttons {
     grid-template-columns: 1fr;
+    padding: 12px;
   }
   .hero-buttons .hero-risk-link {
     grid-column: 1;
   }
   .hero-title {
-    font-size: 1.7rem;
+    font-size: 1.55rem;
+  }
+  .features-section {
+    padding-top: 106px;
   }
   .estimator-car-image {
-    width: 165px;
-    top: -15px;
-    right: -40px;
-    opacity: 0.55;
+    width: 215px;
+    top: -18px;
+    right: -82px;
+    opacity: 1;
+  }
+  .why-us-section {
+    padding-top: 98px;
   }
   .why-car-image {
-    width: 160px;
-    top: -35px;
-    left: -30px;
-    opacity: 0.55;
+    width: 205px;
+    top: -46px;
+    left: -58px;
+    opacity: 1;
   }
 }
 

@@ -77,7 +77,7 @@ class AnomalyComparisonsRepository:
 
     def get_characteristics(self, brand, model, generation, listing_id=None, year=None, fuel_type=None, engine=None, min_samples=15):
         statement = select(
-            CarListing.year, CarListing.mileage, CarListing.engine, CarListing.fuel_type,
+            CarListing.price_eur, CarListing.year, CarListing.mileage, CarListing.engine, CarListing.fuel_type,
             CarListing.gearbox, CarListing.drivetrain, CarListing.body_type,
         ).where(CarListing.brand == brand, CarListing.model == model)
         if generation is not None:

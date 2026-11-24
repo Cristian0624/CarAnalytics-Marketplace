@@ -1,4 +1,6 @@
 .recommendations-main {
+  position: relative;
+  z-index: 1;
   width: 1126px;
   max-width: 100%;
   margin: 0 auto;
