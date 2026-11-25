@@ -227,6 +227,14 @@ function Header() {
             {t("header.riskAnalysis")}
           </NavLink>
 
+          <NavLink
+            to="/copilot"
+            className={({ isActive }) => `header-nav-link header-nav-copilot${isActive ? " active" : ""}`}
+          >
+            <span>{t("header.copilot", "Buy-Safe")}</span>
+            <span className="header-beta-pill">BETA</span>
+          </NavLink>
+
           {user && (
             <NavLink
               to="/profile"
@@ -377,6 +385,11 @@ function Header() {
 
           <NavLink to="/anomaly-risk" className={mobileNavClass}>
             <span>{t("header.riskAnalysis")}</span>
+          </NavLink>
+
+          <NavLink to="/copilot" className={mobileNavClass}>
+            <span>{t("header.copilot", "Buy-Safe")}</span>
+            <span className="header-beta-pill">BETA</span>
           </NavLink>
 
           <NavLink to="/comparator" className={mobileNavClass}>

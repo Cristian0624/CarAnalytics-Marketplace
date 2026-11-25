@@ -2046,3 +2046,201 @@
   background: var(--dm-teal-bright);
   color: #0B111A;
 }
+
+/* ==========================================================================
+   BUY-SAFE COPILOT PROTOTYPE PAGE
+   ========================================================================== */
+
+[data-theme="dark"] .copilot-page {
+  color: var(--dm-text);
+}
+
+[data-theme="dark"] .copilot-hero h1,
+[data-theme="dark"] .copilot-demo-card strong,
+[data-theme="dark"] .copilot-odo-stats strong,
+[data-theme="dark"] .copilot-timeline-top strong,
+[data-theme="dark"] .copilot-check-text strong,
+[data-theme="dark"] .copilot-ladder-step strong,
+[data-theme="dark"] .copilot-tco-item strong,
+[data-theme="dark"] .copilot-validation-card h3 {
+  color: var(--dm-ink);
+}
+
+[data-theme="dark"] .copilot-subtitle,
+[data-theme="dark"] .copilot-demo-card small,
+[data-theme="dark"] .copilot-timeline-content p,
+[data-theme="dark"] .copilot-check-text small,
+[data-theme="dark"] .copilot-tco-slider-row label,
+[data-theme="dark"] .copilot-validation-card > p {
+  color: var(--dm-muted);
+}
+
+[data-theme="dark"] .copilot-scan-bar,
+[data-theme="dark"] .copilot-demo-card,
+[data-theme="dark"] .copilot-scanning-card,
+[data-theme="dark"] .copilot-card {
+  background: var(--dm-surface);
+  border-color: var(--dm-border);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38);
+}
+
+[data-theme="dark"] .copilot-scan-bar input {
+  background: var(--dm-surface-2);
+  color: var(--dm-ink);
+}
+
+[data-theme="dark"] .copilot-demo-card.is-active {
+  background: rgba(20, 184, 166, 0.14);
+  border-color: var(--dm-teal);
+}
+
+[data-theme="dark"] .copilot-demo-price {
+  color: var(--dm-teal-soft);
+}
+
+[data-theme="dark"] .copilot-card-head {
+  background: var(--dm-header-band);
+}
+
+[data-theme="dark"] .copilot-odo-stats > div,
+[data-theme="dark"] .copilot-odo-chart-wrap,
+[data-theme="dark"] .copilot-timeline-item,
+[data-theme="dark"] .copilot-check-item,
+[data-theme="dark"] .copilot-ladder-step,
+[data-theme="dark"] .copilot-message-box,
+[data-theme="dark"] .copilot-tco-item {
+  background: var(--dm-surface-2);
+  border-color: var(--dm-border);
+}
+
+[data-theme="dark"] .copilot-timeline-item.status-danger,
+[data-theme="dark"] .copilot-check-item.is-issue {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(248, 113, 113, 0.35);
+}
+
+[data-theme="dark"] .copilot-check-item.is-ok {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(74, 222, 128, 0.35);
+}
+
+[data-theme="dark"] .copilot-check-indicator {
+  background: var(--dm-surface);
+  border-color: var(--dm-border-strong);
+}
+
+[data-theme="dark"] .copilot-check-badge {
+  background: var(--dm-surface-3);
+  color: var(--dm-text);
+}
+
+[data-theme="dark"] .copilot-check-badge.is-ok {
+  background: rgba(34, 197, 94, 0.18);
+  color: #86EFAC;
+}
+
+[data-theme="dark"] .copilot-check-badge.is-issue {
+  background: rgba(239, 68, 68, 0.2);
+  color: #FCA5A5;
+}
+
+[data-theme="dark"] .copilot-history-deduction-row {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(251, 191, 36, 0.32);
+  color: #FDE68A;
+}
+
+[data-theme="dark"] .copilot-odo-grid {
+  stroke: var(--dm-border-strong);
+}
+
+[data-theme="dark"] .copilot-odo-dot {
+  stroke: var(--dm-surface-2);
+}
+
+[data-theme="dark"] .copilot-odo-val {
+  fill: var(--dm-ink);
+}
+
+[data-theme="dark"] .copilot-odo-year {
+  fill: var(--dm-muted);
+}
+
+[data-theme="dark"] .copilot-ladder-step.is-opening {
+  background: var(--dm-teal-tint);
+  border-color: var(--dm-teal);
+}
+
+[data-theme="dark"] .copilot-ladder-step.is-opening strong {
+  color: var(--dm-teal-soft);
+}
+
+[data-theme="dark"] .copilot-ladder-step.is-target {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(52, 211, 153, 0.36);
+}
+
+[data-theme="dark"] .copilot-message-box p {
+  color: var(--dm-ink);
+}
+
+[data-theme="dark"] .copilot-copy-btn {
+  background: var(--dm-teal);
+  color: #0B111A;
+}
+
+[data-theme="dark"] .copilot-tco-item.is-total {
+  background: #0D1622;
+  border-color: var(--dm-teal);
+}
+
+[data-theme="dark"] .copilot-validation-card {
+  background: linear-gradient(135deg, #10242A 0%, #121B26 100%);
+  border-color: var(--dm-teal-border);
+}
+
+[data-theme="dark"] .copilot-vote-btn,
+[data-theme="dark"] .copilot-link-secondary {
+  background: var(--dm-surface-2);
+  border-color: var(--dm-border-strong);
+  color: var(--dm-ink);
+}
+
+[data-theme="dark"] .copilot-vote-btn:hover,
+[data-theme="dark"] .copilot-link-secondary:hover {
+  border-color: var(--dm-teal);
+  background: var(--dm-teal-tint);
+}
+
+[data-theme="dark"] .copilot-vote-btn.is-selected {
+  background: var(--dm-teal);
+  border-color: var(--dm-teal);
+  color: #0B111A;
+}
+
+[data-theme="dark"] .copilot-vote-thanks {
+  color: var(--dm-teal-soft) !important;
+}
+
+[data-theme="dark"] .copilot-link-primary {
+  background: var(--dm-teal);
+  color: #0B111A;
+}
+
+[data-theme="dark"] .copilot-page .tone-danger {
+  background: rgba(239, 68, 68, 0.18);
+  color: #FCA5A5;
+  border-color: rgba(248, 113, 113, 0.36);
+}
+
+[data-theme="dark"] .copilot-page .tone-warning {
+  background: rgba(245, 158, 11, 0.18);
+  color: #FDE68A;
+  border-color: rgba(251, 191, 36, 0.36);
+}
+
+[data-theme="dark"] .copilot-page .tone-positive {
+  background: rgba(34, 197, 94, 0.18);
+  color: #86EFAC;
+  border-color: rgba(74, 222, 128, 0.36);
+}

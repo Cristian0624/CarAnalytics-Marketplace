@@ -13,6 +13,7 @@ import SavedItemsPage from "./pages/SavedItemsPage";
 import ComparatorPage from "./pages/ComparatorPage";
 import AboutUsPage from "./pages/AboutUsPage";
 import LegalPage from "./pages/LegalPage";
+import BuySafeCopilotPage from "./pages/BuySafeCopilotPage";
 import { FavouritesProvider } from "./context/FavouritesContext";
 import { ComparatorProvider } from "./context/ComparatorContext";
 
@@ -54,6 +55,8 @@ function App() {
         <Route path="/create-listing" element={<Navigate to="/price-estimate" replace />} />
         <Route path="/anomaly-risk" element={<AnomalyRiskPage />} />
         <Route path="/price-estimate" element={<PriceEstimatePage />} />
+        <Route path="/copilot" element={<BuySafeCopilotPage />} />
+        <Route path="/prototype" element={<BuySafeCopilotPage />} />
         <Route path="/favourites/:id?" element={<SavedItemsPage kind="favourites" />} />
         <Route path="/saved-risk-assessments/:id?" element={<SavedItemsPage kind="risks" />} />
         <Route path="/saved-searches/:id?" element={<SavedItemsPage kind="searches" />} />
